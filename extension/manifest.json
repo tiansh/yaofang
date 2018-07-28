@@ -1,0 +1,57 @@
+{
+
+  "manifest_version": 2,
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
+  "version": "0.0.1",
+  "default_locale": "zh_CN",
+
+  "icons": {
+    "48": "yawf.svg"
+  },
+
+  "permissions": [
+    "webRequest", "webRequestBlocking",
+    "storage", "unlimitedStorage",
+    "*://*.weibo.com/*", "<all_urls>"
+  ],
+
+  "background": {
+    "scripts": [
+      "background/request-blocking.js"
+    ]
+  },
+
+  "content_scripts": [{
+    "matches": [
+      "*://*.weibo.com/*" 
+    ],
+    "js": [
+      "content/util/priority.js",
+      "content/util/debug.js",
+      "content/util/i18n.js",
+      "content/util/css.js",
+      "content/util/inject.js",
+
+      "content/init/page.js",
+      "content/init/init.js",
+      "content/init/setup.js",
+      "content/init/ready.js",
+
+      "content/main/entry.js"
+    ],
+    "run_at": "document_start"
+  }],
+
+  "web_accessible_resources": [
+    "external/*"
+  ],
+
+  "applications": {
+    "gecko": {
+      "id": "{2aef2502-7d42-4e2f-be82-1f17cc5753ab}",
+      "strict_min_version": "60.0"
+    }
+  }
+
+}
