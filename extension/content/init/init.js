@@ -35,39 +35,42 @@
 
   /** @type {boolean?} */
   let status = null;
-  /** @type {Set<{ callback: Function, priority: number }>} */
+  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
   const onReadyCallback = new Set();
-  /** @type {Set<{ callback: Function, priority: number }>} */
+  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
   const onLoadCallback = new Set();
-  /** @type {Set<{ callback: Function, priority: number }>} */
+  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
   const onDeinitCallback = new Set();
 
   const noop = () => { };
 
   /**
-   * @param {Set<{ callback: Function, priority: number }>} set
+   * @param {Set<{ callback: Function, priority: number, async: boolean? }>} set
    */
-  const runSet = set => {
+  const runSet = async set => {
     const list = [...set.values()].sort((p, q) => q.priority - p.priority);
-    list.forEach(({ callback }) => {
-      try { callback(); }
-      catch (e) {
+    for (const { callback, async } of list) {
+      try {
+        const result = callback();
+        if (async) await result;
+      } catch (e) {
         util.debug('Error while initializing:\n%o', e);
       }
-    });
+    }
     set.clear();
   };
 
   init.status = () => status;
   // 触发 Ready
-  init.ready = $CONFIG => {
+  init.ready = async $CONFIG => {
     if (!validPageReady($CONFIG)) {
       return init.deinit();
     }
     page.$CONFIG = $CONFIG;
-    runSet(onReadyCallback);
     status = true;
     init.ready = noop;
+    util.debug('yawf onready');
+    await runSet(onReadyCallback);
     if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
       setTimeout(init.dcl, 0);
     } else {
@@ -75,55 +78,35 @@
     }
   };
   // 触发 Deinit
-  init.deinit = () => {
-    runSet(onDeinitCallback);
+  init.deinit = async () => {
     status = false;
     init.ready = init.dcl = noop;
+    util.debug('yawf deinit');
+    await runSet(onDeinitCallback);
   };
   // 触发 Load
-  init.dcl = () => {
+  init.dcl = async () => {
     if (!validPageDom()) {
       return init.deinit();
     }
-    runSet(onLoadCallback);
     status = {};
     init.dcl = noop;
+    util.debug('yawf onload');
+    await runSet(onLoadCallback);
   };
 
-  /**
-   * @param {Function} callback
-   * @param {number} priority
-   */
-  init.onReady = (callback, priority) => {
-    if (status === null) {
-      onReadyCallback.add({ callback, priority });
-    } else if (status) {
-      Promise.resolve().then(callback);
+  const register = callbackCollection => (
+    (callback, { priority = util.priority.DEFAULT, async = false } = {}) => {
+      if (status === null) {
+        callbackCollection.add({ callback, priority, async });
+      } else if (status) {
+        Promise.resolve().then(callback);
+      }
     }
-  };
+  );
 
-  /**
-   * @param {Function} callback
-   * @param {number} priority
-   */
-  init.onLoad = (callback, priority) => {
-    if (status === null || status === true) {
-      onLoadCallback.add({ callback, priority });
-    } else if (status) {
-      Promise.resolve().then(callback);
-    }
-  };
-
-  /**
-   * @param {Function} callback
-   * @param {number} priority
-   */
-  init.onDeinit = (callback, priority) => {
-    if (status === null) {
-      onDeinitCallback.add({ callback, priority });
-    } else if (status === false) {
-      Promise.resolve().then(callback);
-    }
-  };
+  init.onReady = register(onReadyCallback);
+  init.onLoad = register(onLoadCallback);
+  init.onDeinit = register(onDeinitCallback);
 
 }());
