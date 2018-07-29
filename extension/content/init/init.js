@@ -64,7 +64,8 @@
   // 触发 Ready
   init.ready = async $CONFIG => {
     if (!validPageReady($CONFIG)) {
-      return init.deinit();
+      await init.deinit();
+      return;
     }
     page.$CONFIG = $CONFIG;
     status = true;
@@ -87,7 +88,8 @@
   // 触发 Load
   init.dcl = async () => {
     if (!validPageDom()) {
-      return init.deinit();
+      await init.deinit();
+      return;
     }
     status = {};
     init.dcl = noop;

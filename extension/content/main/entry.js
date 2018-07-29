@@ -7,6 +7,9 @@
   const init = yawf.init;
 
   const i18n = util.i18n;
+  const ui = util.ui;
+
+  const rule = yawf.rule;
 
   i18n.filterMenuItem = {
     cn: '过滤器设置',
@@ -44,8 +47,10 @@
     iconStyle.remove();
   });
 
-
-  const onClick = function (e) { alert('stub'); e.preventDefault(); }
+  const onClick = function (e) {
+    rule.dialog();
+    e.preventDefault();
+  };
   init.onLoad(() => {
     const icon = function () {
       const reference = document.querySelector('.WB_global_nav .gn_set_list');

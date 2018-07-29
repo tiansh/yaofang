@@ -34,12 +34,15 @@
       "content/util/inject.js",
       "content/util/storage.js",
       "content/util/config.js",
+      "content/util/keyboard.js",
+      "content/util/ui.js",
 
       "content/init/page.js",
       "content/init/init.js",
       "content/init/setup.js",
       "content/init/ready.js",
 
+      "content/main/rule.js",
       "content/main/entry.js"
     ],
     "run_at": "document_start"
