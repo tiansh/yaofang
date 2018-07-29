@@ -9,7 +9,7 @@
   const i18n = util.i18n;
   const ui = util.ui;
 
-  const rule = yawf.rule;
+  const ruleset = yawf.ruleset;
 
   i18n.filterMenuItem = {
     cn: '过滤器设置',
@@ -48,7 +48,7 @@
   });
 
   const onClick = function (e) {
-    rule.dialog();
+    ruleset.dialog();
     e.preventDefault();
   };
   init.onLoad(() => {

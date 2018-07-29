@@ -6,7 +6,7 @@
   const ui = util.ui;
   const i18n = util.i18n;
 
-  const rule = yawf.rule = yawf.rule || {};
+  const ruleset = yawf.ruleset = yawf.ruleset || {};
 
   i18n.configDialogTitle = {
     cn: '设置 - 药方 (YAWF)',
@@ -14,7 +14,7 @@
     en: 'Settings - Yet Another Weibo Filter (YAWF)',
   };
 
-  rule.dialog = function () {
+  ruleset.dialog = function () {
     ui.alert({
       id: 'yawf-config',
       title: i18n.configDialogTitle,

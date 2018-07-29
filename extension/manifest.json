@@ -42,7 +42,7 @@
       "content/init/setup.js",
       "content/init/ready.js",
 
-      "content/main/rule.js",
+      "content/main/ruleset.js",
       "content/main/entry.js"
     ],
     "run_at": "document_start"
