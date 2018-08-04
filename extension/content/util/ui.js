@@ -27,7 +27,7 @@
 
   /**
    * 显示一个对话框
-   * @param {{ id: string, title: string, render: Function, button: { [type: string]: Function? } }}
+   * @param {{ id: string, title: string, render: Function, button: { [type: string]: Function? }? }}
    */
   ui.dialog = function ({ id, title, render, button }) {
     // 初始化 DOM
@@ -108,7 +108,7 @@
     cover.setAttribute('node-type', 'outer');
     cover.className = 'yawf-dialog-outer';
     // 响应鼠标
-    if (!button.ok && !button.cancel) {
+    if (!button || !button.ok && !button.cancel) {
       buttonCollectionNode.parentNode.removeChild(buttonCollectionNode);
     } else {
       if (button.ok) okButton.addEventListener('click', button.ok);
@@ -116,8 +116,10 @@
       if (button.cancel) cancelButton.addEventListener('click', button.cancel);
       else buttonCollectionNode.removeChild(cancelButton);
     }
-    if (!button.close) button.close = () => { hide(); };
-    closeButton.addEventListener('click', button.close);
+    if (button) {
+      if (!button.close) button.close = () => { hide(); };
+      closeButton.addEventListener('click', button.close);
+    }
     // 响应按键
     const keys = event => {
       const code = keyboard.event(event);

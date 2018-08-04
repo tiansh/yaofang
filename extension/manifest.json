@@ -7,7 +7,7 @@
   "default_locale": "zh_CN",
 
   "icons": {
-    "48": "yawf.svg"
+    "96": "yawf.svg"
   },
 
   "permissions": [
@@ -42,7 +42,12 @@
       "content/init/setup.js",
       "content/init/ready.js",
 
-      "content/main/ruleset.js",
+      "content/ruleset/dialog.js",
+      "content/ruleset/tab.js",
+      "content/ruleset/rule.js",
+
+      "content/rule/about/about.js",
+
       "content/main/entry.js"
     ],
     "run_at": "document_start"
