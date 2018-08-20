@@ -116,10 +116,7 @@
       if (button.cancel) cancelButton.addEventListener('click', button.cancel);
       else buttonCollectionNode.removeChild(cancelButton);
     }
-    if (button) {
-      if (!button.close) button.close = () => { hide(); };
-      closeButton.addEventListener('click', button.close);
-    }
+    closeButton.addEventListener('click', button && button.close || (() => hide()));
     // 响应按键
     const keys = event => {
       const code = keyboard.event(event);

@@ -42,11 +42,11 @@
       "content/init/setup.js",
       "content/init/ready.js",
 
-      "content/ruleset/dialog.js",
-      "content/ruleset/tab.js",
       "content/ruleset/rule.js",
+      "content/ruleset/dialog.js",
 
       "content/rule/about/about.js",
+      "content/rule/about/script.js",
 
       "content/main/entry.js"
     ],

@@ -2,11 +2,9 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const ruleset = yawf.ruleset;
+  const rule = yawf.rule;
 
   const i18n = util.i18n;
-
-  const tabs = yawf.tabs = yawf.tabs || {};
 
   i18n.aboutTabTitle = {
     cn: '关于',
@@ -15,8 +13,10 @@
     en: 'About',
   };
 
-  const about = tabs.about = ruleset.Tab({
-    get name() { return i18n.aboutTabTitle; },
+  const about = yawf.rules.about = {};
+  about.about = rule.Tab({
+    id: 'about',
+    template: () => i18n.aboutTabTitle,
   });
 
 }());

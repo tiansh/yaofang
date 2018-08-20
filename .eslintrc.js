@@ -84,5 +84,7 @@ module.exports = {
     'radix': ['warn'],
 
     'complexity': ['warn'],
+
+    'no-console': ['off'],
 	}
 }
