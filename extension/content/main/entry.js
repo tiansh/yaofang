@@ -48,7 +48,7 @@
   });
 
   const onClick = function (e) {
-    rule.dialog();
+    try { rule.dialog(); } catch (e) { console.error(e); alert(e); }
     e.preventDefault();
   };
   init.onLoad(() => {

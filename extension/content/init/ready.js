@@ -7,14 +7,16 @@
 
   const priority = util.priority;
 
-  init.onReady(() => {
-    const $CONFIG = init.page.$CONFIG;
-    util.i18n = $CONFIG.lang;
-  });
+  const config = yawf.config;
 
   init.onReady(async () => {
     const $CONFIG = init.page.$CONFIG;
-    await util.config.init($CONFIG.uid);
+    await config.init($CONFIG.uid);
+    util.i18n = $CONFIG.lang;
   }, { priority: priority.FIRST, async: true });
+
+  const hideAll = util.css.add('.WB_miniblog { visibility: hidden; opacity: 0; }');
+  init.onReady(() => { hideAll.remove(); }, { priority: priority.LAST });
+  init.onDeinit(() => { hideAll.remove(); });
 
 }());

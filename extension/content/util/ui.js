@@ -111,18 +111,29 @@
     if (!button || !button.ok && !button.cancel) {
       buttonCollectionNode.parentNode.removeChild(buttonCollectionNode);
     } else {
-      if (button.ok) okButton.addEventListener('click', button.ok);
+      if (button.ok) okButton.addEventListener('click', event => {
+        if (!event.isTrusted) return;
+        button.ok();
+      });
       else buttonCollectionNode.removeChild(okButton);
-      if (button.cancel) cancelButton.addEventListener('click', button.cancel);
+      if (button.cancel) cancelButton.addEventListener('click', event => {
+        if (!event.isTrusted) return;
+        button.cancel();
+      });
       else buttonCollectionNode.removeChild(cancelButton);
     }
-    closeButton.addEventListener('click', button && button.close || (() => hide()));
+    closeButton.addEventListener('click', event => {
+      if (!event.isTrusted) return;
+      (button && button.close || hide)();
+    });
     // 响应按键
     const keys = event => {
+      if (!event.isTrusted) return;
       const code = keyboard.event(event);
-      if (code === keyboard.code.ENTER && button.ok) button.ok(event);
-      else if (code === keyboard.code.ESC) (button.cancel || button.close)(event);
-      else return;
+      if (code === keyboard.code.ENTER && button && button.ok) button.ok(event);
+      else if (code === keyboard.code.ESC) {
+        (button && (button.cancel || button.close) || (() => hide()))(event);
+      } else return;
       event.stopPropagation();
       event.preventDefault();
     };

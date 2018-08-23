@@ -39,7 +39,7 @@
     container.innerHTML = '<div node-type="yawf-config-body" class="yawf-config-body yawf-window-body"></div>';
     return container.removeChild(container.firstChild);
   };
-  configDom.tab = () => {
+  configDom.layer = () => {
     const container = document.createElement('div');
     container.innerHTML = '<div class="yawf-config-layer" node-type="searchFilterGroupLayer"></div>';
     return container.removeChild(container.firstChild);
@@ -55,42 +55,29 @@
     const right = inner.appendChild(configDom.right());
     const tablist = left.querySelector('ul');
     const search = tablist.appendChild(configDom.search());
+    const layer = right.appendChild(configDom.layer());
     /** @type {Element?} */
     let current = null;
-    /** @type {WeakMap<Element, Element>} */
-    const tabMap = new WeakMap();
-    /** @type {WeakMap<Element, rule>} */
+    /** @type {WeakMap<Element, Function>} */
     const tabInit = new WeakMap();
     tabs.forEach(tab => {
-      const tabLeft = tablist.appendChild(configDom.item(tab.render()));
-      const tabRight = right.appendChild(configDom.tab());
-      tabMap.set(tabLeft, tabRight);
+      const tabLeft = tablist.appendChild(configDom.item(tab.getRenderResult()));
       tabInit.set(tabLeft, () => {
-        render(tabRight, rule.query({ base: [tab] }));
+        layer.innerHTML = '';
+        render(layer, rule.query({ base: [tab] }));
       });
       if (!current) current = tabLeft;
     });
     const setCurrent = tabLeft => {
-      if (current) {
-        current.classList.remove('current');
-        tabMap.get(current).classList.remove('current');
-      }
+      if (current) current.classList.remove('current');
       tabLeft.classList.add('current');
-      const tabRight = tabMap.get(tabLeft);
-      tabRight.classList.add('current');
-      current = tabLeft;
-      if (tabInit.has(tabLeft)) {
-        tabInit.get(tabLeft)();
-        tabInit.delete(tabLeft);
-      }
+      tabInit.get(tabLeft)();
     };
     // 自动选中第一个选项卡
     setCurrent(current);
     left.addEventListener('click', event => {
       const tabLeft = event.target.closest('.yawf-config-tab');
       if (!tabLeft) return;
-      const tabRight = tabMap.get(tabLeft);
-      if (!tabRight) return;
       setCurrent(tabLeft);
     });
   };
@@ -104,9 +91,10 @@
       groups.get(item.parent).push(item);
     });
     [...groups.entries()].forEach(([group, items]) => {
-      inner.appendChild(group.render());
+      inner.appendChild(group.getRenderResult());
       items.forEach(item => {
-        inner.appendChild(item.render());
+        let node = item.getRenderResult();
+        inner.appendChild(node);
       });
     });
   };
@@ -136,8 +124,12 @@
 #yawf-config .yawf-config-header li.current .yawf-config-search-logo,
 #yawf-config .yawf-config-search:focus ~ .yawf-config-search-logo { left: 15px; }
 #yawf-config .yawf-config-body { padding: 10px 20px 20px; width: 600px; max-height: 450px; overflow: auto; box-shadow: 0 4px 2px -2px rgba(64, 64, 64, 0.15) inset; position: relative; line-height: 20px; }
-#yawf-config .yawf-config-layer { padding-bottom: 20px; min-height: 400px; display: none; }
+#yawf-config .yawf-config-layer { padding-bottom: 20px; min-height: 400px; }
 #yawf-config .yawf-config-layer.current { display: block; }
+
+.yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
+.yawf-config-rule { display: block; margin: 5px 20px; }
 `);
+
 
 }());

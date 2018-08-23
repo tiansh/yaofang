@@ -15,6 +15,7 @@
       entry.tw = value.tw || entry.cn;
       entry.hk = value.hk || entry.tw;
       entry.en = value.en || entry.cn;
+      return true;
     },
   });
 

@@ -1,18 +1,24 @@
 ; (async function () {
 
   const yawf = window.yawf;
+
   const util = yawf.util;
+  const storage = yawf.storage;
+  const config = yawf.config;
+  const init = yawf.init;
 
   const css = util.css;
   const ui = util.ui;
   const i18n = util.i18n;
-  const config = util.config;
+  const priority = util.priority;
 
   const rule = yawf.rule = {};
   const rules = yawf.rules = {};
   const tabs = rule.tabs = [];
 
-  const CommonConfigItem = function CommonConfigItem(item) {
+  rule.class = {};
+
+  const BaseConfigItem = function CommonConfigItem(item) {
     Object.assign(this, item);
     if (!this.ref) this.ref = {};
     Object.keys(this.ref).forEach(key => {
@@ -20,7 +26,7 @@
       this.ref[key] = ConfigItemBuilder(this.ref[key], this);
     });
   };
-  CommonConfigItem.prototype.template = function () { return ''; };
+  BaseConfigItem.prototype.template = function () { return ''; };
 
   /** @param {boolean} fullDom */
   const parseTemplate = function (fullDom) {
@@ -114,10 +120,19 @@
     return ruleRender;
   };
 
-  CommonConfigItem.prototype.render = parseTemplate(true);
-  CommonConfigItem.prototype.text = parseTemplate(false);
+  BaseConfigItem.prototype.render = parseTemplate(true);
+  BaseConfigItem.prototype.text = parseTemplate(false);
+  BaseConfigItem.prototype.getRenderResult = function () {
+    if (this.renderResult) return this.renderResult;
+    let node = this.render();
+    if (typeof this.rendered === 'function') {
+      node = this.rendered(node);
+    }
+    this.renderResult = node;
+    return this.renderResult;
+  };
 
-  class ConfigItem extends CommonConfigItem {
+  class ConfigItem extends BaseConfigItem {
     constructor(item, context) {
       super(item);
       if (context) {
@@ -127,22 +142,33 @@
     }
     initial() { return this.normalize(null); }
     normalize(value) { return value; }
-    get conf() {
-      const id = this.id;
-      const value = config.get(id);
-      if (value != null) {
-        return this.normalize(value);
-      }
-      if (typeof this.initial === 'function') {
-        return this.initial();
-      }
-      return this.initial;
+    initConfig() {
+      if (this.config) return;
+      if (!this.id) throw Error('id is required to init config');
+      this.config = config.user.key(this.id);
     }
-    set conf(value) {
-      const id = this.id;
-      const normalized = this.normalize(value);
-      config.set(id);
-      return true;
+    getConfig() {
+      this.initConfig();
+      const value = this.config.get();
+      const normalize = this.normalize(value);
+      if (value && JSON.stringify(value) !== normalize && JSON.stringify(normalize)) {
+        this.config.set(normalize);
+      }
+      return normalize;
+    }
+    setConfig(value) {
+      this.initConfig();
+      const normalize = this.normalize(value);
+      this.config.set(normalize);
+      return normalize;
+    }
+    addConfigListener(callback) {
+      this.initConfig();
+      this.config.addListener(callback);
+    }
+    removeConfigListener(callback) {
+      this.initConfig();
+      this.config.addListener(callback);
     }
   }
 
@@ -153,9 +179,25 @@
     normalize(value) {
       return !!value;
     }
+    isEnabled() {
+      return this.always || this.getConfig();
+    }
     render() {
       const node = super.render();
       if (this.always) return node;
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.classList.add('W_checkbox');
+      checkbox.checked = this.isEnabled();
+      checkbox.addEventListener('change', event => {
+        if (!event.isTrusted) checkbox.checked = this.getConfig();
+        else this.setConfig(checkbox.checked);
+      });
+      this.addConfigListener(newValue => {
+        checkbox.checked = newValue;
+      });
+      const label = node.querySelector('label');
+      label.insertBefore(checkbox, label.firstChild);
       return node;
     }
   }
@@ -181,6 +223,7 @@
       tabs.push(this);
     }
     get type() { return 'tab'; }
+    get always() { return true; }
     render() {
       const span = document.createElement('span');
       span.textContent = this.template();
@@ -190,9 +233,9 @@
   const tabBuilder = rule.Tab = function (item) {
     return new Tab(item);
   };
+  rule.class.Tab = Tab;
 
   class Group extends RuleItem {
-    get type() { return 'group'; }
     constructor(item) {
       if (!(item.parent instanceof Tab)) {
         throw TypeError('Group must in some Tab');
@@ -200,8 +243,10 @@
       super(item);
       this.children = [];
     }
-    render(isRoot = true) {
-      const node = super.render(isRoot);
+    get type() { return 'group'; }
+    get always() { return true; }
+    render() {
+      const node = super.render();
       node.classList.add('yawf-config-group');
       return node;
     }
@@ -209,6 +254,7 @@
   const groupBuilder = rule.Group = function (item) {
     return new Group(item);
   };
+  rule.class.Group = Group;
 
   class Rule extends RuleItem {
     constructor(item) {
@@ -217,23 +263,43 @@
       }
       super(item);
     }
-    render(isRoot = true) {
-      const node = super.render(isRoot);
+    render() {
+      const node = super.render();
       node.classList.add('yawf-config-rule');
       return node;
+    }
+    execute() {
+      const enabled = this.isEnabled();
+      try {
+        const styles = [];
+        if (typeof this.css === 'string') styles.push(this.css);
+        if (typeof this.css === 'function') styles.push(this.css());
+        if (enabled) {
+          if (typeof this.acss === 'string') styles.push(this.acss);
+          if (typeof this.acss === 'function') styles.push(this.acss());
+        }
+        rule.style.append(styles.join('\n'));
+        if (typeof this.init === 'function') this.init();
+        if (enabled) {
+          if (typeof this.ainit === 'function') this.ainit();
+        }
+      } catch (e) {
+        console.error('Error while execute rule %o: %o', this, e);
+      }
     }
   }
   const ruleBuilder = rule.Rule = function (item) {
     return new Rule(item);
   };
+  rule.class.Rule = Rule;
 
   class Text extends Rule {
     constructor(item) {
       super(item);
       this.always = true;
     }
-    render(isRoot = true) {
-      const node = super.render(isRoot);
+    render() {
+      const node = super.render();
       node.classList.add('yawf-config-text');
       return node;
     }
@@ -241,10 +307,10 @@
   const textBuilder = rule.Text = function (item) {
     return new Text(item);
   };
+  rule.class.Text = Text;
 
   /** @type { ({ base: [] }) => [] } */
-  const query = rule.query = function ({ base }) {
-    const context = base || tabs;
+  const query = rule.query = function ({ base = tabs } = {}) {
     const result = new Set();
     ; (function query(items) {
       items.forEach(item => {
@@ -254,14 +320,18 @@
         if (!(item instanceof Rule)) return;
         result.add(item);
       });
-    }(context));
+    }(base));
     return [...result];
   };
 
-  css.add(`
-.yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
-.yawf-config-rule { display: block; margin: 5px 20px; }
-`);
+  rule.init = function () {
+    rule.style = css.add('');
+    rule.query().forEach(rule => rule.execute());
+  };
+
+  init.onReady(async () => {
+    rule.init();
+  }, { priority: priority.DEFAULT, async: true });
 
 }());
 

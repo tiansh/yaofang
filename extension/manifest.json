@@ -32,10 +32,11 @@
       "content/util/i18n.js",
       "content/util/css.js",
       "content/util/inject.js",
-      "content/util/storage.js",
-      "content/util/config.js",
       "content/util/keyboard.js",
       "content/util/ui.js",
+
+      "content/storage/storage.js",
+      "content/storage/config.js",
 
       "content/init/page.js",
       "content/init/init.js",
@@ -44,6 +45,9 @@
 
       "content/ruleset/rule.js",
       "content/ruleset/dialog.js",
+
+      "content/rule/clean/clean.js",
+      "content/rule/clean/icons.js",
 
       "content/rule/about/about.js",
       "content/rule/about/script.js",
