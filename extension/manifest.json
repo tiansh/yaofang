@@ -49,6 +49,7 @@
       "content/rule/clean/clean.js",
       "content/rule/clean/icons.js",
       "content/rule/clean/follow.js",
+      "content/rule/clean/nav.js",
 
       "content/rule/about/about.js",
       "content/rule/about/script.js",
