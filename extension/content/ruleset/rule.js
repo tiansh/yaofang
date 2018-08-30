@@ -273,7 +273,43 @@
   }
   rule.class.BooleanConfigItem = BooleanConfigItem;
 
+  class SelectConfigItem extends ConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+    }
+    render() {
+      const container = document.createElement('span');
+      if (!Array.isArray(this.select) || !this.select) {
+        return container;
+      }
+      const select = document.createElement('select');
+      this.select.forEach(({ text, value }) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = typeof text === 'function' ? text() : text;
+        select.appendChild(option);
+      });
+      select.value = this.getConfig();
+      if (!select.value) {
+        const value = select.value = this.select[0].value;
+        this.setConfig(value);
+      }
+      select.addEventListener('change', event => {
+        if (!event.isTrusted) select.value = this.getConfig();
+        else this.setConfig(select.value);
+      });
+      this.addConfigListener(newValue => {
+        select.value = newValue;
+      });
+      container.appendChild(select);
+      return container;
+    }
+  }
+  rule.class.SelectConfigItem = SelectConfigItem;
+
   const configItemBuilder = function (item, parent) {
+    if (item && item.type === 'boolean') return new BooleanConfigItem(item, parent);
+    if (item && item.type === 'select') return new SelectConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 
@@ -403,6 +439,10 @@
   init.onReady(async () => {
     rule.init();
   }, { priority: priority.DEFAULT, async: true });
+
+  css.add(`
+    .yawf-config-rule > label + label { margin-left: 8px; }
+`);
 
 }());
 
