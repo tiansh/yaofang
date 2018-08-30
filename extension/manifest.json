@@ -44,7 +44,12 @@
       "content/init/ready.js",
 
       "content/ruleset/rule.js",
+      "content/ruleset/observer.js",
+      "content/ruleset/filter.js",
       "content/ruleset/dialog.js",
+
+      "content/rule/feed/more/more.js",
+      "content/rule/feed/more/commercial.js",
 
       "content/rule/clean/clean.js",
       "content/rule/clean/icons.js",

@@ -1,3 +1,6 @@
+/**
+ * 这个文件用于显示一个显示了若干条规则的对话框
+ */
 ; (async function () {
 
   const yawf = window.yawf;
@@ -70,6 +73,7 @@
     });
     const setCurrent = tabLeft => {
       if (current) current.classList.remove('current');
+      current = tabLeft;
       tabLeft.classList.add('current');
       tabInit.get(tabLeft)();
     };
@@ -108,7 +112,7 @@
           if (!rules) renderTabs(inner, tabs);
         },
       }).show();
-    } catch (e) { console.error(e); alert(e); }
+    } catch (e) { util.debug('Error while showing rule dialog %o', e); }
   };
 
   css.add(`

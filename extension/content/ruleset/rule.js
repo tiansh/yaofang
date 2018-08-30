@@ -1,3 +1,62 @@
+/**
+ * 这个文件用于描述一条规则
+ *
+ * yawf.rule.<ruleType>(details: object) 新建一条规则
+ * <ruleType>:
+ *   Rule: 普通规则，普通规则应当属于一个 Group
+ *   Text: 纯文本（仅用于展示，一般不承担功能），纯文本是普通规则的一个特例
+ *   Tab: 标签页，是最顶层的规则，其中包含若干 Group
+ *   Group: 规则分组（小标题），属于一个 Tab，其中包含若干 Rule
+ *
+ * 普通规则 Rule 是一个 BooleanConfigItem，会默认带一个开关
+ *   如果不希望显示开关，则需要在 details 里指定 always: true 此时认为
+ *
+ * ConfigItem 用于描述一个界面元素，或一个对应的设置项
+ * yawf.rule.class.ConfigItem 的构造函数一般不需要从外部调用
+ * 一条 Rule 或者 Rule 的 ref 属性，是一个 ConfigItem
+ * ref 属性下的 ConfigItem 的类型由构造时对象的 type 属性决定：
+ *   TODO
+ *
+ * ConfigItem 的属性和方法包括：
+ * 显示相关
+ *   template() （可选） 用于显示的模板
+ *   render(isRoot: boolean) （可选） 显示的函数，如果缺省则使用 template 属性根据规则生成
+ *   rendered() （可选） 在调用 render 后可用这个函数对产生的 DOM 做进一步修改
+ *   text(isRoot: boolean) （可选） 显示的文本，如果缺省则使用 template 或 render 根据规则生成
+ * 设置相关
+ *   initial(): any 设置的默认值
+ *   normalize(value: any): any 对设置值进行规范化
+ *   getConfig(): any 获取设置
+ *   setConfig(value: any): any 写入新设置
+ *   addConfigListener(callback: (newValue: any, oldValue: any) => void) 当设置改变时回调
+ *   removeConfigListener(callback) 取消添加的设置改变的回调
+ *
+ * BooleanConfigItem 继承自 ConfigItem 包括属性和方法：
+ *   always(): boolean = false 如果该属性为 true，那么显示时不带复选框，没有对应的设置项，检查时总是已启用
+ *   isEnabled(): boolean 检查是否已启用
+ *
+ * RuleItem 继承自 BooleanConfigItem 包括属性和方法：
+ *   parent 构造时如指定 parent，则会将该规则加入到其父亲的子集合中
+ *   children: Array<RuleItem> 构造时自动初始化的数组，用于维护其子集合
+ *   type: string = "normal": 规则的类型，用于标记 Tab 和 Group
+ *
+ * Tab, Group 继承自 RuleItem：
+ *   这两个会自动带有 always => true，且有特殊的 type，有特殊的渲染逻辑
+ *
+ * Rule 继承自 RuleItem，在外部构造时使用 yawf.rule.Rule 构造器构造（无需 new 关键字），包括：
+ *   css: string | () => string 这条规则注册的 CSS，无论规则是否启用均会生效
+ *   acss: string | () => string 这条规则注册的 CSS，仅启用该条规则后生效
+ *   init: () => void 当初始化时调用，无论规则是否启用均会生效
+ *   ainit: () => void 当初始化时调用，仅启用该条规则后生效
+ *
+ * Text 继承自 Rule，在外部构造时使用 yawf.rule.Text 构造器构造（无需 new 关键字）：
+ *   实现了特殊的渲染逻辑
+ *
+ * yawf.rule.tabs: Array<Tab> 用于维护所有注册的标签页
+ * yawf.rule.query({
+ *   base: Array<RuleItem> = yawf.rule.tabs
+ * }): Array<Rule> 用于根据筛选条件列出对应的规则
+ */
 ; (async function () {
 
   const yawf = window.yawf;
@@ -23,7 +82,7 @@
     if (!this.ref) this.ref = {};
     Object.keys(this.ref).forEach(key => {
       if (this.ref[key] instanceof CommonConfigItem) return;
-      this.ref[key] = ConfigItemBuilder(this.ref[key], this);
+      this.ref[key] = configItemBuilder(this.ref[key], this);
     });
   };
   BaseConfigItem.prototype.template = function () { return ''; };
@@ -72,7 +131,11 @@
 
     /** @type {TemplateTokenRender} */
     tokenRender.child = function (token, reference, ref) {
-      reference.appendChild(ref[token.value].render(false));
+      if (fullDom) {
+        reference.appendChild(ref[token.value].render(false));
+      } else {
+        reference.appendChild(ref[token.value].text(false));
+      }
       return reference;
     };
     /** @type {TemplateTokenRender} */
@@ -111,6 +174,7 @@
     };
 
     const ruleRender = function (isRoot = true) {
+      if (!this.template) return null;
       const template = this.template();
       const ref = this.ref;
       const mode = fullDom ? isRoot ? 'recursive' : 'normal' : 'text';
@@ -121,7 +185,12 @@
   };
 
   BaseConfigItem.prototype.render = parseTemplate(true);
-  BaseConfigItem.prototype.text = parseTemplate(false);
+  BaseConfigItem.prototype.text = ((parse => function (isRoot = true) {
+    let result;
+    if (this.template) result = parse.apply(this);
+    else result = this.render();
+    return result && result.textContent.trim() || '';
+  })(parseTemplate(false)));
   BaseConfigItem.prototype.getRenderResult = function () {
     if (this.renderResult) return this.renderResult;
     let node = this.render();
@@ -171,6 +240,7 @@
       this.config.addListener(callback);
     }
   }
+  rule.class.ConfigItem = ConfigItem;
 
   class BooleanConfigItem extends ConfigItem {
     constructor(item, parent) {
@@ -201,8 +271,9 @@
       return node;
     }
   }
+  rule.class.BooleanConfigItem = BooleanConfigItem;
 
-  const ConfigItemBuilder = function (item, parent) {
+  const configItemBuilder = function (item, parent) {
     return new ConfigItem(item, parent);
   };
 
@@ -284,7 +355,7 @@
           if (typeof this.ainit === 'function') this.ainit();
         }
       } catch (e) {
-        console.error('Error while execute rule %o: %o', this, e);
+        util.debug('Error while execute rule %o: %o', this, e);
       }
     }
   }

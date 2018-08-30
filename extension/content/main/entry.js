@@ -48,7 +48,9 @@
   });
 
   const onClick = function (e) {
-    try { rule.dialog(); } catch (e) { console.error(e); alert(e); }
+    try {
+      rule.dialog();
+    } catch (e) { util.debug('Error while prompting dialog: %o', e); }
     e.preventDefault();
   };
   init.onLoad(() => {

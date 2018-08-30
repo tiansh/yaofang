@@ -104,7 +104,7 @@
         try {
           callback(clonedNewValue, clonedOldValue);
         } catch (e) {
-          console.error('Error while call config onchange callback: %o, %s [%o, %o]', this.storage, key, clonedNewValue, clonedOldValue);
+          util.debug('Error while call config onchange callback: %o, %s [%o, %o]', this.storage, key, clonedNewValue, clonedOldValue);
         }
       });
     }
