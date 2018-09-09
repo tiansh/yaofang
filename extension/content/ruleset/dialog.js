@@ -95,11 +95,15 @@
       groups.get(item.parent).push(item);
     });
     [...groups.entries()].forEach(([group, items]) => {
-      inner.appendChild(group.getRenderResult());
-      items.forEach(item => {
-        let node = item.getRenderResult();
-        inner.appendChild(node);
-      });
+      try {
+        inner.appendChild(group.getRenderResult());
+        items.forEach(item => {
+          let node = item.getRenderResult();
+          inner.appendChild(node);
+        });
+      } catch (e) {
+        console.log('Error while render config list:', e);
+      }
     });
   };
 

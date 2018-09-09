@@ -50,12 +50,16 @@
 
       "content/rule/feed/more/more.js",
       "content/rule/feed/more/commercial.js",
+      "content/rule/feed/more/content.js",
 
       "content/rule/clean/clean.js",
       "content/rule/clean/icons.js",
 
       "content/rule/style/style.js",
       "content/rule/style/text.js",
+      
+      "content/rule/tool/tool.js",
+      "content/rule/tool/sidebar.js",
 
       "content/rule/about/about.js",
       "content/rule/about/script.js",

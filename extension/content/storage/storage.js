@@ -56,20 +56,28 @@
       this.key = key;
       this.last = Promise.resolve();
     }
+    async run(callback) {
+      this.last = this.last.then(callback).then(value => value, error => {
+        util.debug('Error while handling storage: %o', error);
+      });
+      return this.last;
+    }
     async get() {
-      this.last = this.last.then(() => browser.storage[this.area].get(this.key));
-      const results = await this.last;
+      const results = await this.run(() => (
+        browser.storage[this.area].get(this.key)
+      ));
       return results[this.key];
     }
     /** @param {*} value */
     async set(value) {
-      const obj = { [this.key]: value };
-      this.last = this.last.then(() => browser.storage[this.area].set(obj));
-      await this.last;
+      await this.run(() => (
+        browser.storage[this.area].set({ [this.key]: value })
+      ));
     }
     async remove() {
-      this.last = this.last.then(() => browser.storage[this.area].remove(this.key));
-      await this.last;
+      await this.run(() => (
+        browser.storage[this.area].remove(this.key)
+      ));
     }
     /** @param {Function} callback */
     addListener(callback) {
@@ -97,7 +105,7 @@
     }
     triggerOnChanged(key, newValue, oldValue) {
       const callbacks = this.watcher.get(key);
-      if (!callbacks || !callbacks.size()) return;
+      if (!callbacks || !callbacks.size) return;
       const clonedNewValue = newValue && JSON.parse(JSON.stringify(newValue));
       const clonedOldValue = oldValue && JSON.parse(JSON.stringify(oldValue));
       callbacks.forEach(callback => {
@@ -125,7 +133,7 @@
           const strOldValue = oldValue && JSON.stringify(oldValue);
           if (strNewValue === strOldValue) return;
           values[key] = strNewValue && JSON.parse(strNewValue);
-          this.triggerOnChanged(newValues[key], oldValue);
+          this.triggerOnChanged(key, newValues[key], oldValue);
         });
       });
     }
@@ -145,10 +153,12 @@
       const strOldValue = oldValue && JSON.stringify(oldValue);
       const strNewValue = value && JSON.stringify(value);
       if (strNewValue !== strOldValue) {
-        if (strNewValue) values[key] = strNewValue && JSON.parse(strNewValue);
+        if (strNewValue) values[key] = JSON.parse(strNewValue);
         else delete values[key];
-        this.storage.set(values);
-        this.triggerOnChanged(key, oldValue, value);
+        const set = this.storage.set(values);
+        set.then(() => {
+          this.triggerOnChanged(key, value, oldValue);
+        });
       }
       return strNewValue && JSON.parse(strNewValue);
     }
@@ -193,10 +203,10 @@
     set(value) { return this.config.set(this.key, value); }
     remove() { return this.config.remove(this.key); }
     addListener(callback) {
-      return this.config.addListener(callback);
+      return this.config.addListener(this.key, callback);
     }
     removeListener(callback) {
-      return this.config.removeListener(callback);
+      return this.config.removeListener(this.key, callback);
     }
   }
 

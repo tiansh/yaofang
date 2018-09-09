@@ -205,9 +205,12 @@
   ui.alert = predefinedDialog({ ok: true });
   ui.confirm = predefinedDialog({ ok: true, cancel: false });
 
-  ui.bubble = function (description, reference) {
+  /**
+   * @param {HTMLElement} bubbleContent
+   * @param {HTMLElement} reference
+   */
+  ui.bubble = function (bubbleContent, reference) {
     const bubble = (function () {
-      if (description instanceof Element) return description;
       const template = document.createElement('template');
       template.innerHTML = `
 <div class="W_layer W_layer_pop yawf-bubble">
@@ -218,26 +221,91 @@
 </div>
 `;
       const bubble = document.importNode(template.content.firstElementChild, true);
-      bubble.querySelector('.main_txt').textContent = description;
+      if (!(bubbleContent instanceof Node)) {
+        bubbleContent = document.createTextNode(bubbleContent + '');
+      }
+      bubble.querySelector('.main_txt').appendChild(bubbleContent);
       return bubble;
     }());
-    const rect = reference.getClientRects()[0];
     const arrow = bubble.querySelector('.W_arrow_bor');
-    document.body.appendChild(bubble);
-    setTimeout(function () {
+    const referenceList = [];
+    const deBound = function (callback) {
+      let busy = false;
+      return function () {
+        if (busy) return; busy = true;
+        window.requestAnimationFrame(() => {
+          busy = false;
+          callback();
+        });
+      };
+    };
+    const trackScroll = function (callback) {
+      for (let ref = reference; ref; ref = ref.offsetParent) {
+        referenceList.push(reference);
+        ref.addEventListener('scroll', callback);
+      }
+    };
+    const deTrackScroll = function (callback) {
+      referenceList.splice(0).forEach(ref => {
+        ref.removeEventListener('scroll', callback);
+      });
+    };
+    const updatePosition = deBound(function () {
+      const rect = reference.getClientRects()[0];
+      if (!rect) return;
       const top0 = rect.top - bubble.clientHeight - 8;
       const top1 = top0 + window.pageYOffset;
       const top2 = rect.bottom + 8 + window.pageYOffset;
-      bubble.style.left = rect.left - 32 + rect.width + window.pageXOffset + 'px';
-      if (top0 > 0) {
-        bubble.style.top = top1 + 'px';
-        arrow.className = 'W_arrow_bor W_arrow_bor_b';
-      } else {
-        bubble.style.top = top2 + 'px';
-        arrow.className = 'W_arrow_bor W_arrow_bor_t';
+      const left = rect.left - 32 + rect.width + window.pageXOffset;
+      const atTop = top0 > 0;
+      const top = atTop ? top1 : top2;
+      const addClass = atTop ? 'W_arrow_bor_b' : 'W_arrow_bor_t';
+      const removeClass = atTop ? 'W_arrow_bor_t' : 'W_arrow_bor_b';
+      if (parseInt(bubble.style.left, 10) !== left) {
+        bubble.style.left = left + 'px';
       }
-    }, 0);
-    return bubble;
+      if (parseInt(bubble.style.top, 10) !== top) {
+        bubble.style.top = top + 'px';
+      }
+      if (!arrow.classList.contains(addClass)) {
+        arrow.classList.add(addClass);
+      }
+      if (arrow.classList.contains(removeClass)) {
+        arrow.classList.remove(removeClass);
+      }
+    });
+    const show = function () {
+      document.body.appendChild(bubble);
+      deTrackScroll(updatePosition);
+      trackScroll(updatePosition);
+      updatePosition();
+    };
+    const hide = function () {
+      deTrackScroll(updatePosition);
+      if (bubble.parentNode) {
+        bubble.parentNode.removeChild(bubble);
+      }
+    };
+    let mouseIn = null;
+    const enter = function () {
+      setTimeout(() => {
+        if (mouseIn === null) show();
+        mouseIn = true;
+      }, 0);
+    };
+    const leave = function () {
+      mouseIn = false;
+      setTimeout(function () {
+        if (mouseIn === false) {
+          hide();
+          mouseIn = null;
+        }
+      }, 0);
+    };
+    reference.addEventListener('mouseenter', enter);
+    bubble.addEventListener('mouseenter', enter);
+    reference.addEventListener('mouseleave', leave);
+    bubble.addEventListener('mouseleave', leave);
   };
 
   css.add(`

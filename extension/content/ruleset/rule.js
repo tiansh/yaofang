@@ -35,6 +35,19 @@
  *   always(): boolean = false 如果该属性为 true，那么显示时不带复选框，没有对应的设置项，检查时总是已启用
  *   isEnabled(): boolean 检查是否已启用
  *
+ * SelectConfigItem 继承自 ConfigItem
+ *   指定 select 属性为 Array<{ name: string, value: string }>，可以用于渲染选择框
+ *
+ * NumberConfigItem 继承自 ConfigItem
+ *   指定 min, max, step 属性，类型 number，可用于输入一个数字
+ *
+ * RangeConfigItem 继承自 NumberConfigItem
+ *   相比 Number 多了一个拖动条以方便输入
+ *
+ * BubbleConfigItem 继承自 ConfigItem
+ *   不存储数据，仅用来展示一个气泡弹窗
+ *   使用 icon 属性描述图标类型，模板内容将会渲染到气泡中
+ *
  * RuleItem 继承自 BooleanConfigItem 包括属性和方法：
  *   parent 构造时如指定 parent，则会将该规则加入到其父亲的子集合中
  *   children: Array<RuleItem> 构造时自动初始化的数组，用于维护其子集合
@@ -77,13 +90,21 @@
 
   rule.class = {};
 
-  const BaseConfigItem = function CommonConfigItem(item) {
-    Object.assign(this, item);
-    if (!this.ref) this.ref = {};
-    Object.keys(this.ref).forEach(key => {
-      if (this.ref[key] instanceof CommonConfigItem) return;
-      this.ref[key] = configItemBuilder(this.ref[key], this);
+  const BaseConfigItem = function CommonConfigItem(self) {
+    if (!self.ref) self.ref = {};
+    Object.keys(self.ref).forEach(key => {
+      if (self.ref[key] instanceof CommonConfigItem) return;
+      if (!self.ref[key].id) self.ref[key].id = key;
+      self.ref[key] = configItemBuilder(self.ref[key], self);
     });
+    Object.setPrototypeOf(self, Object.getPrototypeOf(this));
+    // 如果使用 Object.assign 将 self 上的内容拷贝到 this 上
+    //   将会丢失 self 上的所有的 getter / setter
+    //   且当原型上有 setter 时会发生错误
+    // 因此我们为 self 设置正确的 __proto__，并直接返回 self
+    // 只要子类不在 super 之前访问 this，这样做是很安全的
+    // 一般不推荐这种做法，但是这里用起来实在是感觉太好了
+    return self;
   };
   BaseConfigItem.prototype.template = function () { return ''; };
 
@@ -145,9 +166,14 @@
     };
     /** @type {TemplateTokenRender} */
     tokenRender.spliter = function (token, reference, ref) {
-      const next = reference.parentNode.insertBefore(document.createElement('label'), reference.nextSibling);
-      if (token === '||') reference.parentNode.insertBefore(document.createElement('br'), reference);
-      return next;
+      const parent = reference.parentNode;
+      const label = document.createElement('label');
+      parent.insertBefore(label, reference.nextSibling);
+      if (token.value === '||') {
+        const br = document.createElement('br');
+        parent.insertBefore(br, reference.nextSibling);
+      }
+      return label;
     };
     /** @type {TemplateTokenRender} */
     tokenRender.text = function (token, reference, ref) {
@@ -206,10 +232,10 @@
       super(item);
       if (context) {
         this.context = context;
-        this.id = context.id + '.' + item.id;
+        if (this.id) this.id = context.id + '.' + this.id;
       }
     }
-    initial() { return this.normalize(null); }
+    get initial() { return null; }
     normalize(value) { return value; }
     initConfig() {
       if (this.config) return;
@@ -246,14 +272,13 @@
     constructor(item, parent) {
       super(item, parent);
     }
-    normalize(value) {
-      return !!value;
-    }
+    get initial() { return false; }
+    normalize(value) { return !!value; }
     isEnabled() {
       return this.always || this.getConfig();
     }
-    render() {
-      const node = super.render();
+    render(...args) {
+      const node = super.render(...args);
       if (this.always) return node;
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
@@ -277,8 +302,15 @@
     constructor(item, parent) {
       super(item, parent);
     }
+    get initial() { return this.select && this.select[0] || null; }
+    normalize(value) {
+      if (!this.select || !Array.isArray(this.select)) return null;
+      if (this.select.find(item => item.value === value)) return value;
+      return this.initial;
+    }
     render() {
       const container = document.createElement('span');
+      container.classList.add('yawf-config-select');
       if (!Array.isArray(this.select) || !this.select) {
         return container;
       }
@@ -307,9 +339,108 @@
   }
   rule.class.SelectConfigItem = SelectConfigItem;
 
+  class NumberConfigItem extends ConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+    }
+    get initial() { return this.min; }
+    get min() { return 0; }
+    get max() { return Infinity; }
+    get step() { return 1; }
+    normalize(value) {
+      let number = +value;
+      if (!Number.isFinite(number)) return this.initial;
+      if (+this.min === this.min && number < this.min) number = this.min;
+      if (+this.max === this.max && number > this.max) number = this.max;
+      if (+this.step === this.step && Number.isFinite(this.step)) {
+        number -= (number - this.min) % this.step;
+      }
+      return number;
+    }
+    render() {
+      const container = document.createElement('span');
+      container.classList.add('yawf-config-number');
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.value = this.getConfig();
+      if (+this.min === this.min && this.min !== -Infinity) input.min = this.min;
+      if (+this.max === this.max && this.max !== Infinity) input.max = this.max;
+      if (+this.step === this.step && Number.isFinite(this.step)) input.step = this.step;
+      input.addEventListener('input', event => {
+        if (!event.isTrusted) input.value = this.getConfig();
+        else this.setConfig(+input.value);
+      });
+      input.addEventListener('blur', event => {
+        input.value = this.getConfig();
+      });
+      this.addConfigListener(newValue => {
+        if (newValue === +input.value) return;
+        input.value = newValue;
+      });
+      container.appendChild(input);
+      return container;
+    }
+  }
+  rule.class.NumberConfigItem = NumberConfigItem;
+
+  class RangeConfigItem extends NumberConfigItem {
+    render() {
+      const container = super.render();
+      if (+this.min !== this.min) return container;
+      if (!Number.isFinite(this.min)) return container;
+      if (+this.max !== this.max) return container;
+      if (!Number.isFinite(this.max)) return container;
+      if (+this.step !== this.step) return container;
+      if (!Number.isFinite(this.step)) return container;
+      container.classList.add('yawf-config-range');
+      const ranger = document.createElement('span');
+      ranger.classList.add('yawf-config-range-wrap');
+      const range = document.createElement('input');
+      range.type = 'range';
+      ranger.appendChild(range);
+      container.appendChild(ranger);
+      range.min = this.min;
+      range.max = this.max;
+      range.step = this.step;
+      range.addEventListener('input', event => {
+        if (!event.isTrusted) range.value = this.getConfig();
+        else this.setConfig(+range.value);
+      });
+      range.addEventListener('blur', event => {
+        range.value = this.getConfig();
+      });
+      this.addConfigListener(newValue => {
+        if (newValue === +range.value) return;
+        range.value = newValue;
+      });
+      return container;
+    }
+  }
+  rule.class.RangeConfigItem = RangeConfigItem;
+
+  class BubbleConfigItem extends ConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+    }
+    render(...args) {
+      const content = super.render(...args);
+      const container = document.createElement('span');
+      const iconType = this.icon || 'ask';
+      const icon = document.createElement('i');
+      icon.classList.add('W_icon', 'yawf-bubble-icon', `icon_${iconType}S`);
+      container.appendChild(icon);
+      ui.bubble(content, icon);
+      return container;
+    }
+  }
+  rule.class.BubbleConfigItem = BubbleConfigItem;
+
   const configItemBuilder = function (item, parent) {
     if (item && item.type === 'boolean') return new BooleanConfigItem(item, parent);
     if (item && item.type === 'select') return new SelectConfigItem(item, parent);
+    if (item && item.type === 'number') return new NumberConfigItem(item, parent);
+    if (item && item.type === 'range') return new RangeConfigItem(item, parent);
+    if (item && item.type === 'bubble') return new BubbleConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 
@@ -441,7 +572,14 @@
   }, { priority: priority.DEFAULT, async: true });
 
   css.add(`
-    .yawf-config-rule > label + label { margin-left: 8px; }
+.yawf-config-rule > label + label { margin-left: 8px; }
+.yawf-config-rule > br + label { margin-left: 20px; }
+.yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }
+.yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
+.yawf-config-range { position: relative; }
+.yawf-config-range-wrap { display: none; position: absolute; left: 0; right: 0; margin: 0; bottom: calc(100% + 2px); height: 80px; background: #f0f0f0; background: Menu; }
+.yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
+.yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
 `);
 
 }());
