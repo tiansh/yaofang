@@ -54,6 +54,8 @@
 
       "content/rule/clean/clean.js",
       "content/rule/clean/icons.js",
+      "content/rule/clean/follow.js",
+      "content/rule/clean/nav.js",
 
       "content/rule/style/style.js",
       "content/rule/style/text.js",
