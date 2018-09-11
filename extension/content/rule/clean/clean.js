@@ -3,8 +3,11 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
+  const init = yawf.init;
 
   const i18n = util.i18n;
+  const css = util.css;
+  const priority = util.priority;
 
   i18n.cleanTabTitle = {
     cn: '版面清理',
@@ -23,20 +26,40 @@
       id,
       parent: clean.clean,
       template,
+      render(...args) {
+        const node = super.render(...args);
+        node.classList.add('yawf-clean-group');
+        return node;
+      },
     });
     clean[id] = { [id]: group };
     lastCleanGroup = id;
     return group;
   };
 
-  clean.CleanRule = function (id, template, version, acss, details) {
+  clean.CleanRule = function (id, template, version, action, details) {
     clean[lastCleanGroup][id] = rule.Rule(Object.assign({
       id,
       template,
       parent: clean[lastCleanGroup][lastCleanGroup],
       version,
-      acss,
-    }, details));
+    }, typeof action === 'string' ? {
+      acss: action,
+    } : typeof action === 'function' ? {
+      ainit: action,
+    } : typeof action === 'object' ? action : {}, details));
   };
+
+  i18n.cleanConfigColumnCount = {
+    cn: '3',
+    en: '2',
+  };
+
+  init.onReady(() => {
+    css.add(`
+.yawf-clean-group + .yawf-config-group-items { display: grid; grid-template-columns: repeat(${i18n.cleanConfigColumnCount}, 1fr); grid-gap: 5px 10px; margin: 5px 20px; }
+.yawf-clean-group + .yawf-config-group-items > .yawf-config-rule { margin: 0; }
+`);
+  }, { priority: priority.DEFAULT });
 
 }());

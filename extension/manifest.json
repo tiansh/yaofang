@@ -18,7 +18,9 @@
 
   "background": {
     "scripts": [
-      "background/request-blocking.js"
+      "background/message.js",
+
+      "background/request.js"
     ]
   },
 
@@ -34,6 +36,9 @@
       "content/util/inject.js",
       "content/util/keyboard.js",
       "content/util/ui.js",
+
+      "content/backend/message.js",
+      "content/backend/request.js",
 
       "content/storage/storage.js",
       "content/storage/config.js",

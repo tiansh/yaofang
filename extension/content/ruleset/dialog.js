@@ -97,10 +97,13 @@
     [...groups.entries()].forEach(([group, items]) => {
       try {
         inner.appendChild(group.getRenderResult());
+        const container = document.createElement('div');
+        container.classList.add('yawf-config-group-items');
         items.forEach(item => {
           let node = item.getRenderResult();
-          inner.appendChild(node);
+          container.appendChild(node);
         });
+        inner.appendChild(container);
       } catch (e) {
         console.log('Error while render config list:', e);
       }

@@ -17,9 +17,7 @@
     cleanFollowWhisper: { cn: '悄悄关注', tw: '悄悄關注', en: 'Secret Following' },
     cleanFollowVideo: { cn: '视频弹层', hk: '視頻彈層', tw: '影片快顯層', en: 'Video pop-up layer' },
     cleanFollowRecommend: { cn: '关注推荐', tw: '關注推薦', en: 'Follow Recommend' },
-
   });
-
 
   clean.CleanGroup('follow', () => i18n.cleanFollowGroupTitle);
   clean.CleanRule('single', () => i18n.cleanFollowSingle, 1, '[id^="Pl_Official_WeiboDetail__"] [node-type*="feed_recommend_follow"] { display: none !important; }');
@@ -28,6 +26,5 @@
   clean.CleanRule('whisper', () => i18n.cleanFollowWhisper, 1, '#v6_pl_content_homefeed [node-type*="feed_recommend_follow"] { display: none !important; }');
   clean.CleanRule('video', () => i18n.cleanFollowVideo, 1, '.WB_h5video .con-11, .wbv-add-box { display: none !important; }');
   clean.CleanRule('recommend', () => i18n.cleanFollowRecommend, 1, '[action-type="follow_recommend_arr"], [node-type="follow_recommend_box"] { display: none !important; }');
-
 
 }());

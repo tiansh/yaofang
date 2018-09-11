@@ -120,7 +120,7 @@
         String.raw`\{\{([^\}]+)\}\}`, // {{child}}
         String.raw`\[\[([^\]]+)\]\]`, // [[rule]]
         String.raw`(\|\||\|)`, // || or |
-        String.raw`([^\|\[\{\&]+)`, // text
+        String.raw`([^\|\[\{\&]+|&[^;]+;)`, // text
       ].map(reg => `(?:${reg})`).join('|'), 'g');
       /** @type {string?[][]} */
       const matches = [];
@@ -177,7 +177,10 @@
     };
     /** @type {TemplateTokenRender} */
     tokenRender.text = function (token, reference, ref) {
-      reference.appendChild(document.createTextNode(token.value));
+      const text = token.value.startsWith('&') ? {
+        '&amp;': '&',
+      }[token.value] : token.value;
+      reference.appendChild(document.createTextNode(text));
       return reference;
     };
     /** @type {Array<string>} */

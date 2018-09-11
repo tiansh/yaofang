@@ -34,7 +34,6 @@
     cleanIconsPanda: { cn: '熊猫', hk: '熊貓', tw: '貓熊', en: 'Panda' },
     cleanIconsWenda: { cn: '问答', tw: '問答', en: 'Q&amp;A' },
     cleanIconsOthers: { cn: '更多', tw: '其他', en: 'More' },
-
   });
 
   const showIcons = classNames => ({
