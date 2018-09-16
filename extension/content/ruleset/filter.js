@@ -149,7 +149,7 @@
   filter.feed.apply = function (feed, { result, filter = null, reason = null }) {
     feed.setAttribute('yawf-feed-display', result || 'unset');
     if (result && result !== 'unset') {
-      util.debug('Feed filte %o -> %o by %o due to %o', feed, result, filter, reason);
+      util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
     }
     if (result === 'hidden' || result === 'block') return false;
     return true;
@@ -158,13 +158,13 @@
 
   /**
    * 针对评论的过滤规则
-   * 对应脚本版 obserer.comment
+   * 对应脚本版 observer.comment
    */
   filter.comment = new FilterObserver();
   filter.comment.apply = function (comment, { result, filter = null, reason = null }) {
     comment.setAttribute('yawf-comment-display', result || 'unset');
     if (result && result !== 'unset') {
-      util.debug('Comment filte %o -> %o by %o due to %o', comment, result, filter, reason);
+      util.debug('Comment filter %o -> %o by %o due to %o', comment, result, filter, reason);
     }
     if (result === 'hidden' || result === 'block') return false;
     return true;

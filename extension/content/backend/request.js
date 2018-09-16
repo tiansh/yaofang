@@ -1,3 +1,7 @@
+/**
+ * 这个文件用于阻塞各类网络请求
+ * 这些网络请求的具体处理方式交由内容页脚本决定，由 content/request.js 负责
+ */
 ; (async function () {
 
   const yawf = window.yawf = window.yawf || {};

@@ -166,12 +166,12 @@
     return { hide, show, dom: dialog };
   };
 
-  const predefinedDialog = buttons => {
+  const predefinedDialog = (buttons, { icon: defaultIcon }) => {
     /**
      * @param {{ id: string, title: string, text: string, icon: string }}
      * @returns {Promise<boolean?>}
      */
-    const inner = ({ id, title, text, icon }) => new Promise(resolve => {
+    const inner = ({ id, title, text, icon = defaultIcon }) => new Promise(resolve => {
       const render = function (dom) {
         const template = document.createElement('template');
         template.innerHTML = `
@@ -202,8 +202,8 @@
     return inner;
   };
 
-  ui.alert = predefinedDialog({ ok: true });
-  ui.confirm = predefinedDialog({ ok: true, cancel: false });
+  ui.alert = predefinedDialog({ ok: true }, { icon: 'ask' });
+  ui.confirm = predefinedDialog({ ok: true, cancel: false }, { icon: 'question' });
 
   /**
    * @param {HTMLElement} bubbleContent

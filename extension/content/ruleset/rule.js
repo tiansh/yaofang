@@ -130,7 +130,7 @@
         matches.push([...match]);
       }
       const tokens = matches.map(([_, ...typed]) => {
-        const types = ['child', 'rule', 'spliter', 'text'];
+        const types = ['child', 'rule', 'splitter', 'text'];
         const index = typed.findIndex(x => x);
         if (index === -1) return null;
         return { type: types[index], value: typed[index] };
@@ -165,7 +165,7 @@
       return reference;
     };
     /** @type {TemplateTokenRender} */
-    tokenRender.spliter = function (token, reference, ref) {
+    tokenRender.splitter = function (token, reference, ref) {
       const parent = reference.parentNode;
       const label = document.createElement('label');
       parent.insertBefore(label, reference.nextSibling);
@@ -187,8 +187,8 @@
     let acceptTypes = [];
     const itemRender = function (template, ref, mode = null) {
       const types = mode && (acceptTypes = {
-        normal: ['child', 'spliter', 'text'],
-        recursive: ['child', 'spliter', 'text', 'rule'],
+        normal: ['child', 'splitter', 'text'],
+        recursive: ['child', 'splitter', 'text', 'rule'],
         text: ['child', 'text'],
       }[mode || 'normal']) || acceptTypes.filter(type => type !== 'rule');
       const reference = document.createElement('label');
