@@ -17,7 +17,6 @@
   };
 
   text.text = rule.Group({
-    id: 'text',
     parent: style.style,
     template: () => i18n.styleTextGroupTitle,
   });
@@ -29,17 +28,17 @@
   };
 
   text.size = rule.Rule({
-    id: 'size',
+    id: 'feed_font_size',
     parent: text.text,
     template: () => i18n.styleTextFontSize,
     ref: {
       ratio: {
         type: 'select',
         select: [
-          { value: 120, text: '120%' },
-          { value: 150, text: '150%' },
-          { value: 200, text: '200%' },
-          { value: 300, text: '300%' },
+          { value: '120', text: '120%' },
+          { value: '150', text: '150%' },
+          { value: '200', text: '200%' },
+          { value: '300', text: '300%' },
         ],
       },
     },

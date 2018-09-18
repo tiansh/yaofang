@@ -22,7 +22,7 @@
     cleanNavHotTip: { cn: '热门黄签提醒', tw: '熱門黃簽提醒', en: 'Yellow tip for new hots' },
   });
 
-  clean.CleanGroup('nav', () => i18n.cleanNavGroupTitle);
+  clean.CleanGroup('clean_nav', () => i18n.cleanNavGroupTitle);
   clean.CleanRule('logoImg', () => i18n.cleanNavLogoImg, 1, ''); // TODO
   clean.CleanRule('main', () => i18n.cleanNavMain, 1, '.gn_nav_list>li:nth-child(1) { display: none !important; }');
   clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }');

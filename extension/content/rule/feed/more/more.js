@@ -14,7 +14,6 @@
 
   const more = yawf.rules.more = {};
   more.more = rule.Tab({
-    id: 'more',
     template: () => i18n.moreTabTitle,
   });
 

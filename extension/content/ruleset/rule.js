@@ -97,13 +97,13 @@
       if (!self.ref[key].id) self.ref[key].id = key;
       self.ref[key] = configItemBuilder(self.ref[key], self);
     });
-    Object.setPrototypeOf(self, Object.getPrototypeOf(this));
     // 如果使用 Object.assign 将 self 上的内容拷贝到 this 上
     //   将会丢失 self 上的所有的 getter / setter
     //   且当原型上有 setter 时会发生错误
     // 因此我们为 self 设置正确的 __proto__，并直接返回 self
     // 只要子类不在 super 之前访问 this，这样做是很安全的
     // 一般不推荐这种做法，但是这里用起来实在是感觉太好了
+    Object.setPrototypeOf(self, Object.getPrototypeOf(this));
     return self;
   };
   BaseConfigItem.prototype.template = function () { return ''; };
@@ -221,14 +221,22 @@
     return result && result.textContent.trim() || '';
   })(parseTemplate(false)));
   BaseConfigItem.prototype.getRenderResult = function () {
-    if (this.renderResult) return this.renderResult;
     let node = this.render();
     if (typeof this.rendered === 'function') {
       node = this.rendered(node);
     }
-    this.renderResult = node;
-    return this.renderResult;
+    return node;
   };
+
+  const nextConfigId = (function () {
+    let lastIndex = Math.floor(Math.random() * 1e7) * 10;
+    return function () {
+      lastIndex += Math.floor(Math.random() * 100);
+      const rand = Math.random().toString(36).slice(2);
+      const index = lastIndex.toString(36);
+      return `yawf-${rand}-${lastIndex}`;
+    };
+  }());
 
   class ConfigItem extends BaseConfigItem {
     constructor(item, context) {
@@ -237,13 +245,24 @@
         this.context = context;
         if (this.id) this.id = context.id + '.' + this.id;
       }
+      this.configId = nextConfigId();
+      this.configInitialized = false;
     }
     get initial() { return null; }
     normalize(value) { return value; }
     initConfig() {
-      if (this.config) return;
-      if (!this.id) throw Error('id is required to init config');
-      this.config = config.user.key(this.id);
+      if (this.configInitialized) return;
+      if (!this.config) {
+        if (!this.id) throw Error('id is required to init config');
+        this.config = config.user.key(this.id);
+      }
+      this.configInitialized = true;
+      console.log('listen %o for %o', this.id, this.configId);
+      this.config.addListener(newValue => {
+        const items = this.getRenderedItems();
+        console.log('callback listen %o for %o: update %o', this.id, this.configId, items);
+        items.forEach(item => this.renderValue(item));
+      });
     }
     getConfig() {
       this.initConfig();
@@ -268,6 +287,20 @@
       this.initConfig();
       this.config.addListener(callback);
     }
+    render(...args) {
+      const node = super.render(...args);
+      node.setAttribute('yawf-config-item', this.configId);
+      return node;
+    }
+    getRenderedItems() {
+      console.log('get attribute of %o: %o', this, this.configId);
+      const selector = `[yawf-config-item="${this.configId}"]`;
+      return Array.from(document.querySelectorAll(selector));
+    }
+    /** @param {HTMLElement} container */
+    renderValue(container) {
+      return container;
+    }
   }
   rule.class.ConfigItem = ConfigItem;
 
@@ -281,22 +314,31 @@
       return this.always || this.getConfig();
     }
     render(...args) {
-      const node = super.render(...args);
-      if (this.always) return node;
+      const container = super.render(...args);
+      if (this.always) return container;
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.classList.add('W_checkbox');
-      checkbox.checked = this.isEnabled();
+      checkbox.setAttribute('yawf-config-input', this.configId);
       checkbox.addEventListener('change', event => {
-        if (!event.isTrusted) checkbox.checked = this.getConfig();
-        else this.setConfig(checkbox.checked);
+        if (!event.isTrusted) {
+          this.renderValue(container);
+        } else this.setConfig(checkbox.checked);
       });
-      this.addConfigListener(newValue => {
-        checkbox.checked = newValue;
-      });
-      const label = node.querySelector('label');
+      const label = container.querySelector('label');
       label.insertBefore(checkbox, label.firstChild);
-      return node;
+      checkbox.checked = this.getConfig();
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `input[type="checkbox"][yawf-config-input="${this.configId}"]`;
+      const checkbox = container.querySelector(selector);
+      const config = this.getConfig();
+      if (checkbox && checkbox.checked !== config) {
+        checkbox.checked = config;
+      }
+      return container;
     }
   }
   rule.class.BooleanConfigItem = BooleanConfigItem;
@@ -304,8 +346,19 @@
   class SelectConfigItem extends ConfigItem {
     constructor(item, parent) {
       super(item, parent);
+      const select = this.select;
+      if (!select || !Array.isArray(select)) {
+        throw TypeError('`select` attribute is required for select config item');
+      }
+      if (select.some(item => item.value !== '' + item.value)) {
+        throw TypeError("Select options' value should be string");
+      }
     }
-    get initial() { return this.select && this.select[0] || null; }
+    get initial() {
+      if (!this.select) return null;
+      if (!this.select[0]) return null;
+      return this.select[0].value;
+    }
     normalize(value) {
       if (!this.select || !Array.isArray(this.select)) return null;
       if (this.select.find(item => item.value === value)) return value;
@@ -313,6 +366,7 @@
     }
     render() {
       const container = document.createElement('span');
+      container.setAttribute('yawf-config-item', this.configId);
       container.classList.add('yawf-config-select');
       if (!Array.isArray(this.select) || !this.select) {
         return container;
@@ -321,22 +375,27 @@
       this.select.forEach(({ text, value }) => {
         const option = document.createElement('option');
         option.value = value;
-        option.textContent = typeof text === 'function' ? text() : text;
-        select.appendChild(option);
+        option.text = typeof text === 'function' ? text() : text;
+        select.add(option);
       });
+      select.setAttribute('yawf-config-input', this.configId);
       select.value = this.getConfig();
-      if (!select.value) {
-        const value = select.value = this.select[0].value;
-        this.setConfig(value);
-      }
       select.addEventListener('change', event => {
-        if (!event.isTrusted) select.value = this.getConfig();
-        else this.setConfig(select.value);
-      });
-      this.addConfigListener(newValue => {
-        select.value = newValue;
+        if (!event.isTrusted) {
+          this.renderValue(container);
+        } else this.setConfig(select.value);
       });
       container.appendChild(select);
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `select[yawf-config-input="${this.configId}"]`;
+      const select = container.querySelector(selector);
+      const config = this.getConfig();
+      if (select && select.value !== config) {
+        select.value = config;
+      }
       return container;
     }
   }
@@ -362,6 +421,7 @@
     }
     render() {
       const container = document.createElement('span');
+      container.setAttribute('yawf-config-item', this.configId);
       container.classList.add('yawf-config-number');
       const input = document.createElement('input');
       input.type = 'number';
@@ -376,11 +436,18 @@
       input.addEventListener('blur', event => {
         input.value = this.getConfig();
       });
-      this.addConfigListener(newValue => {
-        if (newValue === +input.value) return;
-        input.value = newValue;
-      });
+      input.setAttribute('yawf-config-input', this.configId);
       container.appendChild(input);
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `input[type="number"][yawf-config-input="${this.configId}"]`;
+      const number = container.querySelector(selector);
+      const config = this.getConfig();
+      if (number && +number.value !== this.config) {
+        number.value = config;
+      }
       return container;
     }
   }
@@ -389,6 +456,7 @@
   class RangeConfigItem extends NumberConfigItem {
     render() {
       const container = super.render();
+      container.setAttribute('yawf-config-item', this.configId);
       if (+this.min !== this.min) return container;
       if (!Number.isFinite(this.min)) return container;
       if (+this.max !== this.max) return container;
@@ -410,18 +478,26 @@
         else this.setConfig(+range.value);
       });
       range.addEventListener('blur', event => {
-        range.value = this.getConfig();
+        this.renderValue();
       });
-      this.addConfigListener(newValue => {
-        if (newValue === +range.value) return;
-        range.value = newValue;
-      });
+      range.value = this.getConfig();
+      range.setAttribute('yawf-config-input', this.configId);
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `input[type="range"][yawf-config-input="${this.configId}"]`;
+      const range = container.querySelector(selector);
+      const config = this.getConfig();
+      if (range && +range.value !== this.config) {
+        range.value = config;
+      }
       return container;
     }
   }
   rule.class.RangeConfigItem = RangeConfigItem;
 
-  class BubbleConfigItem extends ConfigItem {
+  class BubbleConfigItem extends BaseConfigItem {
     constructor(item, parent) {
       super(item, parent);
     }

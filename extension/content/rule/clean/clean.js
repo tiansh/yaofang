@@ -16,7 +16,6 @@
 
   const clean = yawf.rules.clean = {};
   clean.clean = rule.Tab({
-    id: 'clean',
     template: () => i18n.cleanTabTitle,
   });
 
@@ -39,7 +38,7 @@
 
   clean.CleanRule = function (id, template, version, action, details) {
     clean[lastCleanGroup][id] = rule.Rule(Object.assign({
-      id,
+      id: lastCleanGroup + '_' + id,
       template,
       parent: clean[lastCleanGroup][lastCleanGroup],
       version,

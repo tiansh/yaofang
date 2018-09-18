@@ -14,7 +14,6 @@
 
   const style = yawf.rules.style = {};
   style.style = rule.Tab({
-    id: 'style',
     template: () => i18n.styleTabTitle,
   });
 

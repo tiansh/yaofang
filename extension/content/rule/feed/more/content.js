@@ -16,7 +16,6 @@
 
   const content = more.content = {};
   content.content = rule.Group({
-    id: 'content',
     parent: more.more,
     template: () => i18n.moreContentGroupTitle,
   });
@@ -28,7 +27,7 @@
   };
 
   content.multipleTopics = rule.Rule({
-    id: 'multipleTopics',
+    id: 'multiple_topics_feed',
     parent: content.content,
     template: () => i18n.multipleTopicsFeedFilter,
     ref: {

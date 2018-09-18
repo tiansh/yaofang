@@ -13,7 +13,6 @@
 
   const tool = yawf.rules.tool = {};
   tool.tool = rule.Tab({
-    id: 'tool',
     template: () => i18n.toolTabTitle,
   });
 

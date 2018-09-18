@@ -19,7 +19,6 @@
   };
 
   sidebar.sidebar = rule.Group({
-    id: 'sidebar',
     parent: tool.tool,
     template: () => i18n.sideBarToolGroupTitle,
   });
@@ -46,7 +45,7 @@
   });
 
   sidebar.messages = rule.Rule({
-    id: 'size',
+    id: 'left_nav_msgs',
     parent: sidebar.sidebar,
     template: () => i18n.sidebarShowMessages,
     ref: {

@@ -16,7 +16,6 @@
 
   const commercial = more.commercial = {};
   commercial.commercial = rule.Group({
-    id: 'commercial',
     parent: more.more,
     template: () => i18n.moreCommercialGroupTitle,
   });
@@ -28,7 +27,7 @@
   };
 
   commercial.ad = rule.Rule({
-    id: 'ad',
+    id: 'ad_feed',
     parent: commercial.commercial,
     template: () => i18n.adFeedFilter,
     init() {

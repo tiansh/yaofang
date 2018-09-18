@@ -19,7 +19,7 @@
     cleanFollowRecommend: { cn: '关注推荐', tw: '關注推薦', en: 'Follow Recommend' },
   });
 
-  clean.CleanGroup('follow', () => i18n.cleanFollowGroupTitle);
+  clean.CleanGroup('clean_follow', () => i18n.cleanFollowGroupTitle);
   clean.CleanRule('single', () => i18n.cleanFollowSingle, 1, '[id^="Pl_Official_WeiboDetail__"] [node-type*="feed_recommend_follow"] { display: none !important; }');
   clean.CleanRule('atMe', () => i18n.cleanFollowAtMe, 1, '#v6_pl_content_atmeweibo [node-type*="feed_recommend_follow"] { display: none !important; }');
   clean.CleanRule('discover', () => i18n.cleanFollowDiscover, 1, '#plc_discover [node-type*="feed_recommend_follow"] { display: none !important; }');
