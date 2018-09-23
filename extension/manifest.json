@@ -20,13 +20,19 @@
     "scripts": [
       "background/message.js",
 
-      "background/request.js"
+      "background/request.js",
+      
+      "background/interests.js"
     ]
   },
 
   "content_scripts": [{
     "matches": [
       "*://*.weibo.com/*" 
+    ],
+    "exclude_matches": [
+      "*://weibo.com/nguide/*",
+      "*://weibo.com/a/bind/*"
     ],
     "js": [
       "content/util/priority.js",
