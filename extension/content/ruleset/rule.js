@@ -21,7 +21,7 @@
  * 显示相关
  *   template() （可选） 用于显示的模板
  *   render(isRoot: boolean) （可选） 显示的函数，如果缺省则使用 template 属性根据规则生成
- *   rendered() （可选） 在调用 render 后可用这个函数对产生的 DOM 做进一步修改
+ *   afterRender(container: Element) （可选） 在调用 render 后可用这个函数对产生的 DOM 做进一步修改
  *   text(isRoot: boolean) （可选） 显示的文本，如果缺省则使用 template 或 render 根据规则生成
  * 设置相关
  *   initial(): any 设置的默认值
@@ -90,10 +90,18 @@
 
   rule.class = {};
 
-  const BaseConfigItem = function CommonConfigItem(self) {
+  /**
+   * 这里维护一个基本的设置项
+   * 我们在这一层维护：
+   *   基于 template 属性的通用渲染逻辑
+   *   基于 ref 属性的父子关系（用于渲染）
+   * @constructor
+   * @param {object} self
+   */
+  const BaseConfigItem = function BaseConfigItem(self) {
     if (!self.ref) self.ref = {};
     Object.keys(self.ref).forEach(key => {
-      if (self.ref[key] instanceof CommonConfigItem) return;
+      if (self.ref[key] instanceof BaseConfigItem) return;
       if (!self.ref[key].id) self.ref[key].id = key;
       self.ref[key] = configItemBuilder(self.ref[key], self);
     });
@@ -106,6 +114,9 @@
     Object.setPrototypeOf(self, Object.getPrototypeOf(this));
     return self;
   };
+  /**
+   * @returns {string}
+   */
   BaseConfigItem.prototype.template = function () { return ''; };
 
   /** @param {boolean} fullDom */
@@ -213,23 +224,37 @@
     return ruleRender;
   };
 
+  /**
+   * render 是通用的基于 template 的渲染逻辑
+   */
   BaseConfigItem.prototype.render = parseTemplate(true);
+  /**
+   * text 是通用的检查包含文字的逻辑
+   */
   BaseConfigItem.prototype.text = ((parse => function (isRoot = true) {
     let result;
     if (this.template) result = parse.apply(this);
     else result = this.render();
     return result && result.textContent.trim() || '';
   })(parseTemplate(false)));
+  /**
+   * 渲染包括 render 和一个可选的 afterRender
+   * 这里包装两个函数，如果需要重载渲染逻辑，应该重载 render
+   * 如果需要获得渲染结果，应该使用这个方法
+   */
   BaseConfigItem.prototype.getRenderResult = function () {
     let node = this.render();
-    if (typeof this.rendered === 'function') {
-      node = this.rendered(node);
+    if (typeof this.afterRender === 'function') {
+      node = this.afterRender(node);
     }
     return node;
   };
 
   const nextConfigId = (function () {
     let lastIndex = Math.floor(Math.random() * 1e7) * 10;
+    /**
+     * @return {string} 返回一个在此次运行中唯一的值，用来标识独立的设置项
+     */
     return function () {
       lastIndex += Math.floor(Math.random() * 100);
       const rand = Math.random().toString(36).slice(2);
@@ -238,7 +263,18 @@
     };
   }());
 
+  /**
+   * 一个可能带有设置的项目
+   * 我们在这一层维护所有和设置有关的内容，包括
+   *   设置的读写
+   *   设置的合法性验证
+   *   设置更新时回调更新数据的渲染逻辑
+   */
   class ConfigItem extends BaseConfigItem {
+    /**
+     * @param {object} item 子设置项
+     * @param {ConfigItem} context 父设置项（item 应当在是该设置项的 ref 中）
+     */
     constructor(item, context) {
       super(item);
       if (context) {
@@ -248,8 +284,20 @@
       this.configId = nextConfigId();
       this.configInitialized = false;
     }
+    /**
+     * @returns {any} 表示设置的初始值
+     */
     get initial() { return null; }
+    /**
+     * @param {any} 未格式化的设置项
+     * @returns {any} 根据该设置项允许的取值格式化后的设置项，此时设置项总是合法的
+     */
     normalize(value) { return value; }
+    /**
+     * 一个项目不一定总是需要包含设置项
+     * 如果没有调用过任何 getConfig, setConfig 等方法，则不会为该项目分配设置项
+     * 在第一次调用任何和设置项相关的方法时，我们试图分配设置项
+     */
     initConfig() {
       if (this.configInitialized) return;
       if (!this.config) {
@@ -257,13 +305,16 @@
         this.config = config.user.key(this.id);
       }
       this.configInitialized = true;
-      console.log('listen %o for %o', this.id, this.configId);
       this.config.addListener(newValue => {
-        const items = this.getRenderedItems();
+        const items = this.getRenderItems();
         console.log('callback listen %o for %o: update %o', this.id, this.configId, items);
         items.forEach(item => this.renderValue(item));
       });
     }
+    /**
+     * 读取设置项
+     * @return {any} 当前设置项的值
+     */
     getConfig() {
       this.initConfig();
       const value = this.config.get();
@@ -273,43 +324,66 @@
       }
       return normalize;
     }
+    /**
+     * 写入设置项
+     * @param {any} value 当前设置项的值
+     * @return {any} 实际写入的值（经过格式化）
+     */
     setConfig(value) {
       this.initConfig();
       const normalize = this.normalize(value);
       this.config.set(normalize);
       return normalize;
     }
+    /**
+     * 当设置项变化时的回调
+     * 注意不要在回调函数中保留设置项渲染出来的文档节点的引用，否则可能造成垃圾回收失效
+     * @param {Function} callback 当设置项变化时的回调函数
+     * @return {{removeConfigListener: Function}}
+     */
     addConfigListener(callback) {
       this.initConfig();
-      this.config.addListener(callback);
-    }
-    removeConfigListener(callback) {
-      this.initConfig();
-      this.config.addListener(callback);
+      const { removeListener } = this.config.addListener(callback);
+      return { removeConfigListener: removeListener };
     }
     render(...args) {
       const node = super.render(...args);
+      // 在渲染时标记该元素的设置 id
+      // 当需要更新设置时可以方便地从界面上找到该元素
       node.setAttribute('yawf-config-item', this.configId);
       return node;
     }
-    getRenderedItems() {
-      console.log('get attribute of %o: %o', this, this.configId);
+    /**
+     * 根据设置 id 找到所有该设置项渲染的实例
+     */
+    getRenderItems() {
       const selector = `[yawf-config-item="${this.configId}"]`;
       return Array.from(document.querySelectorAll(selector));
     }
-    /** @param {HTMLElement} container */
+    /**
+     * 更新渲染项的值 
+     * @param {HTMLElement} container
+     */
     renderValue(container) {
       return container;
     }
   }
   rule.class.ConfigItem = ConfigItem;
 
+  /**
+   * 一个布尔设置项
+   * 有个 checkbox
+   * 使用默认的渲染逻辑，复选框加到最前面
+   */
   class BooleanConfigItem extends ConfigItem {
     constructor(item, parent) {
       super(item, parent);
     }
     get initial() { return false; }
-    normalize(value) { return !!value; }
+    normalize(value) {
+      if (value == null) return this.initial;
+      return !!value;
+    }
     isEnabled() {
       return this.always || this.getConfig();
     }
@@ -343,6 +417,12 @@
   }
   rule.class.BooleanConfigItem = BooleanConfigItem;
 
+  /**
+   * 一个多选一设置项
+   * 有个 select 下拉选择框
+   * 需要配置 select 属性为 Array<{ value: string, name: string }> 用于候选项
+   * 不使用默认的渲染逻辑
+   */
   class SelectConfigItem extends ConfigItem {
     constructor(item, parent) {
       super(item, parent);
@@ -401,6 +481,11 @@
   }
   rule.class.SelectConfigItem = SelectConfigItem;
 
+  /**
+   * 一个数字输入框
+   * 允许定义 min, max, step 属性
+   * 对应一个 number 输入框
+   */
   class NumberConfigItem extends ConfigItem {
     constructor(item, parent) {
       super(item, parent);
@@ -453,6 +538,11 @@
   }
   rule.class.NumberConfigItem = NumberConfigItem;
 
+  /**
+   * 范围输入框
+   * 和数字输入框没什么差别，除了多了一个范围拖动条
+   * 仅当 min、max 都设置了时才会有效
+   */
   class RangeConfigItem extends NumberConfigItem {
     render() {
       const container = super.render();
@@ -497,6 +587,10 @@
   }
   rule.class.RangeConfigItem = RangeConfigItem;
 
+  /**
+   * 显示一个小图标，鼠标划上去可以显示弹出起泡
+   * 这个项目不对应设置值
+   */
   class BubbleConfigItem extends BaseConfigItem {
     constructor(item, parent) {
       super(item, parent);
@@ -523,6 +617,9 @@
     return new ConfigItem(item, parent);
   };
 
+  /**
+   * 描述一个出现在设置窗口中的项目
+   */
   class RuleItem extends BooleanConfigItem {
     get type() { return 'normal'; }
     constructor(item) {
@@ -533,6 +630,9 @@
     }
   }
 
+  /**
+   * 描述设置窗口的一个标签页
+   */
   class Tab extends RuleItem {
     constructor(item) {
       super(item);
@@ -552,6 +652,9 @@
   };
   rule.class.Tab = Tab;
 
+  /**
+   * 描述窗口的一组设置，一组设置有一个加粗文字显示的标题
+   */
   class Group extends RuleItem {
     constructor(item) {
       if (!(item.parent instanceof Tab)) {
@@ -573,6 +676,15 @@
   };
   rule.class.Group = Group;
 
+  /**
+   * 描述一条设置
+   * 设置会调用 execute 初始化一次
+   * 不要重载 execute 实现逻辑，相反，应该重载以下几个属性：
+   *   css: string 描述该设置需要加入的 CSS，无论是否打开设置均会生效
+   *   acss: string 仅当该设置打开时加入这些 CSS
+   *   init: Function 初始化时会回调一次
+   *   ainit: Function 仅当该设置打开时，初始化时回调一次
+   */
   class Rule extends RuleItem {
     constructor(item) {
       if (!(item.parent instanceof Group)) {
@@ -610,6 +722,10 @@
   };
   rule.class.Rule = Rule;
 
+  /**
+   * 设置中的一个纯文本项，这个设置项没有复选框
+   * 继承自有复选框的设置项，此时认为该复选框是总被选中的
+   */
   class Text extends Rule {
     constructor(item) {
       super(item);
@@ -626,7 +742,11 @@
   };
   rule.class.Text = Text;
 
-  /** @type { ({ base: [] }) => [] } */
+  /**
+   * 从所有设置项中根据条件筛选出一些设置项
+   * 之后可用于展示对话框等操作
+   * @param {{ base: Tab[] }} base 描述搜索范围
+   */
   const query = rule.query = function ({ base = tabs } = {}) {
     const result = new Set();
     ; (function query(items) {

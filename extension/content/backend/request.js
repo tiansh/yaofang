@@ -6,6 +6,7 @@
 
   const yawf = window.yawf = window.yawf || {};
   const util = yawf.util;
+  const init = yawf.init;
   const message = yawf.message;
   const backend = yawf.backend = yawf.backend || {};
 
@@ -13,11 +14,13 @@
   const requestHandler = new Map();
   /** @type {Map<string, Array<{ details: any, resolve: Function }>>} */
   const pendingRequest = new Map();
+  let pageDeinited = false;
 
   message.export(function request(id, details) {
     if (requestHandler.has(id)) {
       return requestHandler.get(id)(details);
     }
+    if (pageDeinited) return {};
     return new Promise(resolve => {
       if (!pendingRequest.has(id)) pendingRequest.set(id, []);
       pendingRequest.get(id).push({ details, resolve });
@@ -37,5 +40,15 @@
       pendingRequest.delete(id);
     });
   };
+
+  init.onDeinit(() => {
+    [...pendingRequest.entries()].forEach(([id, requests]) => {
+      requests.forEach(({ details, resolve }) => {
+        resolve({});
+      });
+    });
+    pendingRequest.clear();
+    pageDeinited = true;
+  });
 
 }());

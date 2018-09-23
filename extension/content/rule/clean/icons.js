@@ -37,8 +37,8 @@
   });
 
   const showIcons = classNames => ({
-    rendered: rule => {
-      const label = rule.querySelector('label');
+    afterRender: container => {
+      const label = container.querySelector('label');
       classNames.forEach(className => {
         const container = document.createElement('span');
         container.innerHTML = '<i class="W_icon" style="display:inline-block!important"></i>';
@@ -46,7 +46,7 @@
         i.classList.add(className);
         label.appendChild(container);
       });
-      return rule;
+      return container;
     },
   });
 

@@ -32,15 +32,14 @@
       const watcher = this.watcher[storage.area];
       if (!watcher.has(storage.key)) watcher.set(storage.key, new Set());
       watcher.get(storage.key).add(callback);
-    }
-    /**
-     * @param {StorageItem} storage
-     * @param {Function} callback
-     */
-    removeListener(storage, callback) {
-      const watcher = this.watcher[storage.area];
-      if (!watcher.has(storage.key)) return false;
-      return watcher.get(storage.key).delete(callback);
+      const removeListener = function () {
+        if (!watcher.has(storage.key)) return false;
+        const callbacks = watcher.get(storage.key);
+        const result = callbacks.delete(callback);
+        if (callbacks.size === 0) watcher.delete(storage.key);
+        return result;
+      };
+      return { removeListener };
     }
   }
 
@@ -82,10 +81,6 @@
     /** @param {Function} callback */
     addListener(callback) {
       return watcher.addListener(this, callback);
-    }
-    /** @param {Function} callback */
-    removeListener(callback) {
-      return watcher.removeListener(this, callback);
     }
   }
 
@@ -174,15 +169,14 @@
       const watcher = this.watcher;
       if (!watcher.has(key)) watcher.set(key, new Set());
       watcher.get(key).add(callback);
-    }
-    /**
-     * @param {string} key
-     * @param {Function} callback
-     */
-    removeListener(key, callback) {
-      const watcher = this.watcher;
-      if (!watcher.has(key)) return false;
-      return watcher.get(key).delete(callback);
+      const removeListener = function () {
+        if (!watcher.has(key)) return false;
+        const callbacks = watcher.get(key);
+        const result = callbacks.delete(callback);
+        if (callbacks.size === 0) watcher.delete(key);
+        return result;
+      };
+      return { removeListener };
     }
     /** @param {string} key */
     key(key) {
@@ -204,9 +198,6 @@
     remove() { return this.config.remove(this.key); }
     addListener(callback) {
       return this.config.addListener(this.key, callback);
-    }
-    removeListener(callback) {
-      return this.config.removeListener(this.key, callback);
     }
   }
 
