@@ -59,6 +59,8 @@
       "content/ruleset/filter.js",
       "content/ruleset/dialog.js",
 
+      "content/rule/feed/content/content.js",
+      "content/rule/feed/content/text.js",
       "content/rule/feed/more/more.js",
       "content/rule/feed/more/commercial.js",
       "content/rule/feed/more/content.js",

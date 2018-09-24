@@ -163,12 +163,21 @@
 
     /** @type {TemplateTokenRender} */
     tokenRender.child = function (token, reference, ref) {
+      const child = ref[token.value];
+      if (!child) return reference;
       if (fullDom) {
-        reference.appendChild(ref[token.value].render(false));
+        const childDom = child.render(false);
+        if (childDom instanceof Node) {
+          reference.appendChild(childDom);
+          return reference;
+        } else if (typeof childDom === 'function') {
+          return childDom(reference);
+        } else return reference;
       } else {
-        reference.appendChild(ref[token.value].text(false));
+        const text = child.text(false);
+        reference.appendChild(document.createTextNode(text));
+        return reference;
       }
-      return reference;
     };
     /** @type {TemplateTokenRender} */
     tokenRender.rule = function (token, reference, ref) {
@@ -361,7 +370,7 @@
       return Array.from(document.querySelectorAll(selector));
     }
     /**
-     * 更新渲染项的值 
+     * 更新渲染项的值
      * @param {HTMLElement} container
      */
     renderValue(container) {
@@ -608,12 +617,166 @@
   }
   rule.class.BubbleConfigItem = BubbleConfigItem;
 
+  i18n.collectionAddButton = {
+    cn: '添加',
+    tw: '新增',
+    en: 'Add',
+  };
+
+  class CollectionConfigItem extends ConfigItem {
+    get initial() { return []; }
+    normalize(value) {
+      if (!Array.isArray(value)) return [];
+      return value.map(item => this.normalizeItem(item));
+    }
+    normalizeItem(item) { return item; }
+    track(item, index = -1) { return '' + index; }
+    renderListitem(item, index) {
+      const listitem = document.createElement('li');
+      listitem.classList.add('yawf-config-collection-item', 'W_btn_b', 'W_btn_tag');
+      const track = arguments.length > 1 ? this.track(item, index) : this.track(item);
+      listitem.dataset.yawfTrack = track;
+      const deleteItem = document.createElement('span');
+      deleteItem.classList.add('yawf-config-collection-remove');
+      deleteItem.innerHTML = '<a class="W_ficon ficon_close S_ficon" href="javascript:void(0);">X</a>';
+      listitem.appendChild(deleteItem);
+      const content = document.createElement('div');
+      content.classList.add('yawf-config-collection-item-content');
+      content.appendChild(this.renderItem(item));
+      listitem.appendChild(content);
+      return listitem;
+    }
+    render() {
+      return reference => {
+        /** @type {HTMLLabelElement} */
+        const label = reference;
+        // 我们渲染一个输入框
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.classList.add('yawf-config-collection-input', 'W_input');
+        label.appendChild(input);
+        // 在当前标签前面藏一个表单元素，用于处理用户输入提交
+        const form = document.createElement('form');
+        form.classList.add('yawf-config-collection-form');
+        label.parentNode.insertBefore(form, label);
+        const formId = form.id = nextConfigId();
+        input.setAttribute('form', formId);
+        // 在当前标签后面放一个提交按钮
+        setTimeout(() => {
+          const submit = document.createElement('button');
+          submit.setAttribute('form', formId);
+          submit.classList.add('yawf-config-collection-submit', 'W_btn_a');
+          submit.textContent = i18n.collectionAddButton;
+          label.parentNode.insertBefore(submit, label.nextSibling);
+        }, 0);
+        // 处理提交时的操作
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (!event.isTrusted) return;
+          const userInput = input.value.trim();
+          if (!userInput) return;
+          input.disabled = true;
+          const items = await this.parseUserInput(userInput);
+          if (Array.isArray(items)) {
+            items.forEach(item => this.addItem(item));
+            input.value = '';
+          }
+          input.disabled = false;
+        });
+
+        // 显示所有项目组成的列表
+        const container = document.createElement('div');
+        container.classList.add('yawf-config-collection-items');
+        container.setAttribute('yawf-config-item', this.configId);
+        const list = document.createElement('ul');
+        list.classList.add('yawf-config-collection-list');
+        container.appendChild(list);
+        reference.parentNode.appendChild(container);
+        this.getConfig().forEach((item, index) => {
+          const listitem = this.renderListitem(item, index);
+          list.appendChild(listitem);
+        });
+        container.addEventListener('click', event => {
+          if (!event.isTrusted) return;
+          const deleteItem = event.target.closest('.yawf-config-collection-remove');
+          if (!deleteItem) return;
+          const listitem = deleteItem.parentNode;
+          const track = listitem.dataset.yawfTrack;
+          this.removeItem(track);
+        });
+      };
+    }
+    async parseUserInput(value) {
+      return [value];
+    }
+    addItem(value) {
+      const values = this.getConfig();
+      const track = this.track(value);
+      const index = values.findIndex((item, index) => this.track(item, index) === track);
+      if (index !== -1) values.splice(index, 1);
+      values.push(value);
+      this.setConfig(values);
+    }
+    removeItem(track) {
+      const values = this.getConfig();
+      const index = values.findIndex((item, index) => this.track(item, index) === track);
+      if (index !== -1) values.splice(index, 1);
+      this.setConfig(values);
+    }
+    renderItem(item) {
+      return document.createTextNode(item);
+    }
+    updateItem(container, item) {
+      container.textContent = item;
+    }
+    renderValue(container) {
+      const values = this.getConfig();
+      const list = container.querySelector('.yawf-config-collection-list');
+      const listitems = container.querySelectorAll('.yawf-config-collection-item');
+      const listitemMap = new Map();
+      let reference = null;
+      [...listitems].forEach(listitem => {
+        listitemMap.set(listitem.dataset.yawfTrack, listitem);
+      });
+      list.innerHTML = '';
+      values.forEach((value, index) => {
+        const track = this.track(value, index);
+        if (listitemMap.has(track)) {
+          const listitem = listitemMap.get(track);
+          const content = listitem.querySelector('.yawf-config-collection-item-content');
+          this.updateItem(content, value);
+          list.appendChild(listitem);
+        } else {
+          const listitem = this.renderListitem(value, index);
+          list.appendChild(listitem);
+        }
+      });
+    }
+  }
+  rule.class.CollectionConfigItem = CollectionConfigItem;
+
+  class StringCollectionConfigItem extends CollectionConfigItem {
+    normalizeItem(item) { return ('' + item).trim(); }
+    track(item, index = -1) { return item; }
+    render() {
+      const render = super.render();
+      return reference => {
+        render(reference);
+        const container = reference.parentNode.querySelector('.yawf-config-collection-items');
+        container.classList.add('yawf-config-collection-string');
+      };
+    }
+  }
+  rule.class.StringCollectionConfigItem = StringCollectionConfigItem;
+
   const configItemBuilder = function (item, parent) {
     if (item && item.type === 'boolean') return new BooleanConfigItem(item, parent);
     if (item && item.type === 'select') return new SelectConfigItem(item, parent);
     if (item && item.type === 'number') return new NumberConfigItem(item, parent);
     if (item && item.type === 'range') return new RangeConfigItem(item, parent);
     if (item && item.type === 'bubble') return new BubbleConfigItem(item, parent);
+    if (item && item.type === 'strings') return new StringCollectionConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 
@@ -772,13 +935,17 @@
 
   css.add(`
 .yawf-config-rule > label + label { margin-left: 8px; }
-.yawf-config-rule > br + label { margin-left: 20px; }
+.yawf-config-rule > br + label, .yawf-config-rule > br + form + label { margin-left: 20px; }
 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }
 .yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
 .yawf-config-range { position: relative; }
 .yawf-config-range-wrap { display: none; position: absolute; left: 0; right: 0; margin: 0; bottom: calc(100% + 2px); height: 80px; background: #f0f0f0; background: Menu; }
 .yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
+.yawf-config-collection-input { margin: 5px; }
+.yawf-config-collection-list { display: block; margin: 5px; }
+.yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; }
+.yawf-config-collection-remove { position: absolute; top: 0; left: 0; }
 `);
 
 }());
