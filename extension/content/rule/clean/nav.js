@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const backend = yawf.backend;
+  const observer = yawf.observer;
 
   const clean = yawf.rules.clean;
 
@@ -23,7 +24,21 @@
   });
 
   clean.CleanGroup('clean_nav', () => i18n.cleanNavGroupTitle);
-  clean.CleanRule('logoImg', () => i18n.cleanNavLogoImg, 1, ''); // TODO
+  clean.CleanRule('logoImg', () => i18n.cleanNavLogoImg, 1, {
+    init: function () {
+      const rule = this;
+      observer.add(function replaceLogo() {
+        const box = document.querySelector('.WB_global_nav .gn_logo .box');
+        if (!box) { setTimeout(replaceLogo, 100); return; }
+        const img = box.getElementsByTagName('img')[0];
+        if (!img) return;
+        const logo = document.createElement('span');
+        logo.classList.add('logo');
+        img.parentNode.replaceChild(logo, img);
+      });
+    },
+    acss: '.WB_global_nav .gn_logo .box img { display: none !important; }',
+  });
   clean.CleanRule('main', () => i18n.cleanNavMain, 1, '.gn_nav_list>li:nth-child(1) { display: none !important; }');
   clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }');
   clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '.gn_nav_list>li:nth-child(3) { display: none !important; }');
