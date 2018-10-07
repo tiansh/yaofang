@@ -105,7 +105,7 @@
         });
         inner.appendChild(container);
       } catch (e) {
-        console.log('Error while render config list:', e);
+        util.debug('Error while render config list:', e);
       }
     });
   };

@@ -35,12 +35,12 @@
       filter.feed.add(function adFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         // 修改这里时请注意，悄悄关注也会显示关注按钮，但是相关微博不应被隐藏
-        if (feed.getAttribute('feedtype') === 'ad') return 'hidden';
-        if (feed.querySelector('[action-type="feed_list_ad"]')) return 'hidden';
-        if (feed.querySelector('a[href*="//adinside.weibo.cn/"]')) return 'hidden';
-        if (feed.querySelector('[diss-data*="feedad"]')) return 'hidden';
-        if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hidden';
-        if (feed.querySelector('[suda-uatrack*="negativefeedback]')) return 'hidden';
+        if (feed.getAttribute('feedtype') === 'ad') return 'hide';
+        if (feed.querySelector('[action-type="feed_list_ad"]')) return 'hide';
+        if (feed.querySelector('a[href*="//adinside.weibo.cn/"]')) return 'hide';
+        if (feed.querySelector('[diss-data*="feedad"]')) return 'hide';
+        if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
+        if (feed.querySelector('[suda-uatrack*="negativefeedback]')) return 'hide';
         return null;
       }, { priority: 1e6 });
     },

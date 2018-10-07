@@ -137,7 +137,7 @@
   }
 
   const removeHiddenItem = function (item, { result }) {
-    if (result !== 'hidden' && result !== 'block') return;
+    if (result !== 'hide') return;
     item.parentNode.removeChild(item);
   };
 
@@ -151,7 +151,7 @@
     if (result && result !== 'unset') {
       util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
     }
-    if (result === 'hidden' || result === 'block') return false;
+    if (result === 'hide') return false;
     return true;
   };
   filter.feed.onFinally(removeHiddenItem);
@@ -166,7 +166,7 @@
     if (result && result !== 'unset') {
       util.debug('Comment filter %o -> %o by %o due to %o', comment, result, filter, reason);
     }
-    if (result === 'hidden' || result === 'block') return false;
+    if (result === 'hide') return false;
     return true;
   };
   filter.comment.onFinally(removeHiddenItem);

@@ -38,10 +38,14 @@
       "content/util/priority.js",
       "content/util/debug.js",
       "content/util/i18n.js",
+      "content/util/strings.js",
       "content/util/css.js",
       "content/util/inject.js",
       "content/util/keyboard.js",
       "content/util/ui.js",
+
+      "common/network/network.js",
+      "content/request/userinfo.js",
 
       "content/backend/message.js",
       "content/backend/request.js",
@@ -61,6 +65,9 @@
 
       "content/rule/feed/content/content.js",
       "content/rule/feed/content/text.js",
+      "content/rule/feed/content/regex.js",
+      "content/rule/feed/account/account.js",
+      "content/rule/feed/account/author.js",
       "content/rule/feed/more/more.js",
       "content/rule/feed/more/commercial.js",
       "content/rule/feed/more/content.js",
@@ -77,6 +84,7 @@
       "content/rule/tool/sidebar.js",
 
       "content/rule/about/about.js",
+      "content/rule/about/debug.js",
       "content/rule/about/script.js",
 
       "content/main/entry.js"

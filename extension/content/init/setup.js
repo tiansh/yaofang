@@ -1,7 +1,9 @@
-// 这个文件用于从网页中获取 $CONFIG 参数
-// 网页中的 $CONFIG 参数包含脚本需要的上下文参数，如
-// 当前用户 id、昵称，当前页面用户 id，当前主题等等
-// 我们需要当前用户 id 才能读取用户的设置从而继续后面的工作
+/*
+ * 这个文件用于从网页中获取 $CONFIG 参数
+ * 网页中的 $CONFIG 参数包含脚本需要的上下文参数，如
+ * 当前用户 id、昵称，当前页面用户 id，当前主题等等
+ * 我们需要当前用户 id 才能读取用户的设置从而继续后面的工作
+ */
 
 ; (async function () {
 
@@ -14,19 +16,36 @@
   const randStr = [...rand].map(value => value.toString(16).padStart(2, 0)).join('');
   const key = `yawf_${randStr}`;
   util.inject(function (key) {
-    const reportResult = () => {
-      Promise.resolve().then(() => {
-        const $CONFIG = JSON.stringify(window.$CONFIG);
-        window.postMessage({ message: { key, $CONFIG }, direction: 'yawf' }, '*');
+    let lastReport = null;
+    const reportResult = async value => {
+      lastReport = lastReport ? lastReport.then(Promise.resolve()) : Promise.resolve();
+      await lastReport;
+      const event = new CustomEvent(key, {
+        detail: { $CONFIG: JSON.stringify(value) },
       });
+      window.dispatchEvent(event);
     };
+    if ('$CONFIG' in window) {
+      reportResult(null);
+      return;
+    }
+    let $CONFIG = void 0;
+    let proxied = void 0;
     Object.defineProperty(window, '$CONFIG', {
       configurable: true,
-      get: () => (void 0),
-      set: value => {
-        delete window.$CONFIG;
-        window.$CONFIG = value;
-        reportResult();
+      enumerable: false,
+      get() { return proxied; },
+      set(value) {
+        Object.defineProperty(window, '$CONFIG', { enumerable: true });
+        $CONFIG = value;
+        proxied = new Proxy($CONFIG, {
+          set: function (self, property, value) {
+            self[property] = value;
+            reportResult($CONFIG);
+            return true;
+          },
+        });
+        reportResult($CONFIG);
       },
     });
     const onload = () => {
@@ -36,16 +55,14 @@
     window.addEventListener('load', onload);
   }, key);
 
-  const configReady = function (event) {
-    if (event.source !== window) return;
-    if (!event.data) return;
-    if (event.data.direction !== 'yawf') return;
-    if (event.data.message.key !== key) return;
-    const $CONFIG = JSON.parse(event.data.message.$CONFIG);
-    window.removeEventListener('message', configReady);
-    if ($CONFIG) init.ready($CONFIG);
-    else init.deinit();
-  };
-  window.addEventListener('message', configReady);
+  let lastConfig = void 0;
+  window.addEventListener(key, function (event) {
+    event.stopPropagation();
+    const $CONFIG = JSON.parse(event.detail.$CONFIG);
+    if (event.detail.$CONFIG === lastConfig) return;
+    lastConfig = event.detail.$CONFIG;
+    init.configChange($CONFIG);
+  }, true);
 
 }());
+

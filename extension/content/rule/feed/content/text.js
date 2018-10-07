@@ -9,9 +9,9 @@
 
   const i18n = util.i18n;
   i18n.contentTextGroupTitle = {
-    cn: '按内容过滤',
-    tw: '按內容篩選',
-    en: 'Filter by Content',
+    cn: '按内容关键词过滤',
+    tw: '按內容關鍵字篩選',
+    en: 'Filter by Content Keywords',
   };
 
   const text = content.text = {};
@@ -20,22 +20,33 @@
     template: () => i18n.contentTextGroupTitle,
   });
 
-  i18n.textContentHide = {
-    cn: '隐藏包含以下内容的微博||关键词{{text}}',
-    tw: '隱藏包含以下內容的微博||關鍵字{{text}}',
-    en: 'Hide feeds with these content||keyword {{text}}',
-  };
-
-  text.hide = rule.Rule({
-    id: 'ad_feed',
-    parent: text.text,
-    ref: {
-      text: {
-        type: 'strings',
-      },
+  Object.assign(i18n, {
+    textContentShow: {
+      cn: '总是显示包含以下内容的微博||关键词{{text}}',
+      tw: '总是显示包含以下內容的微博||關鍵字{{text}}',
+      en: 'Always show feeds with these content||keyword {{text}}',
     },
-    always: true,
-    template: () => i18n.textContentHide,
+    textContentHide: {
+      cn: '隐藏包含以下内容的微博||关键词{{text}}',
+      tw: '隱藏包含以下內容的微博||關鍵字{{text}}',
+      en: 'Hide feeds with these content||keyword {{text}}',
+    },
+    textContentFold: {
+      cn: '折叠包含以下内容的微博||关键词{{text}}',
+      tw: '折叠包含以下內容的微博||關鍵字{{text}}',
+      en: 'Fold feeds with these content||keyword {{text}}',
+    },
+  });
+
+  class TextFeedRule extends rule.class.Rule {
+    constructor(item) {
+      item.always = true;
+      item.ref = item.ref || {};
+      item.ref.text = { type: 'strings' };
+      item.feedAction = item.id;
+      item.parent = text.text;
+      super(item);
+    }
     init() {
       const rule = this;
       filter.feed.add(function textFeedFilter(/** @type {Element} */feed) {
@@ -47,10 +58,28 @@
         const text = [...contentItems].map(item => item.textContent).join('\n');
         const keywords = rule.ref.text.getConfig();
         const contain = keywords.some(keyword => text.includes(keyword));
-        if (contain) return 'hidden';
+        if (contain) return rule.feedAction;
         return null;
-      }, { priority: 1e6 });
-    },
+      }, { priority: this.filterPriority });
+    }
+  }
+
+  text.show = new TextFeedRule({
+    id: 'show',
+    priority: 1e5,
+    template: () => i18n.textContentShow,
+  });
+
+  text.hide = new TextFeedRule({
+    id: 'hide',
+    priority: 0,
+    template: () => i18n.textContentHide,
+  });
+
+  text.fold = new TextFeedRule({
+    id: 'fold',
+    priority: -1e5,
+    template: () => i18n.textContentFold,
   });
 
 }());

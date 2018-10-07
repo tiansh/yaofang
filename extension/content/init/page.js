@@ -1,3 +1,6 @@
+/*
+ * 检查当前页面的类型
+ */
 ; (async function () {
 
   const yawf = window.yawf;

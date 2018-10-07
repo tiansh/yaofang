@@ -1,15 +1,17 @@
-// 初始化相关流程
-
-// 初始化流程
-// Ready:
-//   当获取到 $CONFIG 参数时尽快调用
-// Load:
-//   当 DOMContentLoaded 时调用，此时 DOM 树可用
-//   Load 总是在 Ready 之后
-// Deinit:
-//   当出错时调用，此时应当消除之前行为的各种副作用
-//   Deinit 可能不触发 Ready，也可能在 Ready 之后
-//   Deinit 与 Load 互斥
+/*
+ * 初始化相关流程
+ *
+ * 初始化流程
+ * Ready:
+ *   当获取到 $CONFIG 参数时尽快调用
+ * Load:
+ *   当 DOMContentLoaded 时调用，此时 DOM 树可用
+ *   Load 总是在 Ready 之后
+ * Deinit:
+ *   当出错时调用，此时应当消除之前行为的各种副作用
+ *   Deinit 可能不触发 Ready，也可能在 Ready 之后
+ *   Deinit 与 Load 互斥
+ */
 
 ; (async function () {
 
@@ -40,6 +42,8 @@
   /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
   const onLoadCallback = new Set();
   /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
+  const onConfigChangeCallback = new Set();
+  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
   const onDeinitCallback = new Set();
 
   const noop = () => { };
@@ -63,10 +67,6 @@
   init.status = () => status;
   // 触发 Ready
   init.ready = async $CONFIG => {
-    if (!validPageReady($CONFIG)) {
-      await init.deinit();
-      return;
-    }
     page.$CONFIG = $CONFIG;
     status = true;
     init.ready = noop;
@@ -78,10 +78,21 @@
       document.addEventListener('DOMContentLoaded', init.dcl);
     }
   };
+  // 触发 ConfigChange
+  init.configChange = async $CONFIG => {
+    util.debug('yawf onconfigchange: %o', $CONFIG);
+    await runSet(onConfigChangeCallback);
+    if (validPageReady($CONFIG)) {
+      await init.ready($CONFIG);
+    } else {
+      await init.deinit();
+      return;
+    }
+  };
   // 触发 Deinit
   init.deinit = async () => {
     status = false;
-    init.ready = init.dcl = noop;
+    init.deinit = init.ready = init.dcl = noop;
     util.debug('yawf deinit');
     await runSet(onDeinitCallback);
   };
@@ -109,6 +120,7 @@
 
   init.onReady = register(onReadyCallback);
   init.onLoad = register(onLoadCallback);
+  init.onConfigChange = register(onConfigChangeCallback);
   init.onDeinit = register(onDeinitCallback);
 
 }());

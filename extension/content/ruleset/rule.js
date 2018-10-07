@@ -78,6 +78,7 @@
   const storage = yawf.storage;
   const config = yawf.config;
   const init = yawf.init;
+  const request = yawf.request;
 
   const css = util.css;
   const ui = util.ui;
@@ -316,7 +317,6 @@
       this.configInitialized = true;
       this.config.addListener(newValue => {
         const items = this.getRenderItems();
-        console.log('callback listen %o for %o: update %o', this.id, this.configId, items);
         items.forEach(item => this.renderValue(item));
       });
     }
@@ -658,6 +658,7 @@
         // 在当前标签前面藏一个表单元素，用于处理用户输入提交
         const form = document.createElement('form');
         form.classList.add('yawf-config-collection-form');
+        form.setAttribute('onsubmit', '');
         label.parentNode.insertBefore(form, label);
         const formId = form.id = nextConfigId();
         input.setAttribute('form', formId);
@@ -767,6 +768,139 @@
         container.classList.add('yawf-config-collection-string');
       };
     }
+    updateItem() {
+      // track 返回的是字串本身，如果 track 对应字串不应该有变化，所以无需更新
+    }
+  }
+  rule.class.StringCollectionConfigItem = StringCollectionConfigItem;
+
+  class RegExpCollectionConfigItem extends StringCollectionConfigItem {
+    normalizeItem(value) {
+      if (!value || typeof value !== 'object') return null;
+      if (typeof value.source !== 'string') return null;
+      if (typeof value.flags !== 'string' && value.flags !== void 0) return null;
+      const { source, flags } = value;
+      return { source, flags };
+    }
+    track({ source, flags }, index = -1) { return `/${source}/${flags}`; }
+    renderItem({ source, flags }) {
+      return document.createTextNode(`/${source}/${flags}`);
+    }
+    async parseUserInput(value) {
+      let regexp = null;
+      try {
+        regexp = new RegExp(...value.match(/^\/(.*)\/([a-zA-Z]*)$/).slice(1));
+      } catch (e) {
+        try {
+          regexp = new RegExp(value);
+        } catch (e2) { /* empty */ }
+      }
+      if (!regexp) return null;
+      const { source, flags } = regexp;
+      if (source === '(?:)') return null;
+      return [{ source, flags }];
+    }
+    // 我们储存一份编译好的正则表达式，这样可以方便使用
+    getConfigCompiled() {
+      this.updateConfigCache();
+      return this.configCache;
+    }
+    updateConfigCache() {
+      if (Array.isArray(this.configCache) && !this.configCacheDirty) return;
+      this.rebuildConfigCache();
+    }
+    setConfig(...args) {
+      const result = super.setConfig(...args);
+      this.rebuildConfigCacheLater();
+      return result;
+    }
+    rebuildConfigCache() {
+      this.configCache = this.getConfig().map(item => this.compileRegExp(item));
+      this.configCacheDirty = false;
+    }
+    rebuildConfigCacheLater() {
+      this.configCacheDirty = true;
+      setTimeout(() => {
+        if (this.configCacheDirty) {
+          this.rebuildConfigCache();
+        }
+      }, 0);
+    }
+    addItem(value) {
+      const values = this.getConfig();
+      const track = this.track(value);
+      const index = values.findIndex((item, index) => this.track(item, index) === track);
+      if (index !== -1) {
+        values.splice(index, 1);
+        if (!this.configCacheDirty) {
+          this.configCache.splice(index, 1);
+        }
+      }
+      values.push(value);
+      super.setConfig(values);
+      if (!this.configCacheDirty) {
+        this.configCache.push(this.compileRegExp(value));
+      }
+    }
+    removeItem(track) {
+      const values = this.getConfig();
+      const index = values.findIndex((item, index) => this.track(item, index) === track);
+      if (index !== -1) {
+        values.splice(index, 1);
+        if (!this.configCacheDirty) {
+          this.configCache.splice(index, 1);
+        }
+      }
+      super.setConfig(values);
+    }
+    compileRegExp({ source, flags }) {
+      return RegExp(source, flags);
+    }
+  }
+  rule.class.RegExpCollectionConfigItem = RegExpCollectionConfigItem;
+
+  class UserIdCollectionConfigItem extends CollectionConfigItem {
+    normalizeItem(value) {
+      if (!value || typeof value !== 'object') return null;
+      const id = String(value.id);
+      if (!id || !+id) return null;
+      return { id };
+    }
+    track({ id }, index = -1) { return id; }
+    render() {
+      const render = super.render();
+      return reference => {
+        render(reference);
+        const container = reference.parentNode.querySelector('.yawf-config-collection-items');
+        container.classList.add('yawf-config-collection-user-id');
+      };
+    }
+    renderItem({ id }) {
+      const useritem = document.createElement('div');
+      useritem.classList.add('yawf-config-user-item');
+      useritem.setAttribute('namecard', `id=${id}`);
+      const useravatar = document.createElement('div');
+      useravatar.classList.add('yawf-config-user-avatar');
+      useritem.appendChild(useravatar);
+      const username = document.createElement('div');
+      username.classList.add('yawf-config-user-name');
+      useritem.appendChild(username);
+      request.userInfo({ id }).then(({ id, name, avatar }) => {
+        const img = new Image();
+        img.src = avatar;
+        useravatar.appendChild(img);
+        username.textContent = name;
+      });
+      return useritem;
+    }
+    async parseUserInput(value) {
+      const username = value.replace(/^@/, '');
+      const user = await request.userInfo({ name: username });
+      if (!user || !user.id) return null;
+      return [{ id: user.id }];
+    }
+    updateItem() {
+    }
   }
   rule.class.StringCollectionConfigItem = StringCollectionConfigItem;
 
@@ -777,6 +911,8 @@
     if (item && item.type === 'range') return new RangeConfigItem(item, parent);
     if (item && item.type === 'bubble') return new BubbleConfigItem(item, parent);
     if (item && item.type === 'strings') return new StringCollectionConfigItem(item, parent);
+    if (item && item.type === 'regexen') return new RegExpCollectionConfigItem(item, parent);
+    if (item && item.type === 'users') return new UserIdCollectionConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 
@@ -834,10 +970,10 @@
       return node;
     }
   }
+  rule.class.Group = Group;
   const groupBuilder = rule.Group = function (item) {
     return new Group(item);
   };
-  rule.class.Group = Group;
 
   /**
    * 描述一条设置
@@ -880,10 +1016,10 @@
       }
     }
   }
+  rule.class.Rule = Rule;
   const ruleBuilder = rule.Rule = function (item) {
     return new Rule(item);
   };
-  rule.class.Rule = Rule;
 
   /**
    * 设置中的一个纯文本项，这个设置项没有复选框
@@ -935,7 +1071,7 @@
 
   css.add(`
 .yawf-config-rule > label + label { margin-left: 8px; }
-.yawf-config-rule > br + label, .yawf-config-rule > br + form + label { margin-left: 20px; }
+.yawf-config-rule > br + label { margin-left: 20px; }
 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }
 .yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
 .yawf-config-range { position: relative; }
@@ -944,8 +1080,13 @@
 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
 .yawf-config-collection-input { margin: 5px; }
 .yawf-config-collection-list { display: block; margin: 5px; }
-.yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; }
-.yawf-config-collection-remove { position: absolute; top: 0; left: 0; }
+.yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; }
+.yawf-config-collection-remove { display: block; position: absolute; top: 0; left: 0; display: flow-root; width: 20px; height: 20px; line-height: 20px; }
+.yawf-config-collection-user-id .yawf-config-collection-item { width: 90px; height: 50px; padding: 1px 20px 1px 56px; text-align: left; }
+.yawf-config-collection-user-id .yawf-config-collection-remove { right: 0; left: auto; text-align: center; }
+.yawf-config-collection-user-id .yawf-config-collection-remove a { position: static; margin: 0; }
+.yawf-config-collection-user-id .yawf-config-user-avatar { position: absolute; left: 1px; top: 1px; }
+.yawf-config-collection-user-id .yawf-config-user-name { max-width: 100%; word-break: break-all; white-space: normal; max-height: 40px; overflow: hidden; }
 `);
 
 }());

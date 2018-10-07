@@ -51,7 +51,7 @@
         // TODO 把识别各类内容的逻辑独立出来
         // 这部分逻辑要重写
         const topics = feed.querySelectorAll('.a_topic');
-        if (topics.length >= limit) return 'hidden';
+        if (topics.length >= limit) return 'hide';
         return null;
       }, { priority: 1e6 });
     },

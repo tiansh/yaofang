@@ -1,4 +1,3 @@
-
 ; (async function () {
 
   const yawf = window.yawf;
