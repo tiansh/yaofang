@@ -46,6 +46,7 @@
 
       "common/network/network.js",
       "content/request/userinfo.js",
+      "content/request/usersuggest.js",
 
       "content/backend/message.js",
       "content/backend/request.js",

@@ -685,6 +685,9 @@
           }
           input.disabled = false;
         });
+        if (typeof this.getSuggestionItems === 'function') {
+          this.renderSuggestionItems(input);
+        }
 
         // 显示所有项目组成的列表
         const container = document.createElement('div');
@@ -754,6 +757,113 @@
         }
       });
     }
+    /**
+     * @param {HTMLInputElement} input
+     */
+    renderSuggestionItems(input) {
+      const suggestionContainer = document.createElement('div');
+      suggestionContainer.classList.add('layer_menu_list', 'yawf-collection-suggestion');
+      const suggestionList = document.createElement('ul');
+      suggestionList.classList.add('yawf-collection-suggestion-list');
+      suggestionContainer.appendChild(suggestionList);
+      /** @type {HTMLLIElement[]} */
+      const suggestionItems = [];
+      let suggestionItemsShown = false;
+      const hideSuggestionItems = () => {
+        suggestionItemsShown = false;
+        if (!suggestionContainer.parentNode) return;
+        suggestionContainer.parentNode.removeChild(suggestionContainer);
+      };
+      const oldPosition = Array(3).fill(NaN);
+      const updatePosition = () => {
+        if (!suggestionItemsShown) return;
+        const { left, width, bottom } = input.getClientRects()[0];
+        const [oldLeft, oldWidth, oldBottom] = oldPosition;
+        if (left !== oldLeft) suggestionContainer.style.left = Math.round(left) + 'px';
+        if (width !== oldWidth) suggestionContainer.style.minWidth = (Math.round(width) - 4) + 'px';
+        if (bottom !== oldBottom) suggestionContainer.style.top = Math.round(bottom) + 'px';
+        oldPosition.splice(0, 3, left, width, bottom);
+        window.requestAnimationFrame(updatePosition);
+      };
+      const showSuggestionItems = items => {
+        suggestionList.innerHTML = '';
+        suggestionItems.splice(0);
+        suggestionItems.push(...items.map(item => {
+          const listitem = document.createElement('li');
+          listitem.classList.add('yawf-list-suggestion-item');
+          listitem.dataset.yawfSuggestionData = JSON.stringify(item);
+          const link = document.createElement('a');
+          link.href = 'javascript:void(0);';
+          listitem.appendChild(link);
+          this.renderSuggestionItem(link, item);
+          suggestionList.appendChild(listitem);
+          return listitem;
+        }));
+        if (items.length) suggestionContainer.style.display = 'block';
+        else suggestionContainer.style.display = 'none';
+        if (!suggestionContainer.parentNode) {
+          document.body.appendChild(suggestionContainer);
+        }
+        suggestionItemsShown = true;
+        updatePosition();
+      };
+      const updateInputSuggestion = async () => {
+        const userInput = input.value.trim();
+        const hasFocus = document.activeElement === input;
+        if (!hasFocus || !userInput) {
+          hideSuggestionItems();
+        } else {
+          const items = await this.getSuggestionItems(userInput);
+          if (userInput !== input.value.trim()) return;
+          showSuggestionItems(items);
+        }
+      };
+      input.addEventListener('input', updateInputSuggestion);
+      input.addEventListener('focus', updateInputSuggestion);
+      input.addEventListener('blur', updateInputSuggestion);
+      const choseSuggestionListItem = listitem => {
+        const item = JSON.parse(listitem.dataset.yawfSuggestionData);
+        this.addItem(this.normalizeItem(this.parseSuggestionItem(item)));
+        input.value = '';
+        updateInputSuggestion();
+      };
+      const getFocus = () => suggestionItems.find(item => item.classList.contains('cur'));
+      const setFocus = current => suggestionItems.forEach(item => {
+        if (item === current) item.classList.add('cur');
+        else item.classList.remove('cur');
+      });
+      const keypressEventHandler = event => {
+        const handler = {
+          [util.keyboard.code.ENTER]: () => {
+            const current = getFocus();
+            if (!current) return;
+            choseSuggestionListItem(current);
+          },
+          [util.keyboard.code.UP]: () => {
+            const old = getFocus();
+            const current = old && old.previousSibling || suggestionItems[suggestionItems.length - 1];
+            if (current) setFocus(current);
+          },
+          [util.keyboard.code.DOWN]: () => {
+            const old = getFocus();
+            const current = old && old.nextSibling || suggestionItems[0];
+            if (current) setFocus(current);
+          },
+        }[util.keyboard.event(event)];
+        if (!handler) return;
+        handler();
+        event.preventDefault();
+        event.stopPropagation();
+      };
+      input.addEventListener('keypress', keypressEventHandler);
+      suggestionList.addEventListener('mousedown', event => {
+        const listitem = event.target.closest('li.yawf-list-suggestion-item');
+        choseSuggestionListItem(listitem);
+        event.stopPropagation();
+        event.preventDefault();
+      });
+    };
+    parseSuggestionItem(item) { return item; }
   }
   rule.class.CollectionConfigItem = CollectionConfigItem;
 
@@ -900,6 +1010,12 @@
       return [{ id: user.id }];
     }
     updateItem() {
+    }
+    async getSuggestionItems(userInput) {
+      return request.userSuggest(userInput.replace(/^@/, ''));
+    }
+    renderSuggestionItem(listitem, item) {
+      listitem.appendChild(document.createTextNode(item.name));
     }
   }
   rule.class.StringCollectionConfigItem = StringCollectionConfigItem;
@@ -1087,6 +1203,7 @@
 .yawf-config-collection-user-id .yawf-config-collection-remove a { position: static; margin: 0; }
 .yawf-config-collection-user-id .yawf-config-user-avatar { position: absolute; left: 1px; top: 1px; }
 .yawf-config-collection-user-id .yawf-config-user-name { max-width: 100%; word-break: break-all; white-space: normal; max-height: 40px; overflow: hidden; }
+.yawf-collection-suggestion.yawf-collection-suggestion { z-index: 10000; position: fixed; }
 `);
 
 }());

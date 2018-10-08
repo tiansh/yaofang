@@ -3,12 +3,16 @@
   const yawf = window.yawf = window.yawf || {};
   const network = yawf.network = {};
 
-  network.fakeCallback = (function () {
+  network.getUniqueKey = (function () {
     let last = 0;
     return function () {
-      return 'STK_' + (last = Math.max(last + 1, Date.now()));
+      return '' + (last = Math.max(last + 1, Date.now()));
     };
   }());
+
+  network.fakeCallback = function () {
+    return 'STK_' + network.getUniqueKey();
+  };
 
   /**
    * @param {string} resp
