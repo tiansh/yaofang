@@ -122,7 +122,7 @@
     } catch (e) { util.debug('Error while showing rule dialog %o', e); }
   };
 
-  css.add(`
+  css.append(`
 #yawf-config .yawf-config-inner { padding: 0 0 0 160px; width: 640px; height: 480px; position: relative; }
 #yawf-config .yawf-config-header { position: absolute; width: 160px; height: 480px; top: 0; left: 0; }
 #yawf-config .yawf-config-header ul { height: 450px; width: 120px; overflow: hidden; padding: 20px 0 10px 40px; box-shadow: -4px 0 2px -2px rgba(64, 64, 64, 0.15) inset, 0 4px 2px -2px rgba(64, 64, 64, 0.15) inset; }

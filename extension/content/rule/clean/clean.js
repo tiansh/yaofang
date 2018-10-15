@@ -55,7 +55,7 @@
   };
 
   init.onReady(() => {
-    css.add(`
+    css.append(`
 .yawf-clean-group + .yawf-config-group-items { display: grid; grid-template-columns: repeat(${i18n.cleanConfigColumnCount}, 1fr); grid-gap: 5px 10px; margin: 5px 20px; }
 .yawf-clean-group + .yawf-config-group-items > .yawf-config-rule { margin: 0; }
 `);

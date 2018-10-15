@@ -24,10 +24,13 @@
   }());
 
   message.invoke = function (tabId) {
+    const tab = tabId ? null : browser.tabs.query({ currentWindow: true, active: true });
     return new Proxy({}, {
-      get: (empty, method) => (...params) => (
+      get: (empty, method) => (...params) => tabId ? (
         browser.tabs.sendMessage(tabId, { method, params })
-      ),
+      ) : tab.then(([{ id: tabId }]) => (
+        browser.tabs.sendMessage(tabId, { method, params })
+      )),
     });
   };
 

@@ -8,43 +8,46 @@
   const content = yawf.rules.content;
 
   const i18n = util.i18n;
-  i18n.contentTextGroupTitle = {
-    cn: '按内容关键词过滤',
-    tw: '按內容關鍵字篩選',
-    en: 'Filter by Content Keywords',
-  };
-
-  const text = content.text = {};
-  text.text = rule.Group({
-    parent: content.content,
-    template: () => i18n.contentTextGroupTitle,
-  });
 
   Object.assign(i18n, {
+    contentTextGroupTitle: {
+      cn: '按内容关键词过滤',
+      tw: '按內容關鍵字篩選',
+      en: 'Filter by Content Keywords',
+    },
     textContentShow: {
-      cn: '总是显示包含以下内容的微博||关键词{{text}}',
-      tw: '总是显示包含以下內容的微博||關鍵字{{text}}',
-      en: 'Always show feeds with these content||keyword {{text}}',
+      cn: '总是显示包含以下内容的微博||关键词{{items}}',
+      tw: '总是显示包含以下內容的微博||關鍵字{{items}}',
+      en: 'Always show feeds with these content||keyword {{items}}',
     },
     textContentHide: {
-      cn: '隐藏包含以下内容的微博||关键词{{text}}',
-      tw: '隱藏包含以下內容的微博||關鍵字{{text}}',
-      en: 'Hide feeds with these content||keyword {{text}}',
+      cn: '隐藏包含以下内容的微博||关键词{{items}}',
+      tw: '隱藏包含以下內容的微博||關鍵字{{items}}',
+      en: 'Hide feeds with these content||keyword {{items}}',
     },
     textContentFold: {
-      cn: '折叠包含以下内容的微博||关键词{{text}}',
-      tw: '折叠包含以下內容的微博||關鍵字{{text}}',
-      en: 'Fold feeds with these content||keyword {{text}}',
+      cn: '折叠包含以下内容的微博||关键词{{items}}',
+      tw: '折叠包含以下內容的微博||關鍵字{{items}}',
+      en: 'Fold feeds with these content||keyword {{items}}',
+    },
+    contentTextContextTitle: {
+      cn: '过滤包含“{1}”的微博',
+      tw: '篩選包含「{1}」的微博',
+      en: 'Create filter for “{1}”',
+    },
+    textFastDescription: {
+      cn: '包含“{1}”的微博',
+      tw: '包含「{1}」的微博',
+      en: 'Feeds contain text “{1}”',
     },
   });
 
   class TextFeedRule extends rule.class.Rule {
     constructor(item) {
-      item.always = true;
-      item.ref = item.ref || {};
-      item.ref.text = { type: 'strings' };
-      item.feedAction = item.id;
-      item.parent = text.text;
+      item.ref.items.parseFastItem = async function (value, type) {
+        if (type === 'text') return [value];
+        return [];
+      };
       super(item);
     }
     init() {
@@ -56,7 +59,7 @@
           '[node-type="feed_list_reason"]',
         ].join(','));
         const text = [...contentItems].map(item => item.textContent).join('\n');
-        const keywords = rule.ref.text.getConfig();
+        const keywords = rule.ref.items.getConfig();
         const contain = keywords.some(keyword => text.includes(keyword));
         if (contain) return rule.feedAction;
         return null;
@@ -64,22 +67,41 @@
     }
   }
 
-  text.show = new TextFeedRule({
-    id: 'show',
-    priority: 1e5,
-    template: () => i18n.textContentShow,
-  });
+  const renderFastItem = function (item) {
+    const container = document.createElement('span');
+    const [pre, post] = i18n.textFastDescription.split('{1}');
+    container.appendChild(document.createTextNode(pre));
+    const input = document.createElement('input');
+    container.appendChild(input);
+    container.appendChild(document.createTextNode(post));
+    input.value = item.value;
+    input.addEventListener('input', event => {
+      item.value = input.value;
+    });
+    return container;
+  };
 
-  text.hide = new TextFeedRule({
-    id: 'hide',
-    priority: 0,
-    template: () => i18n.textContentHide,
-  });
-
-  text.fold = new TextFeedRule({
-    id: 'fold',
-    priority: -1e5,
-    template: () => i18n.textContentFold,
+  rule.groups({
+    baseClass: TextFeedRule,
+    tab: 'content',
+    key: 'text',
+    type: 'strings',
+    title: () => i18n.contentTextGroupTitle,
+    details: {
+      hide: {
+        title: () => i18n.textContentHide,
+      },
+      show: {
+        title: () => i18n.textContentShow,
+      },
+      fold: {
+        title: () => i18n.textContentFold,
+      },
+    },
+    fast: {
+      types: [['text'], []],
+      render: renderFastItem,
+    },
   });
 
 }());

@@ -714,6 +714,9 @@
     async parseUserInput(value) {
       return [value];
     }
+    async parseFastItem(value, type) {
+      return [value];
+    }
     addItem(value) {
       const values = this.getConfig();
       const track = this.track(value);
@@ -1037,6 +1040,7 @@
    */
   class RuleItem extends BooleanConfigItem {
     get type() { return 'normal'; }
+    get disabled() { return false; }
     constructor(item) {
       super(item, null);
       if (this.parent) {
@@ -1134,7 +1138,9 @@
   }
   rule.class.Rule = Rule;
   const ruleBuilder = rule.Rule = function (item) {
-    return new Rule(item);
+    const result = new Rule(item);
+    if (rule.inited) result.execute();
+    return result;
   };
 
   /**
@@ -1162,7 +1168,10 @@
    * 之后可用于展示对话框等操作
    * @param {{ base: Tab[] }} base 描述搜索范围
    */
-  const query = rule.query = function ({ base = tabs } = {}) {
+  const query = rule.query = function ({
+    base = tabs,
+    includeDisabled = false,
+  } = {}) {
     const result = new Set();
     ; (function query(items) {
       items.forEach(item => {
@@ -1170,14 +1179,17 @@
           query(item.children);
         }
         if (!(item instanceof Rule)) return;
+        if (!includeDisabled && item.disabled) return;
         result.add(item);
       });
     }(base));
     return [...result];
   };
 
+  rule.inited = false;
   rule.init = function () {
     rule.style = css.add('');
+    rule.inited = true;
     rule.query().forEach(rule => rule.execute());
   };
 

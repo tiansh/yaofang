@@ -20,4 +20,9 @@
     return { append, remove, ready };
   };
 
+  const style = css.add('');
+  css.append = function (css) {
+    style.append('\n' + css);
+  };
+
 }());

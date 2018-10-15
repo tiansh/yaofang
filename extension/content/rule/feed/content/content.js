@@ -17,4 +17,20 @@
     template: () => i18n.contentTabTitle,
   });
 
+  const contextMenuSelection = function (target) {
+    const selections = window.getSelection();
+    if (selections.rangeCount !== 1) return [];
+    const text = String(selections).trim();
+    if (!text) return [];
+    const template = i18n.contentTextContextTitle;
+    const contextMenuText = text.length > 10 ? text.slice(0, 9) + '…' : text;
+    const title = template.replace('{1}', () => contextMenuText);
+    return [{
+      title,
+      type: 'text',
+      value: text,
+    }];
+  };
+  rule.contextMenu(contextMenuSelection);
+
 }());

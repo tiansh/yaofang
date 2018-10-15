@@ -13,16 +13,21 @@
   "permissions": [
     "webRequest", "webRequestBlocking",
     "storage", "unlimitedStorage",
+    "menus",
     "*://*.weibo.com/*", "<all_urls>"
   ],
 
   "background": {
     "scripts": [
-      "background/message.js",
+      "common/browser/browser.js",
 
-      "background/request.js",
+      "background/message/message.js",
+
+      "background/request/blocking.js",
+
+      "background/contextmenu/contextmenu.js",
       
-      "background/interests.js"
+      "background/interests/interests.js"
     ]
   },
 
@@ -50,6 +55,7 @@
 
       "content/backend/message.js",
       "content/backend/request.js",
+      "content/backend/contextmenu.js",
 
       "content/storage/storage.js",
       "content/storage/config.js",
@@ -64,6 +70,7 @@
       "content/ruleset/filter.js",
       "content/ruleset/dialog.js",
 
+      "content/rule/feed/feed/feed.js",
       "content/rule/feed/content/content.js",
       "content/rule/feed/content/text.js",
       "content/rule/feed/content/regex.js",

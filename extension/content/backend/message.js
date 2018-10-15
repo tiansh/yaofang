@@ -23,13 +23,11 @@
     };
   }());
 
-  message.invoke = function () {
-    return new Proxy({}, {
-      get: (empty, method) => (...params) => (
-        browser.runtime.sendMessage({ method, params })
-      ),
-    });
-  };
+  message.invoke = new Proxy({}, {
+    get: (empty, method) => (...params) => (
+      browser.runtime.sendMessage({ method, params })
+    ),
+  });
 
 }());
 
