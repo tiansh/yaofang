@@ -58,6 +58,7 @@
   let lastConfig = void 0;
   window.addEventListener(key, function (event) {
     event.stopPropagation();
+    if (!event.detail.$CONFIG) return;
     const $CONFIG = JSON.parse(event.detail.$CONFIG);
     if (event.detail.$CONFIG === lastConfig) return;
     lastConfig = event.detail.$CONFIG;

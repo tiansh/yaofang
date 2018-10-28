@@ -53,10 +53,6 @@
       "content/request/userinfo.js",
       "content/request/usersuggest.js",
 
-      "content/backend/message.js",
-      "content/backend/request.js",
-      "content/backend/contextmenu.js",
-
       "content/storage/storage.js",
       "content/storage/config.js",
 
@@ -65,12 +61,17 @@
       "content/init/setup.js",
       "content/init/ready.js",
 
+      "content/backend/message.js",
+      "content/backend/request.js",
+      "content/backend/contextmenu.js",
+
       "content/ruleset/rule.js",
       "content/ruleset/observer.js",
       "content/ruleset/filter.js",
       "content/ruleset/dialog.js",
 
       "content/rule/feed/feed/feed.js",
+      "content/rule/feed/feed/parse.js",
       "content/rule/feed/content/content.js",
       "content/rule/feed/content/text.js",
       "content/rule/feed/content/regex.js",

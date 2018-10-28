@@ -328,7 +328,7 @@
       this.initConfig();
       const value = this.config.get();
       const normalize = this.normalize(value);
-      if (value && JSON.stringify(value) !== normalize && JSON.stringify(normalize)) {
+      if (value && normalize && JSON.stringify(value) !== JSON.stringify(normalize)) {
         this.config.set(normalize);
       }
       return normalize;
@@ -715,7 +715,7 @@
       return [value];
     }
     async parseFastItem(value, type) {
-      return [value];
+      return this.parseUserInput(value);
     }
     addItem(value) {
       const values = this.getConfig();
@@ -905,7 +905,7 @@
         regexp = new RegExp(...value.match(/^\/(.*)\/([a-zA-Z]*)$/).slice(1));
       } catch (e) {
         try {
-          regexp = new RegExp(value);
+          regexp = new RegExp(value, 'mu');
         } catch (e2) { /* empty */ }
       }
       if (!regexp) return null;
@@ -1021,7 +1021,7 @@
       listitem.appendChild(document.createTextNode(item.name));
     }
   }
-  rule.class.StringCollectionConfigItem = StringCollectionConfigItem;
+  rule.class.UserIdCollectionConfigItem = UserIdCollectionConfigItem;
 
   const configItemBuilder = function (item, parent) {
     if (item && item.type === 'boolean') return new BooleanConfigItem(item, parent);

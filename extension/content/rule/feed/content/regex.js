@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const filter = yawf.filter;
+  const feedParser = yawf.feed;
 
   const content = yawf.rules.content;
 
@@ -23,44 +24,39 @@
 
   Object.assign(i18n, {
     regexContentShow: {
-      cn: '总是显示匹配以下正则表达式的微博||正则式{{regex}}',
-      hk: '总是显示匹配以下正則表達式的微博||正則式{{regex}}',
-      tw: '总是显示匹配以下正規表示式的微博||正規式{{regex}}',
-      en: 'Always show feeds match these regexen||Regexen {{regex}}',
+      cn: '总是显示匹配以下正则表达式的微博||正则式{{items}}',
+      hk: '总是显示匹配以下正則表達式的微博||正則式{{items}}',
+      tw: '总是显示匹配以下正規表示式的微博||正規式{{items}}',
+      en: 'Always show feeds match these regexen||Regexen {{items}}',
     },
     regexContentHide: {
-      cn: '隐藏匹配以下正则表达式的微博||正则式{{regex}}',
-      hk: '隱藏匹配以下正則表達式的微博||正則式{{regex}}',
-      tw: '隱藏匹配以下正規表示式的微博||正規式{{regex}}',
-      en: 'Hide feeds match these regexen||Regexen {{regex}}',
+      cn: '隐藏匹配以下正则表达式的微博||正则式{{items}}',
+      hk: '隱藏匹配以下正則表達式的微博||正則式{{items}}',
+      tw: '隱藏匹配以下正規表示式的微博||正規式{{items}}',
+      en: 'Hide feeds match these regexen||Regexen {{items}}',
     },
     regexContentFold: {
-      cn: '折叠匹配以下正则表达式的微博||正则式{{regex}}',
-      hk: '折叠匹配以下正則表達式的微博||正則式{{regex}}',
-      tw: '折叠匹配以下正規表示式的微博||正規式{{regex}}',
-      en: 'Fold feeds match these regexen||Regexen {{regex}}',
+      cn: '折叠匹配以下正则表达式的微博||正则式{{items}}',
+      hk: '折叠匹配以下正則表達式的微博||正則式{{items}}',
+      tw: '折叠匹配以下正規表示式的微博||正規式{{items}}',
+      en: 'Fold feeds match these regexen||Regexen {{items}}',
+    },
+    regexFastDescription: {
+      cn: '匹配{1}的微博',
+      tw: '匹配{1}的微博',
+      en: 'Feeds contain text “{1}”',
     },
   });
 
   class RegexFeedRule extends rule.class.Rule {
     constructor(item) {
-      item.always = true;
-      item.ref = item.ref || {};
-      item.ref.regex = { type: 'regexen' };
-      item.feedAction = item.id;
-      item.parent = regex.regex;
       super(item);
     }
     init() {
       const rule = this;
       filter.feed.add(function regexFeedFilter(/** @type {Element} */feed) {
-        // FIXME 这段临时的，之后再提出去详细写
-        const contentItems = feed.querySelectorAll([
-          '[node-type="feed_list_content"]',
-          '[node-type="feed_list_reason"]',
-        ].join(','));
-        const text = [...contentItems].map(item => item.textContent).join('\n');
-        const regexen = rule.ref.regex.getConfigCompiled();
+        const text = feedParser.text.full(feed);
+        const regexen = rule.ref.items.getConfigCompiled();
         const matches = regexen.some(regex => regex.test(text));
         if (matches) return rule.feedAction;
         return null;
@@ -68,22 +64,51 @@
     }
   }
 
-  regex.show = new RegexFeedRule({
-    id: 'show',
-    priority: 1e5,
-    template: () => i18n.regexContentShow,
-  });
+  const regexEscaped = function (str) {
+    return str.replace(/[.*+?^${}()|[\]/\\]/g, '\\$&');
+  };
 
-  regex.hide = new RegexFeedRule({
-    id: 'hide',
-    priority: 0,
-    template: () => i18n.regexContentHide,
-  });
+  const renderFastItem = function (item) {
+    const container = document.createElement('span');
+    const [pre, post] = i18n.regexFastDescription.split('{1}');
+    container.appendChild(document.createTextNode(pre));
+    const input = document.createElement('input');
+    container.appendChild(input);
+    container.appendChild(document.createTextNode(post));
+    if (item.value.full.length === 1) {
+      input.value = item.value = '/' + regexEscaped(item.value.full[0]) + '/mu';
+    } else {
+      input.value = item.value = '/^' + item.value.full
+        .map(value => `(?=.*${regexEscaped(value)})`).join('') + '/mu';
+    }
+    input.addEventListener('input', event => {
+      item.value = input.value;
+    });
+    return container;
+  };
 
-  regex.fold = new RegexFeedRule({
-    id: 'fold',
-    priority: -1e5,
-    template: () => i18n.regexContentFold,
+  rule.groups({
+    baseClass: RegexFeedRule,
+    tab: 'content',
+    key: 'regex',
+    type: 'regexen',
+    title: () => i18n.contentTextGroupTitle,
+    details: {
+      hide: {
+        title: () => i18n.regexContentHide,
+      },
+      show: {
+        title: () => i18n.regexContentShow,
+      },
+      fold: {
+        title: () => i18n.regexContentFold,
+      },
+    },
+    fast: {
+      types: [['multitext'], ['text']],
+      radioGroup: 'text',
+      render: renderFastItem,
+    },
   });
 
 }());

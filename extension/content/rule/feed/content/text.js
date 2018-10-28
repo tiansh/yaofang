@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const filter = yawf.filter;
+  const feedParser = yawf.feed;
 
   const content = yawf.rules.content;
 
@@ -30,11 +31,6 @@
       tw: '折叠包含以下內容的微博||關鍵字{{items}}',
       en: 'Fold feeds with these content||keyword {{items}}',
     },
-    contentTextContextTitle: {
-      cn: '过滤包含“{1}”的微博',
-      tw: '篩選包含「{1}」的微博',
-      en: 'Create filter for “{1}”',
-    },
     textFastDescription: {
       cn: '包含“{1}”的微博',
       tw: '包含「{1}」的微博',
@@ -44,21 +40,12 @@
 
   class TextFeedRule extends rule.class.Rule {
     constructor(item) {
-      item.ref.items.parseFastItem = async function (value, type) {
-        if (type === 'text') return [value];
-        return [];
-      };
       super(item);
     }
     init() {
       const rule = this;
       filter.feed.add(function textFeedFilter(/** @type {Element} */feed) {
-        // FIXME 这段临时的，之后再提出去详细写
-        const contentItems = feed.querySelectorAll([
-          '[node-type="feed_list_content"]',
-          '[node-type="feed_list_reason"]',
-        ].join(','));
-        const text = [...contentItems].map(item => item.textContent).join('\n');
+        const text = feedParser.text.simple(feed);
         const keywords = rule.ref.items.getConfig();
         const contain = keywords.some(keyword => text.includes(keyword));
         if (contain) return rule.feedAction;
@@ -74,7 +61,7 @@
     const input = document.createElement('input');
     container.appendChild(input);
     container.appendChild(document.createTextNode(post));
-    input.value = item.value;
+    input.value = item.value = item.value.simple;
     input.addEventListener('input', event => {
       item.value = input.value;
     });
@@ -100,6 +87,7 @@
     },
     fast: {
       types: [['text'], []],
+      radioGroup: 'text',
       render: renderFastItem,
     },
   });

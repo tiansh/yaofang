@@ -13,6 +13,17 @@
 
   const fastHandlers = new Map();
 
+  const feedCollectionBall = function (action) {
+    return {
+      render: function () {
+        const span = document.createElement('span');
+        span.classList.add('yawf-config-feed-ball');
+        span.classList.add('yawf-config-feed-' + action);
+        return span;
+      },
+    };
+  };
+
   const groups = function ({
     baseClass: Base,
     tab: tabName,
@@ -40,15 +51,18 @@
 
     actions.forEach(({ action, details: { title, priority = null } }) => {
       group[action] = new Base({
-        id: action,
+        id: key + '.' + action,
         parent: group[key],
         priority: priority === null ? {
           show: 1e5,
           hide: 0,
           fold: -1e5,
         }[action] : priority,
-        template: title,
-        ref: { items: { type } },
+        template: () => '{{ball}}' + title(),
+        ref: {
+          items: { type },
+          ball: feedCollectionBall(action),
+        },
         always: true,
         feedAction: action,
       });
@@ -57,6 +71,7 @@
     if (fast) {
       const {
         types: [activeTypes, allTypes],
+        radioGroup,
         render,
       } = fast;
       [
@@ -65,6 +80,7 @@
       ].forEach(({ type, active }) => {
         const handler = {
           active,
+          radioGroup,
           render,
           rules: actions.map(({ action }) => ({ action, rule: group[action] })),
         };
@@ -103,7 +119,8 @@
     },
   });
 
-  const askFast = function (items) {
+  const askFast = function (selectedItems) {
+    const items = [];
     const fastAddDialog = ui.dialog({
       id: 'yawf-fast-add',
       title: i18n.fastAddDialogTitle,
@@ -116,9 +133,11 @@
         const ul = document.createElement('ul');
         ul.classList.add('yawf-fast-add-list');
         container.appendChild(ul);
-        items.forEach(item => {
-          const handlers = fastHandlers.get(item.type) || [];
-          handlers.forEach(({ active, render, rules }) => {
+        selectedItems.forEach(originalItem => {
+          const handlers = fastHandlers.get(originalItem.type) || [];
+          handlers.forEach(({ active, render, rules, radioGroup }) => {
+            const item = JSON.parse(JSON.stringify(originalItem));
+            items.push(item);
             const li = document.createElement('li');
             const label = document.createElement('label');
             li.appendChild(label);
@@ -127,7 +146,18 @@
             item.active = checkbox.checked = active;
             checkbox.addEventListener('input', () => {
               item.active = checkbox.checked;
+              if (item.active && radioGroup) {
+                items.forEach(thatItem => {
+                  if (thatItem === item) return;
+                  if (thatItem.radioGroup !== item.radioGroup) return;
+                  thatItem.setActive(false);
+                });
+              }
             });
+            if (radioGroup) item.radioGroup = radioGroup;
+            item.setActive = active => {
+              item.active = checkbox.checked = active;
+            };
             label.appendChild(checkbox);
             label.appendChild(render(item));
             const select = document.createElement('select');
@@ -153,13 +183,13 @@
         inner.appendChild(container);
       },
       button: {
-        ok: async function () {
+        ok: function () {
           fastAddDialog.hide();
-          for (const { active, rule: { ref: { items: ruleItem } }, type, value } of items) {
-            if (!active) continue;
+          items.forEach(async ({ active, rule: { ref: { items: ruleItem } }, type, value }) => {
+            if (!active) return;
             const parseResult = await ruleItem.parseFastItem(value, type);
             parseResult.forEach(item => ruleItem.addItem(item));
-          }
+          });
         },
         cancel: function () {
           fastAddDialog.hide();
@@ -188,6 +218,10 @@
   css.append(`
 .yawf-fast-add-body { padding: 20px; }
 .yawf-fast-add-list { padding: 20px; }
+.yawf-config-feed-ball { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 1em; margin-right: 0.5em; border: 1px solid transparent; vertical-align: middle; background: var(--yawf-ball-color); box-shadow: 0 0 2px var(--yawf-ball-color); opacity: 0.8; }
+.yawf-config-feed-show { --yawf-ball-color: #3ec63e; }
+.yawf-config-feed-hide { --yawf-ball-color: #c63e3e; }
+.yawf-config-feed-fold { --yawf-ball-color: #c6c63e; }
 `);
 
 }());
