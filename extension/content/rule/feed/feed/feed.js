@@ -30,6 +30,7 @@
     key,
     title,
     type,
+    before: { hide: beforeHide = null, show: beforeShow = null, fold: beforeFold = null } = {},
     details: { hide = null, show = null, fold = null },
     fast = null,
   }) {
@@ -44,14 +45,15 @@
 
     // 依次创建三种类型的过滤规则
     const actions = [
-      { action: 'show', details: show },
-      { action: 'hide', details: hide },
-      { action: 'fold', details: fold },
+      { action: 'show', details: show, before: beforeShow },
+      { action: 'hide', details: hide, before: beforeHide },
+      { action: 'fold', details: fold, before: beforeFold },
     ].filter(item => item.details);
 
-    actions.forEach(({ action, details: { title, priority = null } }) => {
+    actions.forEach(({ action, details: { title, priority = null }, before }) => {
+      if (typeof before === 'function') before();
       group[action] = new Base({
-        id: key + '.' + action,
+        id: [tabName, key, action].join('.'),
         parent: group[key],
         priority: priority === null ? {
           show: 1e5,

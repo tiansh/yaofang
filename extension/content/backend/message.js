@@ -8,6 +8,7 @@
     const exported = new Map();
 
     browser.runtime.onMessage.addListener(async (message, sender) => {
+      console.log('on message %o', message);
       const { method, params = [] } = message;
       const handler = exported.get(method);
       return new Promise(async (resolve, reject) => {

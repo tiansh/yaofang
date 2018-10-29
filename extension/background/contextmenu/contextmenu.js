@@ -48,10 +48,13 @@
 
   let lastContextMenuIndex = 0, lastContextMenuClicked = false;
   browser.menus.onShown.addListener(async info => {
-    if (!info.contexts.includes('page') && !info.contexts.includes('selection')) return;
+    console.log('ask onshown: %o', info);
+    if (!info.contexts.includes('all')) return;
     const contextMenuIndex = ++lastContextMenuIndex;
     lastContextMenuClicked = false;
     const items = await message.invoke().contextMenuShow().catch(() => []);
+    console.log('contextmenu items: %o', items);
+    console.log(contextMenuIndex, lastContextMenuIndex);
     if (contextMenuIndex !== lastContextMenuIndex) return;
     if (!Array.isArray(items) || !items.length) return;
     const rootMenu = browser.menus.create({

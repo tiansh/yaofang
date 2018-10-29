@@ -67,6 +67,17 @@
   };
 
   /**
+   * 检查某个元素是否是一条转发的微博
+   * @param {Element} element
+   * @returns {boolean}
+   */
+  const isForwardFeedElement = function (element) {
+    if (!isFeedElement(element)) return false;
+    if (!element.hasAttribute('omid')) return false;
+    return true;
+  };
+
+  /**
    * 获取一条微博中所有内容相关的节点
    * @param {Element} feed
    * @returns {Element[]}
@@ -416,7 +427,7 @@
   original.dom = feed => {
     if (!(feed instanceof Node)) return [];
     const original = feed.querySelector('.WB_expand > .WB_info > .W_fb[usercard]');
-    return [original];
+    return original ? [original] : [];
   };
   original.id = feed => {
     const doms = original.dom(feed);
@@ -501,6 +512,10 @@
       return text;
     });
   };
+
+  // 其他基础通用
+  feedParser.isFeed = feed => isFeedElement(feed);
+  feedParser.isForward = feed => isForwardFeedElement(feed);
 
 
 }());

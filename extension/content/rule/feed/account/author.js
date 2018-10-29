@@ -4,73 +4,86 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const filter = yawf.filter;
+  const feedParser = yawf.feed;
 
-  const account = yawf.rules.account;
+  const author = yawf.rules.author;
 
   const i18n = util.i18n;
-  i18n.authorGroupTitle = {
-    cn: '指定作者的微博',
-    en: 'Feeds from these Authors',
-  };
-
-  const author = account.author = {};
-  author.author = rule.Group({
-    parent: account.account,
-    template: () => i18n.authorGroupTitle,
-  });
 
   Object.assign(i18n, {
+    accountAuthorGroupTitle: {
+      cn: '按作者过滤',
+      tw: '按作者篩選',
+      en: 'Filter by Author',
+    },
     accountAuthorShow: {
-      cn: '总是显示以下作者的微博||帐号{{account}}',
-      tw: '总是显示以下作者的微博||帳號{{account}}',
-      en: 'Always show feeds from these authors||author {{account}}',
+      cn: '总是显示以下作者的微博||作者{{items}}',
+      tw: '總是顯示以下作者的微博||作者{{items}}',
+      en: 'Always show feeds from these authors||author {{items}}',
     },
     accountAuthorHide: {
-      cn: '总是隐藏以下作者的微博||帐号{{account}}',
-      tw: '总是隱藏以下作者的微博||帳號{{account}}',
-      en: 'Hide feeds from these authors||author {{account}}',
+      cn: '隐藏以下作者的微博||作者{{items}}',
+      tw: '隱藏以下作者的微博||作者{{items}}',
+      en: 'Hide feeds from these authors||author {{items}}',
     },
     accountAuthorFold: {
-      cn: '折叠以下作者的微博||帐号{{account}}',
-      tw: '折叠以下作者的微博||帳號{{account}}',
-      en: 'Fold feeds from these authors||author {{account}}',
+      cn: '折叠以下作者的微博||作者{{items}}',
+      tw: '折疊以下作者的微博||作者{{items}}',
+      en: 'Fold feeds from these authors||author {{items}}',
+    },
+    accountAuthorFastDescription: {
+      cn: '作者是“@{1}”的微博',
+      tw: '作者是「@{1}」的微博',
+      en: 'Feeds by "@{1}"',
     },
   });
 
-  class AuthorFilterRule extends rule.class.AccountFilterRule {
+  class AuthorFeedRule extends rule.class.Rule {
     constructor(item) {
-      item.parent = author.author;
       super(item);
     }
     init() {
       const rule = this;
       filter.feed.add(function authorFilterFeedFilter(/** @type {Element} */feed) {
-        const usercard = feed.querySelector('.WB_face [usercard]').getAttribute('usercard');
-        const id = new URLSearchParams(usercard).get('id');
-        const accounts = rule.ref.account.getConfig();
-        const contain = accounts.find(account => account.id === id);
+        const [author] = feedParser.author.id(feed);
+        const accounts = rule.ref.items.getConfig();
+        const contain = accounts.find(account => account.id === author);
         if (contain) return rule.feedAction;
         return null;
       }, { priority: this.filterPriority });
     }
   }
 
-  author.show = new AuthorFilterRule({
-    id: 'show',
-    priority: 1e5,
-    template: () => i18n.accountAuthorShow,
-  });
+  const renderFastItem = function (item) {
+    const container = document.createElement('span');
+    const message = i18n.accountAuthorFastDescription.replace('{1}', () => item.value.name);
+    container.appendChild(document.createTextNode(message));
+    return container;
+  };
 
-  author.hide = new AuthorFilterRule({
-    id: 'hide',
-    priority: 0,
-    template: () => i18n.accountAuthorHide,
-  });
-
-  author.fold = new AuthorFilterRule({
-    id: 'fold',
-    priority: -1e5,
-    template: () => i18n.accountAuthorFold,
+  rule.groups({
+    baseClass: AuthorFeedRule,
+    tab: 'author',
+    key: 'id',
+    type: 'users',
+    title: () => i18n.accountAuthorGroupTitle,
+    details: {
+      hide: {
+        title: () => i18n.accountAuthorHide,
+      },
+      show: {
+        title: () => i18n.accountAuthorShow,
+      },
+      fold: {
+        title: () => i18n.accountAuthorFold,
+      },
+    },
+    fast: {
+      types: [['author'], ['original', 'mention', 'user']],
+      radioGroup: 'auther',
+      render: renderFastItem,
+    },
   });
 
 }());
+

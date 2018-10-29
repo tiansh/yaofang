@@ -13,8 +13,8 @@
     en: 'Content',
   };
   i18n.contentTextContextTitle = {
-    cn: '过滤包含“{1}”的微博',
-    tw: '篩選包含「{1}」的微博',
+    cn: '过滤微博 內容“{1}”',
+    tw: '篩選微博 内容「{1}」',
     en: 'Create filter for “{1}”',
   };
 
@@ -26,6 +26,7 @@
 
   const contextMenuSelectionSimple = function (event) {
     const selection = window.getSelection();
+    if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
     const [simple] = feedParser.text.simple(selection);
     const full = feedParser.text.full(selection);

@@ -1012,6 +1012,9 @@
       if (!user || !user.id) return null;
       return [{ id: user.id }];
     }
+    async parseFastItem(value, type) {
+      return [value];
+    }
     updateItem() {
     }
     async getSuggestionItems(userInput) {
@@ -1023,6 +1026,25 @@
   }
   rule.class.UserIdCollectionConfigItem = UserIdCollectionConfigItem;
 
+  class UserNameCollectionConfigItem extends StringCollectionConfigItem {
+    async getSuggestionItems(userInput) {
+      const users = await request.userSuggest(userInput.replace(/^@/, ''));
+      return users.map(user => user.name);
+    }
+    renderSuggestionItem(listitem, item) {
+      listitem.appendChild(document.createTextNode(item));
+    }
+    renderItem(value) {
+      return document.createTextNode('@' + value);
+    }
+    async parseUserInput(userInput) {
+      return [userInput.trim().replace(/^@?/, '')];
+    }
+    async parseFastItem(value) {
+      return [value.name];
+    }
+  }
+
   const configItemBuilder = function (item, parent) {
     if (item && item.type === 'boolean') return new BooleanConfigItem(item, parent);
     if (item && item.type === 'select') return new SelectConfigItem(item, parent);
@@ -1032,6 +1054,7 @@
     if (item && item.type === 'strings') return new StringCollectionConfigItem(item, parent);
     if (item && item.type === 'regexen') return new RegExpCollectionConfigItem(item, parent);
     if (item && item.type === 'users') return new UserIdCollectionConfigItem(item, parent);
+    if (item && item.type === 'usernames') return new UserNameCollectionConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 
