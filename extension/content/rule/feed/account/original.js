@@ -100,8 +100,8 @@
       show: discoverRule,
     },
     fast: {
-      types: [['original'], ['auther', 'mention', 'user']],
-      radioGroup: 'auther',
+      types: [['original', 'account'], ['auther', 'mention']],
+      radioGroup: 'original',
       render: renderFastItem,
     },
   });

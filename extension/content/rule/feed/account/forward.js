@@ -80,7 +80,7 @@
       },
     },
     fast: {
-      types: [[], ['author', 'original', 'mention', 'user']],
+      types: [[], ['author', 'original', 'mention', 'account']],
       radioGroup: 'auther',
       render: renderForwardFastItem,
     },

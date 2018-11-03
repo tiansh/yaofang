@@ -80,8 +80,8 @@
       },
     },
     fast: {
-      types: [['mention'], ['author', 'original', 'user']],
-      radioGroup: 'auther',
+      types: [['mention', 'account'], ['author', 'original']],
+      radioGroup: 'mention',
       render: renderFastItem,
     },
   });

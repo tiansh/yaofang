@@ -13,19 +13,18 @@
     en: 'Content',
   };
   i18n.contentTextContextTitle = {
-    cn: '过滤微博 內容“{1}”',
-    tw: '篩選微博 内容「{1}」',
-    en: 'Create filter for “{1}”',
+    cn: '过滤微博 内容“{1}”',
+    tw: '篩選微博 內容「{1}」',
+    en: 'Create filter for content “{1}”',
   };
-
 
   const content = yawf.rules.content = {};
   content.content = rule.Tab({
     template: () => i18n.contentTabTitle,
   });
 
-  const contextMenuSelectionSimple = function (event) {
-    const selection = window.getSelection();
+  const contextMenuSelectionSimple = function (selection) {
+    if (!(selection instanceof Selection)) return [];
     if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
     const [simple] = feedParser.text.simple(selection);
@@ -34,9 +33,9 @@
     const title = template.replace('{1}', () => simple);
     return [{ title, type: 'text', value: { simple, full } }];
   };
-  rule.contextMenu(contextMenuSelectionSimple);
-  const contextMenuSelectionMultiple = function (event) {
-    const selection = window.getSelection();
+  rule.addFastListener(contextMenuSelectionSimple);
+  const contextMenuSelectionMultiple = function (selection) {
+    if (!(selection instanceof Selection)) return [];
     if (selection.rangeCount <= 1) return [];
     const texts = feedParser.text.full(selection).filter(text => text);
     if (!texts.length) return [];
@@ -46,6 +45,6 @@
     const title = template.replace('{1}', () => placeholder);
     return [{ title, type: 'multitext', value: { full: texts } }];
   };
-  rule.contextMenu(contextMenuSelectionMultiple);
+  rule.addFastListener(contextMenuSelectionMultiple);
 
 }());

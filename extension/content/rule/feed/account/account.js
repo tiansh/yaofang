@@ -26,9 +26,13 @@
     template: () => i18n.mentionTabTitle,
   });
 
-  const contextMenuAccounts = async function (event) {
-    if (window.getSelection() + '') return [];
-    const target = event.target;
+  i18n.accountContextTitle = {
+    cn: '过滤微博 帐号“{1}”',
+    tw: '篩選微博 帳號「{1}」',
+    en: 'Create filter for account “@{1}”',
+  };
+
+  const contextMenuAccounts = async function (target) {
     if (!(target instanceof Element)) return [];
     const user = { id: null, name: null, type: 'account' };
     // 用户链接
@@ -40,7 +44,7 @@
       if (userlink.matches('.WB_detail > .WB_info > .W_fb[usercard]')) user.type = 'author';
       if (userlink.matches('.WB_expand > .WB_info > .W_fb[usercard]')) user.type = 'original';
       if (userlink.matches('.WB_feed_type a[href*="loc=at"][namecard*="name"]')) user.type = 'mention';
-    }(target.closest('[usercard*="name="], [usercard*="id="]')));
+    }(target.querySelector('[usercard*="name="], [usercard*="id="]') || target.closest('[usercard*="name="], [usercard*="id="]')));
     // 个人主页的头像
     ; (function (photo) {
       if (!photo) return;
@@ -62,6 +66,6 @@
     const title = template.replace('{1}', () => user.name);
     return [{ title, type: user.type, value: { id: user.id, name: user.name } }];
   };
-  rule.contextMenu(contextMenuAccounts);
+  rule.addFastListener(contextMenuAccounts);
 
 }());
