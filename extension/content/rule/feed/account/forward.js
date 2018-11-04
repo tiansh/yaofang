@@ -31,11 +31,6 @@
       tw: '折叠以下作者轉發的微博||帳號{{items}}',
       en: 'Fold feeds from these authors\' forwarding||author {{items}}',
     },
-    accountAuthorForwardFastDescription: {
-      cn: '作者是“@{1}”的转发微博',
-      tw: '作者是「@{1}」的轉發微博',
-      en: 'Feeds by "@{1}"',
-    },
   });
 
   class AuthorForwardFeedRule extends rule.class.Rule {
@@ -54,13 +49,6 @@
       }, { priority: this.filterPriority });
     }
   }
-
-  const renderForwardFastItem = function (item) {
-    const container = document.createElement('span');
-    const message = i18n.accountAuthorForwardFastDescription.replace('{1}', () => item.value.name);
-    container.appendChild(document.createTextNode(message));
-    return container;
-  };
 
   rule.groups({
     baseClass: AuthorForwardFeedRule,
@@ -82,7 +70,7 @@
     fast: {
       types: [[], ['author', 'original', 'mention', 'account']],
       radioGroup: 'auther',
-      render: renderForwardFastItem,
+      render: feedParser.fast.render.forward,
     },
   });
 

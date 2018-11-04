@@ -1045,16 +1045,37 @@
     }
   }
 
+  class TopicCollectionConfigItem extends StringCollectionConfigItem {
+    async getSuggestionItems(userInput) {
+      const topics = await request.topicSuggest(userInput.replace(/#/g, ''));
+      return topics;
+    }
+    renderSuggestionItem(listitem, item) {
+      listitem.appendChild(document.createTextNode(item));
+    }
+    renderItem(value) {
+      return document.createTextNode('#' + value + '#');
+    }
+    async parseUserInput(userInput) {
+      return [userInput.trim().replace(/#/g, '')];
+    }
+    async parseFastItem(value) {
+      return [value];
+    }
+  }
+
   const configItemBuilder = function (item, parent) {
-    if (item && item.type === 'boolean') return new BooleanConfigItem(item, parent);
-    if (item && item.type === 'select') return new SelectConfigItem(item, parent);
-    if (item && item.type === 'number') return new NumberConfigItem(item, parent);
-    if (item && item.type === 'range') return new RangeConfigItem(item, parent);
-    if (item && item.type === 'bubble') return new BubbleConfigItem(item, parent);
-    if (item && item.type === 'strings') return new StringCollectionConfigItem(item, parent);
-    if (item && item.type === 'regexen') return new RegExpCollectionConfigItem(item, parent);
-    if (item && item.type === 'users') return new UserIdCollectionConfigItem(item, parent);
-    if (item && item.type === 'usernames') return new UserNameCollectionConfigItem(item, parent);
+    if (!item) return null;
+    if (item.type === 'boolean') return new BooleanConfigItem(item, parent);
+    if (item.type === 'select') return new SelectConfigItem(item, parent);
+    if (item.type === 'number') return new NumberConfigItem(item, parent);
+    if (item.type === 'range') return new RangeConfigItem(item, parent);
+    if (item.type === 'bubble') return new BubbleConfigItem(item, parent);
+    if (item.type === 'strings') return new StringCollectionConfigItem(item, parent);
+    if (item.type === 'regexen') return new RegExpCollectionConfigItem(item, parent);
+    if (item.type === 'users') return new UserIdCollectionConfigItem(item, parent);
+    if (item.type === 'usernames') return new UserNameCollectionConfigItem(item, parent);
+    if (item.type === 'topics') return new TopicCollectionConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 

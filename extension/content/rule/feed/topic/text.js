@@ -1,0 +1,76 @@
+; (async function () {
+
+  const yawf = window.yawf;
+  const util = yawf.util;
+  const rule = yawf.rule;
+  const filter = yawf.filter;
+  const feedParser = yawf.feed;
+
+  const topic = yawf.rules.topic;
+
+  const i18n = util.i18n;
+
+  Object.assign(i18n, {
+    topicGroupTitle: {
+      cn: '按话题过滤',
+      tw: '按話題篩選',
+      en: 'Filter by Topics',
+    },
+    topicShow: {
+      cn: '总是显示包含以下话题的微博||话题{{items}}',
+      tw: '总是显示包含以下話題的微博||話題{{items}}',
+      en: 'Always show feeds with these topics||topic {{items}}',
+    },
+    topicHide: {
+      cn: '隐藏包含以下话题的微博||话题{{items}}',
+      tw: '隱藏包含以下話題的微博||話題{{items}}',
+      en: 'Hide feeds with these topics||topic {{items}}',
+    },
+    topicFold: {
+      cn: '折叠包含以下话题的微博||话题{{items}}',
+      tw: '折疊包含以下話題的微博||話題{{items}}',
+      en: 'Fold feeds with these topics||topic {{items}}',
+    },
+  });
+
+  class TopicFeedRule extends rule.class.Rule {
+    constructor(item) {
+      super(item);
+    }
+    init() {
+      const rule = this;
+      filter.feed.add(function topicFeedFilter(/** @type {Element} */feed) {
+        const text = feedParser.topic.text(feed);
+        const topics = rule.ref.items.getConfig();
+        const contain = topics.some(topic => text.includes(topic));
+        if (contain) return rule.feedAction;
+        return null;
+      }, { priority: this.filterPriority });
+    }
+  }
+
+  rule.groups({
+    baseClass: TopicFeedRule,
+    tab: 'topic',
+    key: 'text',
+    type: 'topics',
+    title: () => i18n.topicGroupTitle,
+    details: {
+      hide: {
+        title: () => i18n.topicHide,
+      },
+      show: {
+        title: () => i18n.topicShow,
+      },
+      fold: {
+        title: () => i18n.topicFold,
+      },
+    },
+    fast: {
+      types: [['topic'], []],
+      radioGroup: 'topic',
+      render: feedParser.fast.render.topic,
+    },
+  });
+
+}());

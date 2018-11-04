@@ -204,7 +204,10 @@
       if (!node.matches('a[action-type="feed_list_url"]')) return null;
       if (node.matches('[suda-uatrack*="1022-topic"]')) return null;
       if (full) {
-        output.push(node.href.trim());
+        const url = new URL(node.href.trim());
+        if (url.host + url.pathname === 'feed.mix.sina.com.cn/link_card/redirect') {
+          output.push(url.searchParams.get('url'));
+        } else output.push(url.href);
         output.push('\ufff9');
         const icon = node.querySelector('.W_ficon');
         if (icon) output.push(icon.textContent);
@@ -260,7 +263,7 @@
     const source = node => {
       if (!node.matches('.WB_from a:not([date])')) return null;
       if (!full) return '';
-      return node.title;
+      return (node.title || node.textContent).trim;
     };
     parsers.push(source);
     /**
@@ -508,15 +511,14 @@
   source.text = feed => {
     const doms = source.dom(feed);
     return doms.map(dom => {
-      const text = dom.title || dom.textContent;
+      const text = (dom.title || dom.textContent).trim();
       return text;
-    });
+    }).filter(source => source);
   };
 
   // 其他基础通用
   feedParser.isFeed = feed => isFeedElement(feed);
   feedParser.isForward = feed => isForwardFeedElement(feed);
-
 
 }());
 

@@ -28,13 +28,8 @@
     },
     textContentFold: {
       cn: '折叠包含以下内容的微博||关键词{{items}}',
-      tw: '折叠包含以下內容的微博||關鍵字{{items}}',
+      tw: '折疊包含以下內容的微博||關鍵字{{items}}',
       en: 'Fold feeds with these content||keyword {{items}}',
-    },
-    textFastDescription: {
-      cn: '包含“{1}”的微博',
-      tw: '包含「{1}」的微博',
-      en: 'Feeds contain text “{1}”',
     },
   });
 
@@ -53,20 +48,6 @@
       }, { priority: this.filterPriority });
     }
   }
-
-  const renderFastItem = function (item) {
-    const container = document.createElement('span');
-    const [pre, post] = i18n.textFastDescription.split('{1}');
-    container.appendChild(document.createTextNode(pre));
-    const input = document.createElement('input');
-    container.appendChild(input);
-    container.appendChild(document.createTextNode(post));
-    input.value = item.value = item.value.simple;
-    input.addEventListener('input', event => {
-      item.value = input.value;
-    });
-    return container;
-  };
 
   rule.groups({
     baseClass: TextFeedRule,
@@ -88,7 +69,7 @@
     fast: {
       types: [['text'], []],
       radioGroup: 'text',
-      render: renderFastItem,
+      render: feedParser.fast.render.text,
     },
   });
 

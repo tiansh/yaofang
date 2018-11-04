@@ -31,11 +31,6 @@
       tw: '折疊以下作者的微博||作者{{items}}',
       en: 'Fold feeds from these authors||author {{items}}',
     },
-    accountAuthorFastDescription: {
-      cn: '作者是“@{1}”的微博',
-      tw: '作者是「@{1}」的微博',
-      en: 'Feeds by "@{1}"',
-    },
   });
 
   class AuthorFeedRule extends rule.class.Rule {
@@ -54,12 +49,6 @@
     }
   }
 
-  const renderFastItem = function (item) {
-    const container = document.createElement('span');
-    const message = i18n.accountAuthorFastDescription.replace('{1}', () => item.value.name);
-    container.appendChild(document.createTextNode(message));
-    return container;
-  };
 
   rule.groups({
     baseClass: AuthorFeedRule,
@@ -81,7 +70,7 @@
     fast: {
       types: [['author', 'account'], ['original', 'mention']],
       radioGroup: 'auther',
-      render: renderFastItem,
+      render: feedParser.fast.render.account,
     },
   });
 

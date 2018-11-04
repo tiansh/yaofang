@@ -213,7 +213,6 @@
     fastListeners.push(listener);
   };
   const runFastListeners = async function (target) {
-    console.log((fastListeners.map(listener => listener(target))));
     const responses = await Promise.all(fastListeners.map(listener => listener(target)));
     return responses.reduce((a, b) => a.concat(b), []);
   };
@@ -308,12 +307,12 @@
       hideDropArea();
     };
     let dragEnterCount = 0;
-    const dragEnterHandler = function () {
+    const dragEnterHandler = function (event) {
       dragEnterCount++;
       enterDropArea();
       event.preventDefault();
     };
-    const dragLeaveHandler = function () {
+    const dragLeaveHandler = function (event) {
       if (!--dragEnterCount) leaveDropArea();
       event.preventDefault();
     };

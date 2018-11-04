@@ -41,11 +41,6 @@
       tw: '折叠匹配以下正規表示式的微博||正規式{{items}}',
       en: 'Fold feeds match these regexen||Regexen {{items}}',
     },
-    regexFastDescription: {
-      cn: '匹配{1}的微博',
-      tw: '匹配{1}的微博',
-      en: 'Feeds contain text “{1}”',
-    },
   });
 
   class RegexFeedRule extends rule.class.Rule {
@@ -63,29 +58,6 @@
       }, { priority: this.filterPriority });
     }
   }
-
-  const regexEscaped = function (str) {
-    return str.replace(/[.*+?^${}()|[\]/\\]/g, '\\$&');
-  };
-
-  const renderFastItem = function (item) {
-    const container = document.createElement('span');
-    const [pre, post] = i18n.regexFastDescription.split('{1}');
-    container.appendChild(document.createTextNode(pre));
-    const input = document.createElement('input');
-    container.appendChild(input);
-    container.appendChild(document.createTextNode(post));
-    if (item.value.full.length === 1) {
-      input.value = item.value = '/' + regexEscaped(item.value.full[0]) + '/mu';
-    } else {
-      input.value = item.value = '/^' + item.value.full
-        .map(value => `(?=.*${regexEscaped(value)})`).join('') + '/mu';
-    }
-    input.addEventListener('input', event => {
-      item.value = input.value;
-    });
-    return container;
-  };
 
   rule.groups({
     baseClass: RegexFeedRule,
@@ -107,7 +79,7 @@
     fast: {
       types: [['multitext'], ['text']],
       radioGroup: 'text',
-      render: renderFastItem,
+      render: feedParser.fast.render.regex,
     },
   });
 

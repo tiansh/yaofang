@@ -25,9 +25,7 @@
 
   const lastContexMenu = [];
   message.export(async function contextMenuShow() {
-    console.log('context show');
     const items = [].concat(...await lastCheck);
-    console.log('context show items: %o', items);
     return items.map(item => {
       if (!item.onclick) return null;
       if (!item.title) return null;

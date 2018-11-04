@@ -32,11 +32,6 @@
       tw: '折疊提到以下帳號的微博||作者{{items}}',
       en: 'Fold feeds mentioned these accounts||mention {{items}}',
     },
-    accountMentionFastDescription: {
-      cn: '提到了“@{1}”的微博',
-      tw: '提到了「@{1}」的微博',
-      en: 'Feeds mentioned "@{1}"',
-    },
   });
 
   class MentionFeedRule extends rule.class.Rule {
@@ -54,13 +49,6 @@
       }, { priority: this.filterPriority });
     }
   }
-
-  const renderFastItem = function (item) {
-    const container = document.createElement('span');
-    const message = i18n.accountMentionFastDescription.replace('{1}', () => item.value.name);
-    container.appendChild(document.createTextNode(message));
-    return container;
-  };
 
   rule.groups({
     baseClass: MentionFeedRule,
@@ -82,7 +70,7 @@
     fast: {
       types: [['mention', 'account'], ['author', 'original']],
       radioGroup: 'mention',
-      render: renderFastItem,
+      render: feedParser.fast.render.mention,
     },
   });
 

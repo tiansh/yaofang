@@ -52,6 +52,7 @@
       "common/network/network.js",
       "content/request/userinfo.js",
       "content/request/usersuggest.js",
+      "content/request/topicsuggest.js",
 
       "content/storage/storage.js",
       "content/storage/config.js",
@@ -72,6 +73,7 @@
 
       "content/rule/feed/feed/feed.js",
       "content/rule/feed/feed/parse.js",
+      "content/rule/feed/feed/fast.js",
       "content/rule/feed/content/content.js",
       "content/rule/feed/content/text.js",
       "content/rule/feed/content/regex.js",
@@ -80,6 +82,10 @@
       "content/rule/feed/account/forward.js",
       "content/rule/feed/account/original.js",
       "content/rule/feed/account/mention.js",
+      "content/rule/feed/topic/topic.js",
+      "content/rule/feed/topic/text.js",
+      "content/rule/feed/source/source.js",
+      "content/rule/feed/source/text.js",
       "content/rule/feed/more/more.js",
       "content/rule/feed/more/commercial.js",
       "content/rule/feed/more/content.js",

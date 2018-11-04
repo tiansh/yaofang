@@ -33,11 +33,6 @@
       tw: '折疊轉發自以下帳號的微博||原作者{{items}}',
       en: 'Fold feeds forwarded from these authors||original {items}}',
     },
-    accountOriginalFastDescription: {
-      cn: '原作者是“@{1}”的微博',
-      tw: '原作者是「@{1}」的微博',
-      en: 'Original Feeds by "@{1}"',
-    },
     accountOriginalDiscover: {
       cn: '按原创作者过滤的规则对发现页面的作者生效',
       tw: '按原創作者過濾的規則對發現頁面的作者生效',
@@ -72,13 +67,6 @@
     }
   }
 
-  const renderFastItem = function (item) {
-    const container = document.createElement('span');
-    const message = i18n.accountOriginalFastDescription.replace('{1}', () => item.value.name);
-    container.appendChild(document.createTextNode(message));
-    return container;
-  };
-
   rule.groups({
     baseClass: OriginalFeedRule,
     tab: 'original',
@@ -102,7 +90,7 @@
     fast: {
       types: [['original', 'account'], ['auther', 'mention']],
       radioGroup: 'original',
-      render: renderFastItem,
+      render: feedParser.fast.render.original,
     },
   });
 
