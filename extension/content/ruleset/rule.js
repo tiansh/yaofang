@@ -15,7 +15,16 @@
  * yawf.rule.class.ConfigItem 的构造函数一般不需要从外部调用
  * 一条 Rule 或者 Rule 的 ref 属性，是一个 ConfigItem
  * ref 属性下的 ConfigItem 的类型由构造时对象的 type 属性决定：
- *   TODO
+ *   boolean: 复选框
+ *   select: 下拉单选框
+ *   number: 数字输入框
+ *   range: 数字输入框和一个范围选择
+ *   bubble: 提示文字
+ *   strings: 多个字符串
+ *   regexen: 多个正则表达式
+ *   users: 多个用户（id）
+ *   usernames: 多个用户名
+ *   topics: 多个话题
  *
  * ConfigItem 的属性和方法包括：
  * 显示相关

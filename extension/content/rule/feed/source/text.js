@@ -31,6 +31,11 @@
       tw: '折疊來自以下來源的微博||來源{{items}}',
       en: 'Fold feeds from these sources||source {{items}}',
     },
+    sourceReason: {
+      cn: '来自 {1}',
+      tw: '來自 {1}',
+      en: 'posted via {1}',
+    },
   });
 
   class SourceFeedRule extends rule.class.Rule {
@@ -43,8 +48,9 @@
         const text = feedParser.source.text(feed);
         const sources = rule.ref.items.getConfig();
         const contain = sources.some(source => text.includes(source));
-        if (contain) return rule.feedAction;
-        return null;
+        if (!contain) return null;
+        const reason = i18n.sourceReason.replace('{1}', () => contain);
+        return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
     }
   }

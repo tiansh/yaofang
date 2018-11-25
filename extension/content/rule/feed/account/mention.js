@@ -32,6 +32,11 @@
       tw: '折疊提到以下帳號的微博||作者{{items}}',
       en: 'Fold feeds mentioned these accounts||mention {{items}}',
     },
+    accountMentionReason: {
+      cn: '提到了 @{1}',
+      tw: '提到了 @{1}',
+      en: 'mentioned @{1}',
+    },
   });
 
   class MentionFeedRule extends rule.class.Rule {
@@ -44,8 +49,9 @@
         const mentions = new Set(feedParser.mention.name(feed));
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => mentions.has(account));
-        if (contain) return rule.feedAction;
-        return null;
+        if (!contain) return;
+        const reason = i18n.accountMentionReason.replace('{1}', () => contain);
+        return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
     }
   }

@@ -41,6 +41,12 @@
       tw: '折叠匹配以下正規表示式的微博||正規式{{items}}',
       en: 'Fold feeds match these regexen||Regexen {{items}}',
     },
+    regexContextReason: {
+      cn: '正则匹配',
+      hk: '正則符合',
+      tw: '正規符合',
+      en: 'regexp matched',
+    },
   });
 
   class RegexFeedRule extends rule.class.Rule {
@@ -50,11 +56,12 @@
     init() {
       const rule = this;
       filter.feed.add(function regexFeedFilter(/** @type {Element} */feed) {
-        const text = feedParser.text.full(feed);
+        const text = feedParser.text.detail(feed);
         const regexen = rule.ref.items.getConfigCompiled();
-        const matches = regexen.some(regex => regex.test(text));
-        if (matches) return rule.feedAction;
-        return null;
+        const matchReg = regexen.find(regex => regex.test(text));
+        if (!matchReg) return null;
+        const reason = ((matchReg + '').match(/\(\?=\|(([^)]|\\\))*)\)/) || [])[1] || i18n.regexContextReason;
+        return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
     }
   }

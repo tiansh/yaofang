@@ -82,27 +82,29 @@
    * @param {Element} feed
    * @returns {Element[]}
    */
-  const feedContentElements = function (feed, full) {
+  const feedContentElements = function (feed, { detail = false, short = false, long = true } = {}) {
     if (!isFeedElement(feed)) return null;
     const content = feed.querySelector('[node-type="feed_list_content"]');
-    let post = [content];
-    if (full) {
+    const contentFull = feed.querySelector('[node-type="feed_list_content_full"]');
+    let post = contentFull ? !short ? [contentFull] : long ? [content, contentFull] : [content] : [content];
+    if (detail) {
       const [author] = feedParser.author.dom(feed);
       const source = feed.querySelector('.WB_detail > .WB_from a:not([date])');
       const date = feed.querySelector('.WB_detail > .WB_from a[date]');
-      post = [author, content, source, date];
+      post = [author, ...post, source, date];
     }
     let ori;
     if (feed.hasAttribute('omid')) {
       const reason = feed.querySelector('[node-type="feed_list_reason"]');
-      if (full) {
+      const reasonFull = feed.querySelector('[node-type="feed_list_reason_full"]');
+      let ori = reasonFull ? !short ? [reasonFull] : long ? [reason, reasonFull] : [reason] : [reason];
+      if (detail) {
         const [original] = feedParser.original.dom(feed);
         const sourceOri = feed.querySelector('.WB_expand .WB_from a:not([date])');
         const dateOri = feed.querySelector('.WB_detail > .WB_from a[date]');
-        const ori = [original, reason, sourceOri, dateOri];
-        return [...post, null, ...ori];
+        ori = [original, ...ori, sourceOri, dateOri];
       }
-      return [content, null, reason];
+      return [...post, null, ...ori];
     }
     return post;
   };
@@ -120,7 +122,7 @@
     return node.closest('.WB_feed_type');
   };
 
-  const textParser = function (full) {
+  const textParser = function (detail) {
     const parsers = [];
     /**
      * 普通文本（文本✓，正则✓）
@@ -173,8 +175,8 @@
       }
       if (topic) {
         const [_, superTopic, text] = topic.match(/^(\ue627?)\s*(.*)$/);
-        if (superTopic && full) return ` \ue627#${text}#`;
-        if (full) return ` #${text}# `;
+        if (superTopic && detail) return ` \ue627#${text}#`;
+        if (detail) return ` #${text}# `;
         return `#${text}#`;
       }
       return null;
@@ -187,7 +189,7 @@
     const stock = node => {
       if (node.matches('a[suda-uatrack*="1022-stock"]')) {
         const text = node.textContent.trim().replace(/^\$?|\$?$/g, '');
-        if (full) return ` $${text}$ `;
+        if (detail) return ` $${text}$ `;
         return `$${text}$`;
       }
       return null;
@@ -203,7 +205,7 @@
       const output = [];
       if (!node.matches('a[action-type="feed_list_url"]')) return null;
       if (node.matches('[suda-uatrack*="1022-topic"]')) return null;
-      if (full) {
+      if (detail) {
         const url = new URL(node.href.trim());
         if (url.host + url.pathname === 'feed.mix.sina.com.cn/link_card/redirect') {
           output.push(url.searchParams.get('url'));
@@ -215,7 +217,7 @@
       if (node.matches('[title]')) {
         output.push(node.getAttribute('title').trim());
       }
-      if (full) {
+      if (detail) {
         output.push('\ufffb');
       }
       if (output.length) return ' ' + output.join(' ') + ' ';
@@ -230,7 +232,7 @@
       if (node.matches('img[type="face"][alt]')) {
         const text = node.getAttribute('alt').trim()
           .replace(/^\[?/, '[').replace(/\]?$/, ']');
-        if (full) return ` ${text} `;
+        if (detail) return ` ${text} `;
         return text;
       }
       return null;
@@ -242,7 +244,7 @@
      */
     const author = node => {
       if (!node.matches('.WB_detail > .WB_info > .W_fb[usercard]')) return null;
-      if (!full) return '';
+      if (!detail) return '';
       return '@' + node.title;
     };
     parsers.push(author);
@@ -252,7 +254,7 @@
      */
     const original = node => {
       if (!node.matches('.WB_expand > .WB_info > .W_fb[usercard]')) return null;
-      if (!full) return '';
+      if (!detail) return '';
       return '@' + node.title;
     };
     parsers.push(original);
@@ -262,7 +264,7 @@
      */
     const source = node => {
       if (!node.matches('.WB_from a:not([date])')) return null;
-      if (!full) return '';
+      if (!detail) return '';
       return (node.title || node.textContent).trim;
     };
     parsers.push(source);
@@ -272,7 +274,7 @@
      */
     const timestamp = node => {
       if (!node.matches('a[date]')) return null;
-      if (!full) return '';
+      if (!detail) return '';
       const date = new Date(+node.getAttribute('date'));
       // 将时间格式化为东八区的 ISO 8601 串
       date.setHours(date.getHours() + 8);
@@ -326,7 +328,7 @@
       });
       const feed = feedContainer(commonParent(...rangeElements));
       if (!feed) return null;
-      const elements = feedContentElements(feed, full);
+      const elements = feedContentElements(feed, { detail, short: true, long: true });
       if (rangeElements.some(re => !contains(elements, re))) return null;
       return ranges.map((range, rangeIndex) => {
         const [start, end] = [range.startContainer, range.endContainer];
@@ -388,19 +390,19 @@
   const fullTextParser = textParser(true);
   const simpleTextParser = textParser(false);
 
-  const nodeTextParser = (target, full) => {
-    const parser = full ? fullTextParser : simpleTextParser;
-    const elements = feedContentElements(target, full);
+  const nodeTextParser = (target, detail) => {
+    const parser = detail ? fullTextParser : simpleTextParser;
+    const elements = feedContentElements(target, { detail, long: true });
     if (elements) {
       const texts = elements.map(element => parser(element) || '');
-      return texts.join(full ? '\u2028' : '\n');
+      return texts.join(detail ? '\u2028' : '\n');
     } else {
       return parser(target);
     }
   };
 
   const text = feedParser.text = {};
-  text.full = element => nodeTextParser(element, true);
+  text.detail = element => nodeTextParser(element, true);
   text.simple = element => nodeTextParser(element, false);
 
   // 作者（这条微博是谁发的）
@@ -449,12 +451,12 @@
 
   // 提到（微博中提到的人，转发路径中的人同属于提到）
   const mention = feedParser.mention = {};
-  mention.dom = feed => {
-    const doms = feed.querySelectorAll([
-      '[node-type="feed_list_content"] a[href*="loc=at"][namecard*="name"]',
-      '[node-type="feed_list_reason"] a[href*="loc=at"][namecard*="name"]',
-    ].join(','));
-    return Array.from(doms);
+  mention.dom = (feed, { short = false, long = true } = {}) => {
+    const contents = feedContentElements(feed, { short, long });
+    const doms = [].concat(...contents.map(content => content.querySelectorAll(
+      'a[href*="loc=at"][namecard*="name"]',
+    )));
+    return doms;
   };
   mention.name = feed => {
     const doms = original.dom(feed);
@@ -467,15 +469,11 @@
   // 话题（包括话题和超话）
   const topic = feedParser.topic = {};
   topic.dom = feed => {
-    const superTopics = feed.querySelectorAll([
-      '[node-type="feed_list_content"] a[suda-uatrack*="1022-topic"]',
-      '[node-type="feed_list_reason"] a[suda-uatrack*="1022-topic"]',
-    ].join(','));
-    const topics = feed.querySelectorAll([
-      '[node-type="feed_list_content"] a.a_topic',
-      '[node-type="feed_list_reason"] a.a_topic',
-    ].join(','));
-    return [...superTopics, ...topics];
+    const contents = feedContentElements(feed, { short, long });
+    const doms = [].concat(...contents.map(content => content.querySelectorAll(
+      'a[suda-uatrack*="1022-topic"], a.a_topic',
+    )));
+    return doms;
   };
   topic.text = feed => {
     const doms = topic.dom(feed);
@@ -488,11 +486,11 @@
   // 链接（除超话外所有的链接，包括外站链接、视频、文章等）
   const link = feedParser.link = {};
   link.dom = feed => {
-    const doms = feed.querySelectorAll([
-      '[node-type="feed_list_content"] a[action-type="feed_list_url"]:not([suda-uatrack*="1022-topic"])',
-      '[node-type="feed_list_reason"] a[action-type="feed_list_url"]:not([suda-uatrack*="1022-topic"])',
-    ].join(','));
-    return Array.from(doms);
+    const contents = feedContentElements(feed, { short, long });
+    const doms = [].concat(...contents.map(content => content.querySelectorAll(
+      'a[action-type="feed_list_url"]:not([suda-uatrack*="1022-topic"])',
+    )));
+    return doms;
   };
   link.text = feed => {
     const doms = source.dom(feed);

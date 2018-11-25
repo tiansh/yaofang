@@ -31,6 +31,11 @@
       tw: '折疊以下作者的微博||作者{{items}}',
       en: 'Fold feeds from these authors||author {{items}}',
     },
+    accountAuthorReason: {
+      cn: '作者 @{1}',
+      tw: '作者 @{1}',
+      en: 'posted by @{1}',
+    },
   });
 
   class AuthorFeedRule extends rule.class.Rule {
@@ -43,7 +48,8 @@
         const [author] = feedParser.author.id(feed);
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => account.id === author);
-        if (contain) return rule.feedAction;
+        const reason = i18n.accountAuthorReason.replace('{1}', () => feedParser.author.name(feed));
+        if (contain) return { result: rule.feedAction, reason };
         return null;
       }, { priority: this.filterPriority });
     }
@@ -69,8 +75,8 @@
     },
     fast: {
       types: [['author', 'account'], ['original', 'mention']],
-      radioGroup: 'auther',
-      render: feedParser.fast.render.account,
+      radioGroup: 'author',
+      render: feedParser.fast.render.author,
     },
   });
 

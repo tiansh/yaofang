@@ -48,11 +48,13 @@
       "content/util/inject.js",
       "content/util/keyboard.js",
       "content/util/ui.js",
+      "content/util/dom.js",
 
       "common/network/network.js",
       "content/request/userinfo.js",
       "content/request/usersuggest.js",
       "content/request/topicsuggest.js",
+      "content/request/longfeed.js",
 
       "content/storage/storage.js",
       "content/storage/config.js",
@@ -74,6 +76,7 @@
       "content/rule/feed/feed/feed.js",
       "content/rule/feed/feed/parse.js",
       "content/rule/feed/feed/fast.js",
+      "content/rule/feed/feed/long.js",
       "content/rule/feed/content/content.js",
       "content/rule/feed/content/text.js",
       "content/rule/feed/content/regex.js",

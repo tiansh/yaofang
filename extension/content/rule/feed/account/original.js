@@ -38,6 +38,11 @@
       tw: '按原創作者過濾的規則對發現頁面的作者生效',
       en: 'Rules filter by originals apply to authors in discovery pages',
     },
+    accountOriginalReason: {
+      cn: '转发自 @{1}',
+      tw: '轉發自 @{1}',
+      en: 'forwarded from @{1}',
+    },
   });
 
   const discoverRule = function () {
@@ -61,8 +66,9 @@
         }
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => original.has(account.id));
-        if (contain) return rule.feedAction;
-        return null;
+        if (!contain) return null;
+        const reason = i18n.accountOriginalReason.replace('{1}', () => feedParser.original.name(feed));
+        return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
     }
   }
@@ -88,7 +94,7 @@
       show: discoverRule,
     },
     fast: {
-      types: [['original', 'account'], ['auther', 'mention']],
+      types: [['original', 'account'], ['author', 'mention']],
       radioGroup: 'original',
       render: feedParser.fast.render.original,
     },

@@ -21,6 +21,8 @@
   const observer = yawf.observer;
 
   const priority = util.priority;
+  const css = util.css;
+  const i18n = util.i18n;
 
   const filter = yawf.filter = {};
 
@@ -108,16 +110,21 @@
         return;
       }
       this.busy = true;
+      const promises = [];
       for (const item of items) {
-        await this.invokeCallbacks(this.before, item);
-        const result = await this.filters.filter(item);
-        const callAfter = this.apply(item, result);
-        if (callAfter) {
-          await this.invokeCallbacks(this.after, item, result);
-        }
-        await this.invokeCallbacks(this.finally, item, result);
-        await new Promise(resolve => setTimeout(resolve, 0));
+        promises.push((async () => {
+          await this.invokeCallbacks(this.before, item);
+          const result = await this.filters.filter(item);
+          const callAfter = this.apply(item, result);
+          if (callAfter) {
+            await this.invokeCallbacks(this.after, item, result);
+          }
+          await this.invokeCallbacks(this.finally, item, result);
+          await new Promise(resolve => setTimeout(resolve, 0));
+        })());
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
+      await Promise.all(promises);
       await this.invokeCallbacks(this.done);
       this.busy = false;
       if (this.pending.length) {
@@ -141,6 +148,15 @@
     item.parentNode.removeChild(item);
   };
 
+  const foldFeedUnfold = function (feed, { result }) {
+    if (result !== 'fold') return;
+    const unfold = function () {
+      feed.setAttribute('yawf-feed-display', 'unfold');
+      feed.removeEventListener('click', unfold);
+    };
+    feed.addEventListener('click', unfold);
+  };
+
   /**
    * 针对微博的过滤规则
    * 对应脚本版 observer.weibo.*
@@ -149,12 +165,16 @@
   filter.feed.apply = function (feed, { result, filter = null, reason = null }) {
     feed.setAttribute('yawf-feed-display', result || 'unset');
     if (result && result !== 'unset') {
+      const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]').title;
+      feed.setAttribute('yawf-feed-author', author);
+      feed.setAttribute('yawf-feed-reason', reason);
       util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
     }
     if (result === 'hide') return false;
     return true;
   };
   filter.feed.onFinally(removeHiddenItem);
+  filter.feed.onFinally(foldFeedUnfold);
 
   /**
    * 针对评论的过滤规则
@@ -194,5 +214,42 @@
       filter.comment.active(comments);
     });
   }, { priority: priority.LAST });
+
+  i18n.foldReason = {
+    cn: '"已折叠 @" attr(yawf-feed-author) " 的一条微博"',
+    tw: '"已折疊 @" attr(yawf-feed-author) " 的一條微博"',
+    en: '"A feed posted by @" attr(yawf-feed-author)',
+  };
+
+  css.append(`
+[action-type="feed_list_item"]:not([yawf-feed])', '[node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
+[yawf-feed]:not([yawf-feed-display]) { visibility: hidden; opacity: 0; }
+[yawf-feed-display="hide"] { display: none; }
+[yawf-feed-display="fold"] { position: relative; }
+[yawf-feed-display="fold"] > * { display: none; }
+[yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; }
+.WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: block; max-height: 0; transition: max-height, padding 0.1s; overflow: hidden; padding: 0 20px; }
+.WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { max-height: 1000px; padding: 0 20px 27px; }
+`);
+  init.onLoad(function () {
+    css.append(`[yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);
+  });
+
+  // 单条微博页面永远不应当隐藏微博
+  filter.feed.add(function singleWeiboPageUnsetRule() {
+    return document.querySelector('[id^="Pl_Official_WeiboDetail__"]') ? 'unset' : null;
+  }, { priority: 1e6 });
+  // 头条文章是一条微博，类似于单条微博，不应当隐藏
+  filter.feed.add(function singleWeiboPageUnsetRule(feed) {
+    return util.dom.matches(feed, '.WB_artical *') ? 'unset' : null;
+  }, { priority: 1e6 });
+  // 无论因为何种原因，同一页面上同一条微博不应出现两次
+  filter.feed.add(function hideDuplicate(feed) {
+    if (feed.hasAttribute('yawf-not-duplicate')) return null;
+    const mid = feed.getAttribute('mid'); if (!mid) return null;
+    const all = document.querySelectorAll('.WB_feed_type:not([yawf-not-duplicate])');
+    if (all.find(that => that.getAttribute('mid') === mid)) return 'hide';
+    return null;
+  }, { priority: 1e6 });
 
 }());

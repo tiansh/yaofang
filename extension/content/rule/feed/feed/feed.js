@@ -94,6 +94,13 @@
   };
   rule.groups = groups;
 
+  css.append(`
+.yawf-config-feed-ball { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 1em; margin-right: 0.5em; border: 1px solid transparent; vertical-align: middle; background: var(--yawf-ball-color); box-shadow: 0 0 2px var(--yawf-ball-color); opacity: 0.8; }
+.yawf-config-feed-show { --yawf-ball-color: #3ec63e; }
+.yawf-config-feed-hide { --yawf-ball-color: #c63e3e; }
+.yawf-config-feed-fold { --yawf-ball-color: #c6c63e; }
+`);
+
   Object.assign(i18n, {
     fastAddDialogTitle: {
       cn: '创建过滤规则',
@@ -358,10 +365,6 @@
   css.append(`
 .yawf-fast-add-body { padding: 20px; }
 .yawf-fast-add-list { padding: 20px; }
-.yawf-config-feed-ball { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 1em; margin-right: 0.5em; border: 1px solid transparent; vertical-align: middle; background: var(--yawf-ball-color); box-shadow: 0 0 2px var(--yawf-ball-color); opacity: 0.8; }
-.yawf-config-feed-show { --yawf-ball-color: #3ec63e; }
-.yawf-config-feed-hide { --yawf-ball-color: #c63e3e; }
-.yawf-config-feed-fold { --yawf-ball-color: #c6c63e; }
 .yawf-drop-area { width: 224px; height: 224px; top: 34px; right: -119px; display: none; opacity: 0.8; }
 .yawf-drop-area.yawf-drag { display: block; }
 .yawf-drop-area.yawf-drag-in { opacity: 1; }

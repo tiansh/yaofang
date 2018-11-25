@@ -31,6 +31,11 @@
       tw: '折叠以下作者轉發的微博||帳號{{items}}',
       en: 'Fold feeds from these authors\' forwarding||author {{items}}',
     },
+    accountAuthorForwardReason: {
+      cn: '由 @{1} 转发',
+      tw: '由 @{1} 轉發',
+      en: 'forwarded by @{1}',
+    },
   });
 
   class AuthorForwardFeedRule extends rule.class.Rule {
@@ -44,7 +49,8 @@
         const [author] = feedParser.author.id(feed);
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => account.id === author);
-        if (contain) return rule.feedAction;
+        const reason = i18n.accountAuthorForwardReason.replace('{1}', () => feedParser.author.name(feed));
+        if (contain) return { result: rule.feedAction, reason };
         return null;
       }, { priority: this.filterPriority });
     }
@@ -69,7 +75,7 @@
     },
     fast: {
       types: [[], ['author', 'original', 'mention', 'account']],
-      radioGroup: 'auther',
+      radioGroup: 'author',
       render: feedParser.fast.render.forward,
     },
   });

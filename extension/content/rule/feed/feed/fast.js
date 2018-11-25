@@ -40,7 +40,7 @@
     if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
     const [simple] = feedParser.text.simple(selection);
-    const full = feedParser.text.full(selection);
+    const full = feedParser.text.detail(selection);
     const template = i18n.contentTextContextTitle;
     const title = template.replace('{1}', () => simple);
     return [{ title, type: 'text', value: { simple, full } }];

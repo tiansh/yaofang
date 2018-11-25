@@ -31,6 +31,11 @@
       tw: '折疊包含以下話題的微博||話題{{items}}',
       en: 'Fold feeds with these topics||topic {{items}}',
     },
+    topicReason: {
+      cn: '提到话题 {1}',
+      tw: '提到話題 {1}',
+      en: 'mentioned topic {1}',
+    },
   });
 
   class TopicFeedRule extends rule.class.Rule {
@@ -42,9 +47,10 @@
       filter.feed.add(function topicFeedFilter(/** @type {Element} */feed) {
         const text = feedParser.topic.text(feed);
         const topics = rule.ref.items.getConfig();
-        const contain = topics.some(topic => text.includes(topic));
-        if (contain) return rule.feedAction;
-        return null;
+        const contain = topics.find(topic => text.includes(topic));
+        if (!contain) return null;
+        const reason = i18n.topicReason.replace('{1}', () => contain);
+        return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
     }
   }

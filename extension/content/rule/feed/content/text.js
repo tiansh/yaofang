@@ -31,6 +31,11 @@
       tw: '折疊包含以下內容的微博||關鍵字{{items}}',
       en: 'Fold feeds with these content||keyword {{items}}',
     },
+    textContentReason: {
+      cn: '关键词“{1}”',
+      tw: '关键字「{1}」',
+      en: 'content "{1}"',
+    },
   });
 
   class TextFeedRule extends rule.class.Rule {
@@ -42,9 +47,11 @@
       filter.feed.add(function textFeedFilter(/** @type {Element} */feed) {
         const text = feedParser.text.simple(feed);
         const keywords = rule.ref.items.getConfig();
-        const contain = keywords.some(keyword => text.includes(keyword));
-        if (contain) return rule.feedAction;
-        return null;
+        const contain = keywords.find(keyword => text.includes(keyword));
+        if (!contain) return null;
+        const reasonText = contain.length > 8 ? contain.slice(0, 6) + '…' : contain;
+        const reason = i18n.textContentReason.replace('{1}', () => reasonText);
+        return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
     }
   }
