@@ -70,7 +70,7 @@
       if (!userlink) return;
       const params = new URLSearchParams(userlink.getAttribute('usercard'));
       if (params.has('id')) user.id = params.get('id');
-      if (params.has('name')) user.id = params.get('name');
+      if (params.has('name')) user.name = params.get('name');
       if (userlink.matches('.WB_detail > .WB_info > .W_fb[usercard]')) user.type = 'author';
       if (userlink.matches('.WB_expand > .WB_info > .W_fb[usercard]')) user.type = 'original';
       if (userlink.matches('.WB_feed_type a[href*="loc=at"][namecard*="name"]')) user.type = 'mention';
@@ -93,6 +93,7 @@
       Object.assign(user, await request.userInfo(user));
     } catch (e) { return []; }
     const template = i18n.accountContextTitle;
+    if (!template) return [];
     const title = template.replace('{1}', () => user.name);
     return [{ title, type: user.type, value: { id: user.id, name: user.name } }];
   };
@@ -211,19 +212,19 @@
     return container;
   };
 
-  const simpleRender = function (template) {
+  const simpleRender = function (template, readValue = value => value) {
     return function (item) {
       const container = document.createElement('span');
-      const message = template().replace('{1}', () => item.value);
+      const message = template().replace('{1}', () => readValue(item.value));
       container.appendChild(document.createTextNode(message));
       return container;
     };
   };
 
-  render.author = simpleRender(() => i18n.accountAuthorFastDescription);
-  render.forward = simpleRender(() => i18n.accountAuthorForwardFastDescription);
-  render.mention = simpleRender(() => i18n.accountMentionFastDescription);
-  render.original = simpleRender(() => i18n.accountOriginalFastDescription);
+  render.author = simpleRender(() => i18n.accountAuthorFastDescription, value => value.name);
+  render.forward = simpleRender(() => i18n.accountAuthorForwardFastDescription, value => value.name);
+  render.mention = simpleRender(() => i18n.accountMentionFastDescription, value => value.name);
+  render.original = simpleRender(() => i18n.accountOriginalFastDescription, value => value.name);
   render.topic = simpleRender(() => i18n.topicFastDescription);
   render.source = simpleRender(() => i18n.sourceFastDescription);
 

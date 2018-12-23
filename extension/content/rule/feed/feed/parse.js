@@ -278,7 +278,7 @@
       const date = new Date(+node.getAttribute('date'));
       // 将时间格式化为东八区的 ISO 8601 串
       date.setHours(date.getHours() + 8);
-      if ((date.getUTCFullYear() + '').length !== 4) return  '';
+      if ((date.getUTCFullYear() + '').length !== 4) return '';
       return [
         date.getUTCFullYear(),
         '-', (date.getUTCMonth() + 1 + '').padStart(2, 0),
@@ -458,8 +458,8 @@
     )));
     return doms;
   };
-  mention.name = feed => {
-    const doms = original.dom(feed);
+  mention.name = (feed, { short = false, long = true } = {}) => {
+    const doms = original.dom(feed, { short, long });
     return doms.map(dom => {
       const name = new URLSearchParams(dom.getAttribute('usercard')).get('name');
       return name;
@@ -468,15 +468,15 @@
 
   // 话题（包括话题和超话）
   const topic = feedParser.topic = {};
-  topic.dom = feed => {
+  topic.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
     const doms = [].concat(...contents.map(content => content.querySelectorAll(
       'a[suda-uatrack*="1022-topic"], a.a_topic',
     )));
     return doms;
   };
-  topic.text = feed => {
-    const doms = topic.dom(feed);
+  topic.text = (feed, { short = false, long = true } = {}) => {
+    const doms = topic.dom(feed, { short, long });
     return doms.map(dom => {
       const text = dom.title || dom.textContent;
       return text.replace(/[#\ue627]/g, '').trim();
@@ -485,15 +485,15 @@
 
   // 链接（除超话外所有的链接，包括外站链接、视频、文章等）
   const link = feedParser.link = {};
-  link.dom = feed => {
+  link.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
     const doms = [].concat(...contents.map(content => content.querySelectorAll(
       'a[action-type="feed_list_url"]:not([suda-uatrack*="1022-topic"])',
     )));
     return doms;
   };
-  link.text = feed => {
-    const doms = source.dom(feed);
+  link.text = (feed, { short = false, long = true } = {}) => {
+    const doms = source.dom(feed, { short, long });
     return doms.map(dom => {
       const text = dom.title || dom.textContent;
       return text;

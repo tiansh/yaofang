@@ -586,7 +586,7 @@
         else this.setConfig(+range.value);
       });
       range.addEventListener('blur', event => {
-        this.renderValue();
+        this.renderValue(container);
       });
       range.value = this.getConfig();
       range.setAttribute('yawf-config-input', this.configId);
@@ -822,7 +822,7 @@
       const updateInputSuggestion = async () => {
         const userInput = input.value.trim();
         const hasFocus = document.activeElement === input;
-        if (!hasFocus || !userInput) {
+        if (!hasFocus) {
           hideSuggestionItems();
         } else {
           const items = await this.getSuggestionItems(userInput);
@@ -1073,6 +1073,50 @@
     }
   }
 
+  class GroupIdCollectionConfigItem extends CollectionConfigItem {
+    normalizeItem(value) {
+      if (!value || typeof value !== 'object') return null;
+      const id = String(value.id);
+      return { id };
+    }
+    track({ id }, index = -1) { return id; }
+    render() {
+      const render = super.render();
+      return reference => {
+        render(reference);
+        const container = reference.parentNode.querySelector('.yawf-config-collection-items');
+        container.classList.add('yawf-config-collection-group-id');
+      };
+    }
+    renderItem(value) {
+      const span = document.createElement('span');
+      ; (async function () {
+        const groups = await request.groupList();
+        const group = groups.find(group => group.id === value.id);
+        span.textContent = group.name;
+      }());
+      return span;
+    }
+    async parseGroupInput(value) {
+      const groups = await request.groupList();
+      const group = groups.find(group => group.name === value);
+      return [{ id: group.id }];
+    }
+    async parseFastItem(value, type) {
+      return [value];
+    }
+    updateItem() {
+    }
+    async getSuggestionItems(userInput) {
+      const groups = await request.groupList();
+      return groups.filter(group => group.name.includes(userInput));
+    }
+    renderSuggestionItem(listitem, item) {
+      listitem.appendChild(document.createTextNode(item.name));
+    }
+  }
+  rule.class.GroupIdCollectionConfigItem = GroupIdCollectionConfigItem;
+
   const configItemBuilder = function (item, parent) {
     if (!item) return null;
     if (item.type === 'boolean') return new BooleanConfigItem(item, parent);
@@ -1085,6 +1129,7 @@
     if (item.type === 'users') return new UserIdCollectionConfigItem(item, parent);
     if (item.type === 'usernames') return new UserNameCollectionConfigItem(item, parent);
     if (item.type === 'topics') return new TopicCollectionConfigItem(item, parent);
+    if (item.type === 'groups') return new GroupIdCollectionConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 
@@ -1269,7 +1314,8 @@
 .yawf-config-collection-user-id .yawf-config-user-avatar { position: absolute; left: 1px; top: 1px; }
 .yawf-config-collection-user-id .yawf-config-user-name { max-width: 100%; word-break: break-all; white-space: normal; max-height: 40px; overflow: hidden; }
 .yawf-collection-suggestion.yawf-collection-suggestion { z-index: 10000; position: fixed; }
+.yawf-list-suggestion-item a { min-height: 15.6px; }
 `);
 
-}());
 
+}());

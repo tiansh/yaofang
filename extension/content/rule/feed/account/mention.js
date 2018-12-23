@@ -49,7 +49,7 @@
         const mentions = new Set(feedParser.mention.name(feed));
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => mentions.has(account));
-        if (!contain) return;
+        if (!contain) return null;
         const reason = i18n.accountMentionReason.replace('{1}', () => contain);
         return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });

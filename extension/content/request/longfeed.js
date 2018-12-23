@@ -1,5 +1,5 @@
 /**
- * ÕÒµ½Ò»Ìõ³¬³¤Î¢²©µÄÈ«ÎÄ
+ * æ‰¾åˆ°ä¸€æ¡è¶…é•¿å¾®åšçš„å…¨æ–‡
  */
 ; (async function () {
 
@@ -8,7 +8,7 @@
   const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
-  // ÕâÒ»´ÎÎÒÃÇ²»ÔÙ»º´æ³¤Î¢²©µÄÔ­ÎÄÁË£¬ÒòÎªÏÖÔÚÎ¢²©ÉñËûÂè¿ÉÒÔ±à¼­ÁË
+  // è¿™ä¸€æ¬¡æˆ‘ä»¬ä¸å†ç¼“å­˜é•¿å¾®åšçš„åŸæ–‡äº†ï¼Œå› ä¸ºç°åœ¨å¾®åšç¥ä»–å¦ˆå¯ä»¥ç¼–è¾‘äº†
   const getLongText = async function (mid) {
     const requestUrl = new URL('https://weibo.com/p/aj/mblog/getlongtext');
     requestUrl.searchParams.set('ajwvr', 6);

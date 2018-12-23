@@ -178,14 +178,18 @@
               fold: 'fastAddFold',
             }[action]];
             select.appendChild(option);
-            if (action === 'hide') item.rule = rule;
           });
           li.appendChild(select);
           select.value = 'hide';
-          select.addEventListener('input', () => {
-            item.rule = rules.find(rule => rule.action === select.value).rule;
-          });
+          item.getRule = () => rules.find(rule => rule.action === select.value).rule;
           ul.appendChild(li);
+        });
+      });
+      container.addEventListener('input', event => {
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) return;
+        Array.from(container.querySelectorAll('select')).forEach(select => {
+          if (select.value !== target.value) select.value = target.value;
         });
       });
       inner.appendChild(container);
@@ -197,8 +201,9 @@
       button: {
         ok: function () {
           fastAddDialog.hide();
-          items.forEach(async ({ active, rule: { ref: { items: ruleItem } }, type, value }) => {
+          items.forEach(async ({ active, getRule, type, value }) => {
             if (!active) return;
+            const { ref: { items: ruleItem } } = getRule();
             const parseResult = await ruleItem.parseFastItem(value, type);
             parseResult.forEach(item => ruleItem.addItem(item));
           });

@@ -7,6 +7,8 @@
 
   const more = yawf.rules.more;
 
+  const feedParser = yawf.feed = {};
+
   const i18n = util.i18n;
   i18n.moreContentGroupTitle = {
     cn: '隐藏以下微博 - 特定内容',
@@ -48,9 +50,7 @@
       filter.feed.add(function multipleTopicsFilter(feed) {
         if (!rule.isEnabled()) return null;
         const limit = rule.ref.num.getConfig();
-        // TODO 把识别各类内容的逻辑独立出来
-        // 这部分逻辑要重写
-        const topics = feed.querySelectorAll('.a_topic');
+        const topics = feedParser.topic.dom(feed);
         if (topics.length >= limit) return 'hide';
         return null;
       }, { priority: 1e6 });
