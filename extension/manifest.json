@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "default_locale": "zh_CN",
 
   "icons": {
@@ -94,6 +94,7 @@
       "content/rule/feed/source/source.js",
       "content/rule/feed/source/text.js",
       "content/rule/feed/more/more.js",
+      "content/rule/feed/more/myself.js",
       "content/rule/feed/more/commercial.js",
       "content/rule/feed/more/content.js",
 
@@ -101,12 +102,18 @@
       "content/rule/clean/icons.js",
       "content/rule/clean/follow.js",
       "content/rule/clean/nav.js",
+      "content/rule/clean/left.js",
+      "content/rule/clean/middle.js",
+      "content/rule/clean/right.js",
+      "content/rule/clean/feed.js",
+      "content/rule/clean/profile.js",
+      "content/rule/clean/other.js",
 
-      "content/rule/style/style.js",
-      "content/rule/style/text.js",
+      "content/rule/layout/layout.js",
+      "content/rule/layout/sidebar.js",
       
-      "content/rule/tool/tool.js",
-      "content/rule/tool/sidebar.js",
+      "content/rule/feeds/feeds.js",
+      "content/rule/feeds/text.js",
 
       "content/rule/about/about.js",
       "content/rule/about/debug.js",

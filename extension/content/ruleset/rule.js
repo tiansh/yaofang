@@ -176,7 +176,7 @@
       const child = ref[token.value];
       if (!child) return reference;
       if (fullDom) {
-        const childDom = child.render(false);
+        const childDom = child.getRenderResult(false);
         if (childDom instanceof Node) {
           reference.appendChild(childDom);
           return reference;
@@ -184,7 +184,7 @@
           return childDom(reference);
         } else return reference;
       } else {
-        const text = child.text(false);
+        const text = child.text();
         reference.appendChild(document.createTextNode(text));
         return reference;
       }
@@ -252,8 +252,8 @@
    */
   BaseConfigItem.prototype.text = ((parse => function (isRoot = true) {
     let result;
-    if (this.template) result = parse.apply(this);
-    else result = this.render();
+    if (this.template) result = parse.call(this, isRoot);
+    else result = this.render(isRoot);
     return result && result.textContent.trim() || '';
   })(parseTemplate(false)));
   /**
@@ -261,8 +261,8 @@
    * 这里包装两个函数，如果需要重载渲染逻辑，应该重载 render
    * 如果需要获得渲染结果，应该使用这个方法
    */
-  BaseConfigItem.prototype.getRenderResult = function () {
-    let node = this.render();
+  BaseConfigItem.prototype.getRenderResult = function (isRoot = true) {
+    let node = this.render(isRoot);
     if (typeof this.afterRender === 'function') {
       node = this.afterRender(node);
     }
@@ -445,39 +445,48 @@
     constructor(item, parent) {
       super(item, parent);
       const select = this.select;
-      if (!select || !Array.isArray(select)) {
+      if (!select || !Array.isArray(select) && typeof select.then !== 'function') {
         throw TypeError('`select` attribute is required for select config item');
       }
-      if (select.some(item => item.value !== '' + item.value)) {
-        throw TypeError("Select options' value should be string");
+      if (!Array.isArray(select) && typeof select.then === 'function') {
+        Promise.resolve(select).then(items => {
+          this.select = items;
+        });
       }
     }
     get initial() {
-      if (!this.select) return null;
-      if (!this.select[0]) return null;
-      return this.select[0].value;
+      const select = this.select;
+      if (!select) return null;
+      if (!Array.isArray(select)) return null;
+      if (!select[0]) return null;
+      return select[0].value;
     }
     normalize(value) {
-      if (!this.select || !Array.isArray(this.select)) return null;
-      if (this.select.find(item => item.value === value)) return value;
+      const select = this.select;
+      if (select && !Array.isArray(select) && typeof select.then === 'function') return value;
+      if (!select || !Array.isArray(select)) return null;
+      if (select.find(item => item.value === value)) return value;
       return this.initial;
     }
     render() {
       const container = document.createElement('span');
       container.setAttribute('yawf-config-item', this.configId);
       container.classList.add('yawf-config-select');
-      if (!Array.isArray(this.select) || !this.select) {
-        return container;
-      }
       const select = document.createElement('select');
-      this.select.forEach(({ text, value }) => {
-        const option = document.createElement('option');
-        option.value = value;
-        option.text = typeof text === 'function' ? text() : text;
-        select.add(option);
+      const renderOptions = items => {
+        items.forEach(({ text, value }) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.text = typeof text === 'function' ? text() : text;
+          select.add(option);
+        });
+        select.value = this.getConfig();
+      };
+      if (Array.isArray(this.select)) renderOptions(this.select);
+      else Promise.resolve(this.select).then(items => {
+        renderOptions(items);
       });
       select.setAttribute('yawf-config-input', this.configId);
-      select.value = this.getConfig();
       select.addEventListener('change', event => {
         if (!event.isTrusted) {
           this.renderValue(container);
@@ -562,8 +571,8 @@
    * 仅当 min、max 都设置了时才会有效
    */
   class RangeConfigItem extends NumberConfigItem {
-    render() {
-      const container = super.render();
+    render(...args) {
+      const container = super.render(...args);
       container.setAttribute('yawf-config-item', this.configId);
       if (+this.min !== this.min) return container;
       if (!Number.isFinite(this.min)) return container;
@@ -882,8 +891,8 @@
   class StringCollectionConfigItem extends CollectionConfigItem {
     normalizeItem(item) { return ('' + item).trim(); }
     track(item, index = -1) { return item; }
-    render() {
-      const render = super.render();
+    render(...args) {
+      const render = super.render(...args);
       return reference => {
         render(reference);
         const container = reference.parentNode.querySelector('.yawf-config-collection-items');
@@ -989,8 +998,8 @@
       return { id };
     }
     track({ id }, index = -1) { return id; }
-    render() {
-      const render = super.render();
+    render(...args) {
+      const render = super.render(...args);
       return reference => {
         render(reference);
         const container = reference.parentNode.querySelector('.yawf-config-collection-items');
@@ -1080,8 +1089,8 @@
       return { id };
     }
     track({ id }, index = -1) { return id; }
-    render() {
-      const render = super.render();
+    render(...args) {
+      const render = super.render(...args);
       return reference => {
         render(reference);
         const container = reference.parentNode.querySelector('.yawf-config-collection-items');
@@ -1182,8 +1191,8 @@
     }
     get type() { return 'group'; }
     get always() { return true; }
-    render() {
-      const node = super.render();
+    render(...args) {
+      const node = super.render(...args);
       node.classList.add('yawf-config-group');
       return node;
     }
@@ -1209,8 +1218,8 @@
       }
       super(item);
     }
-    render() {
-      const node = super.render();
+    render(...args) {
+      const node = super.render(...args);
       node.classList.add('yawf-config-rule');
       return node;
     }
@@ -1250,8 +1259,8 @@
       super(item);
       this.always = true;
     }
-    render() {
-      const node = super.render();
+    render(...args) {
+      const node = super.render(...args);
       node.classList.add('yawf-config-text');
       return node;
     }
@@ -1295,7 +1304,7 @@
     rule.init();
   }, { priority: priority.DEFAULT, async: true });
 
-  css.add(`
+  css.append(`
 .yawf-config-rule > label + label { margin-left: 8px; }
 .yawf-config-rule > br + label { margin-left: 20px; }
 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }

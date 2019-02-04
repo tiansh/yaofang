@@ -61,7 +61,7 @@
       const rule = this;
       filter.feed.add(function originalFilterFeedFilter(/** @type {Element} */feed) {
         const original = new Set(feedParser.original.id(feed));
-        if (rules.original.id.discover.isEnabled() && init.page.type === 'discover') {
+        if (rules.original.id.discover.isEnabled() && init.page.type() === 'discover') {
           feedParser.author.id(feed).forEach(id => original.add(id));
         }
         const accounts = rule.ref.items.getConfig();

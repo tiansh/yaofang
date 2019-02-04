@@ -39,7 +39,7 @@
      * @param {Function} filter
      * @param {number} priority
      */
-    add(filter, priority) {
+    add(filter, priority = 0) {
       this.filters.push({ filter, priority });
       this.filters.sort((x, y) => y.priority - x.priority);
     }
@@ -82,7 +82,7 @@
       this.busy = false;
       this.clean = null;
     }
-    add(filter, { priority }) {
+    add(filter, { priority = 0 } = {}) {
       this.filters.add(filter, priority);
     }
     /** @param {Array<Function>} callbacks */
@@ -167,7 +167,7 @@
     if (result && result !== 'unset') {
       const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]').title;
       feed.setAttribute('yawf-feed-author', author);
-      feed.setAttribute('yawf-feed-reason', reason);
+      if (reason) feed.setAttribute('yawf-feed-reason', reason);
       util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
     }
     if (result === 'hide') return false;
@@ -222,7 +222,7 @@
   };
 
   css.append(`
-[action-type="feed_list_item"]:not([yawf-feed])', '[node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
+[action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
 [yawf-feed]:not([yawf-feed-display]) { visibility: hidden; opacity: 0; }
 [yawf-feed-display="hide"] { display: none; }
 [yawf-feed-display="fold"] { position: relative; }
@@ -241,14 +241,14 @@
   }, { priority: 1e6 });
   // 头条文章是一条微博，类似于单条微博，不应当隐藏
   filter.feed.add(function singleWeiboPageUnsetRule(feed) {
-    return util.dom.matches(feed, '.WB_artical *') ? 'unset' : null;
+    return feed.matches('.WB_artical *') ? 'unset' : null;
   }, { priority: 1e6 });
   // 无论因为何种原因，同一页面上同一条微博不应出现两次
   filter.feed.add(function hideDuplicate(feed) {
     if (feed.hasAttribute('yawf-not-duplicate')) return null;
     const mid = feed.getAttribute('mid'); if (!mid) return null;
-    const all = document.querySelectorAll('.WB_feed_type:not([yawf-not-duplicate])');
-    if (all.find(that => that.getAttribute('mid') === mid)) return 'hide';
+    const all = Array.from(document.querySelectorAll('.WB_feed_type:not([yawf-not-duplicate])'));
+    if (all.find(that => that !== feed && that.getAttribute('mid') === mid)) return 'hide';
     return null;
   }, { priority: 1e6 });
 

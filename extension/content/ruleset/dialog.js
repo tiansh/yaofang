@@ -27,7 +27,7 @@
   };
   configDom.search = () => {
     const container = document.createElement('ul');
-    container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab yawf-config-tab-search"><label class="minitb_lk S_txt1"><input id="yawf-config-search" class="yawf-config-search" type="search"><span class="yawf-config-search-logo W_ficon S_txt2">f</span></label></li>';
+    container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab yawf-config-tab-search" style="display: none"><label class="minitb_lk S_txt1"><input id="yawf-config-search" class="yawf-config-search" type="search"><span class="yawf-config-search-logo W_ficon S_txt2">f</span></label></li>';
     return container.removeChild(container.firstChild);
   };
   configDom.item = title => {

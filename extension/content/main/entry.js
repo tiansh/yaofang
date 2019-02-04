@@ -67,7 +67,7 @@
 `;
       const container = document.importNode(template.content.firstElementChild, true);
       const button = container.querySelector('.gn_filter');
-      reference.parentNode.insertBefore(container, reference);
+      reference.before(container);
       button.setAttribute('title', i18n.filterMenuItem);
       button.addEventListener('click', onClick);
       setTimeout(async () => {
@@ -90,7 +90,7 @@
 </ul>
 `;
       const container = document.importNode(template.content.firstElementChild, true);
-      reference.parentNode.insertBefore(container, reference);
+      reference.before(container);
       const item = container.querySelector('.yawf-config-menuitem');
       item.addEventListener('click', onClick);
       item.textContent = i18n.filterMenuItem;

@@ -123,9 +123,9 @@
         const values = this.value;
         const keys = new Set(Object.keys(values).concat(Object.keys(newValues)));
         keys.forEach(key => {
-          const strNewValue = newValues[key] && JSON.stringify(newValues[key]);
+          const strNewValue = newValues[key] === void 0 ? void 0 : JSON.stringify(newValues[key]);
           const oldValue = values[key];
-          const strOldValue = oldValue && JSON.stringify(oldValue);
+          const strOldValue = oldValue === void 0 ? void 0 : JSON.stringify(oldValue);
           if (strNewValue === strOldValue) return;
           values[key] = strNewValue && JSON.parse(strNewValue);
           this.triggerOnChanged(key, newValues[key], oldValue);
@@ -145,8 +145,8 @@
       if (!this.initialized) throw Error('Config should initialized first');
       const values = this.value;
       const oldValue = values[key];
-      const strOldValue = oldValue && JSON.stringify(oldValue);
-      const strNewValue = value && JSON.stringify(value);
+      const strOldValue = oldValue === void 0 ? void 0 : JSON.stringify(oldValue);
+      const strNewValue = value === void 0 ? void 0 : JSON.stringify(value);
       if (strNewValue !== strOldValue) {
         if (strNewValue) values[key] = JSON.parse(strNewValue);
         else delete values[key];

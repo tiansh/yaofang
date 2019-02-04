@@ -17,10 +17,15 @@
       tw: '首頁',
       en: 'Homepage',
     },
+    feedsHomepageSingleGroup: {
+      cn: '使用单个分组页代替首页（首页微博时间顺序排列）||分组{{group}}',
+      tw: '使用單個分組頁代替首頁（首頁微博時間順序排列）||分組{{group}}',
+      en: 'Use single feed list by group for home page (home page timeline order)||Group{{group}}',
+    },
     feedsHomepageMultiGroup: {
-      cn: '使用分组页代替首页（首页微博时间顺序排列）||每次展示{{count}}条|点击查看更多时{{more}}||分组{{groups}}',
-      tw: '使用分組頁代替首頁（首頁微博時間順序排列）||每次展示{{count}}條|點擊查看更多時{{more}}||分組{{groups}}',
-      en: 'Use feed list by groups for home page (home page timeline order)||show {{count}} feeds per page|{{more}} before show next page||Groups{{groups}}',
+      cn: '使用多个分组页代替首页（首页微博时间顺序排列）||每次展示{{count}}条|点击查看更多时{{more}}||分组{{groups}}',
+      tw: '使用多個分組頁代替首頁（首頁微博時間順序排列）||每次展示{{count}}條|點擊查看更多時{{more}}||分組{{groups}}',
+      en: 'Use multiple feed lists by group for home page (home page timeline order)||show {{count}} feeds per page|{{more}} before show next page||Groups{{groups}}',
     },
     feedsHomepageKeepOld: {
       cn: '保留已展示微博',
@@ -52,7 +57,94 @@
     template: () => i18n.feedsHomepageGroupTitle,
   });
 
-  homepage.multi_group = rule.Rule({
+  // 因为 YAWF 脚本用的 -1，这里为了避免可能的冲突（虽然别的功能还是会冲突），所以用 -2
+  const CUSTOM_GID = -2;
+
+  const fixHomeUrlToGroup = function (targetGroup) {
+    const setParam = function (url) {
+      if (targetGroup === 'custom') {
+        url.searchParams.set('gid', CUSTOM_GID);
+      } else if (targetGroup.startsWith('g')) {
+        url.searchParams.set('gid', targetGroup.slice(1));
+      } else if (targetGroup === 'whisper') {
+        url.searchParams.delete('gid');
+        url.searchParams.set('whisper', 1);
+      }
+    };
+    const updateLocation = function updateLocation() {
+      const isHomeFeed = document.getElementById('v6_pl_content_homefeed');
+      const notHomeFeed = document.getElementById('v6_pl_content_commentlist') ||
+        document.querySelector('[id^="Pl_Official_MyProfileFeed__"]');
+      if (!isHomeFeed && !notHomeFeed) return;
+      const url = new URL(location.href);
+      const hasGid = Boolean(+url.searchParams.get('gid'));
+      const isSearch = Boolean(+url.searchParams.get('is_search'));
+      const isSpecial = ['isfriends', 'vplus', 'isfriends', 'isgroupsfeed', 'whisper']
+        .some(key => +url.searchParams.get(key));
+      const isCustomGid = hasGid && url.searchParams.get('gid') < 0;
+      const shouldAddGid = isHomeFeed && !isSearch && !isSpecial;
+      const shouldRemoveGid = notHomeFeed && isCustomGid;
+      const incorrectGid = isCustomGid && targetGroup !== 'custom';
+      if ((!hasGid || incorrectGid) && shouldAddGid) {
+        setParam(url);
+        location.replace(url.href);
+      } else if (hasGid && shouldRemoveGid) {
+        url.searchParams.delete('gid');
+        location.replace(url);
+      }
+    };
+    observer.add(updateLocation);
+
+    const updateHomeLinksWithGid = function updateHomeLinksWithGid() {
+      /** @type {HTMLAnchorElement[]} */
+      const links = Array.from(document.querySelectorAll([
+        '.gn_logo a', // 导航栏logo
+        'a[suda-uatrack*="homepage"]', // 首页链接，根据跟踪标识识别；适用于顶栏和左栏
+        '#v6_pl_content_homefeed a[action-type="search_type"][action-data="type=0"]', // 首页消息流顶部的“全部”链接
+      ].map(selector => selector + ':not([href*="is_search"])').join(',')));
+      links.forEach(link => {
+        const url = new URL(link.href);
+        setParam(url);
+        link.href = url.href;
+      });
+    };
+    observer.add(updateHomeLinksWithGid);
+  };
+
+  let groupListLazyPromiseResolve;
+  const groupListLazyPromise = new Promise(resolve => {
+    groupListLazyPromiseResolve = resolve;
+  }).then(async () => {
+    const groups = await request.groupList();
+    return groups.map(({ name, id }) => ({ text: name, value: id }));
+  });
+  homepage.singleGroup = rule.Rule({
+    id: 'single_group',
+    parent: homepage.homepage,
+    template: () => i18n.feedsHomepageSingleGroup,
+    ref: {
+      group: {
+        type: 'select',
+        select: groupListLazyPromise,
+        afterRender: function (container) {
+          groupListLazyPromiseResolve();
+          return container;
+        },
+      },
+    },
+    init() {
+      this.addConfigListener(config => {
+        if (config) homepage.multiGroup.setConfig(false);
+      });
+    },
+    ainit: function () {
+      const group = this.ref.group.getConfig();
+      if (group === null) return;
+      fixHomeUrlToGroup(group);
+    },
+  });
+
+  homepage.multiGroup = rule.Rule({
     id: 'multi_group',
     parent: homepage.homepage,
     template: () => i18n.feedsHomepageMultiGroup,
@@ -76,6 +168,11 @@
         type: 'groups',
       },
     },
+    init() {
+      this.addConfigListener(config => {
+        if (config) homepage.singleGroup.setConfig(false);
+      });
+    },
     ainit() {
       const rule = this;
       const count = rule.ref.count.getConfig();
@@ -84,58 +181,13 @@
 
       if (groups.length === 0) return;
 
-      const updateLocation = function updateLocation() {
-        const isHomeFeed = document.getElementById('v6_pl_content_homefeed');
-        const notHomeFeed = document.getElementById('v6_pl_content_commentlist') ||
-          document.querySelector('[id^="Pl_Official_MyProfileFeed__"]');
-        if (!isHomeFeed && !notHomeFeed) return;
-        const url = new URL(location.href);
-        const hasGid = Boolean(+url.searchParams.get('gid'));
-        const isSearch = Boolean(+url.searchParams.get('is_search'));
-        const isSpecial = ['isfriends', 'vplus', 'isfriends', 'isgroupsfeed', 'whisper']
-          .some(key => +url.searchParams.get(key));
-        const isCustomGid = hasGid && url.searchParams.get('gid') < 0;
-        const requireGid = isHomeFeed && !isSearch && !isSpecial;
-        const shouldRemoveGid = notHomeFeed && isCustomGid;
-        const incorrectGid = isCustomGid && groups.length === 1;
-        if ((!hasGid || incorrectGid) && requireGid) {
-          if (groups.length > 1) {
-            url.searchParams.set('gid', 1);
-          } else if (groups[0].id.startsWith('g')) {
-            url.searchParams.set('gid', groups[0].id.slice(1));
-          } else if (groups[0].id === 'whisper') {
-            url.searchParams.delete('gid');
-            url.searchParams.set('whisper', 1);
-          }
-          location.replace(url.href);
-        } else if (hasGid && shouldRemoveGid) {
-          url.searchParams.delete('gid');
-          location.replace(url);
-        }
-      };
-      observer.add(updateLocation);
-
-      const updateHomeLinksWithGid = function updateHomeLinksWithGid() {
-        /** @type {HTMLAnchorElement[]} */
-        const links = Array.from(document.querySelectorAll([
-          '.gn_logo a', // 导航栏logo
-          'a[suda-uatrack*="homepage"]', // 首页链接，根据跟踪标识识别；适用于顶栏和左栏
-          '#v6_pl_content_homefeed a[action-type="search_type"][action-data="type=0"]', // 首页消息流顶部的“全部”链接
-        ].map(selector => selector + ':not([href*="is_search"])').join(',')));
-        links.forEach(link => {
-          const url = new URL(link.href);
-          const gid = groups.length > 1 ? -2 : groups[0];
-          url.searchParams.set('gid', gid);
-          link.href = url.href;
-        });
-      };
-      observer.add(updateHomeLinksWithGid);
+      fixHomeUrlToGroup('custom');
 
       // 检查当前页面是否需要启用分组拼凑首页功能
       const checkPage = function checkMultiGroupPage() {
         const query = new URLSearchParams(location.search);
         const gid = +query.get('gid');
-        if (gid !== -2) return;
+        if (gid !== CUSTOM_GID) return;
         if (!Array.isArray(groups)) return;
         if (groups.length < 2) return;
         query.delete('gid');

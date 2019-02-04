@@ -7,9 +7,8 @@
   const i18n = util.i18n;
 
   i18n.styleTabTitle = {
-    cn: '外观样式',
-    tw: '外觀樣式',
-    en: 'Appearance',
+    cn: '微博展示',
+    en: 'Feeds',
   };
 
   const style = yawf.rules.style = {};

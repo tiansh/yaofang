@@ -20,12 +20,11 @@
     cleanNavHotSearch: { cn: '大家正在搜', tw: '大家正在熱搜', en: 'Hot search' },
     cleanNavNoticeNew: { cn: '新消息计数', tw: '新消息計數', en: 'Count for new notice' },
     cleanNavNew: { cn: '提示红点', tw: '提示紅點', en: 'Red dot tips' },
-    cleanNavHotTip: { cn: '热门黄签提醒', tw: '熱門黃簽提醒', en: 'Yellow tip for new hots' },
   });
 
-  clean.CleanGroup('clean_nav', () => i18n.cleanNavGroupTitle);
+  clean.CleanGroup('_nav', () => i18n.cleanNavGroupTitle);
   clean.CleanRule('logoImg', () => i18n.cleanNavLogoImg, 1, {
-    init: function () {
+    ainit: function () {
       const rule = this;
       observer.add(function replaceLogo() {
         const box = document.querySelector('.WB_global_nav .gn_logo .box');
@@ -34,7 +33,7 @@
         if (!img) return;
         const logo = document.createElement('span');
         logo.classList.add('logo');
-        img.parentNode.replaceChild(logo, img);
+        img.replaceWith(logo);
       });
     },
     acss: '.WB_global_nav .gn_logo .box img { display: none !important; }',
@@ -54,6 +53,5 @@
   });
   clean.CleanRule('noticeNew', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
   clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }');
-  clean.CleanRule('hotTip', () => i18n.cleanNavHotTip, 1, ''); // TODO
 
 }());

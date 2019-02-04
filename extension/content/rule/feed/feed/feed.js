@@ -363,7 +363,7 @@
       dropAreaContent.querySelector('.yawf-drop-title').textContent = i18n.dropAreaTitle;
       dropAreaContent.querySelector('.yawf-drop-text').textContent = i18n.dropAreaContent;
       reference.appendChild(dropArea);
-    }());
+    });
 
   }());
 

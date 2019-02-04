@@ -16,7 +16,7 @@
     requestUrl.searchParams.set('__rnd', +new Date());
     const resp = await fetch(requestUrl, { credentials: 'include' }).then(r => r.json());
     const { html } = (resp || {}).data || {}; if (!html) return null;
-    util.debug('Got longtext for %o: %o', mid, html);
+    util.debug('Got longtext for %o: %o', mid, { html });
     return html;
   };
   request.getLongText = getLongText;

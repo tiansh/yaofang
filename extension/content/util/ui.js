@@ -308,7 +308,8 @@
     bubble.addEventListener('mouseleave', leave);
   };
 
-  css.add(`
+
+  css.append(`
 .yawf-dialog-title {
   cursor: move;
 }
@@ -327,6 +328,9 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
+}
+.yawf-bubble {
+  max-width: 400px;
 }
 `);
 

@@ -1,6 +1,3 @@
-/**
- * �ڽű���Чǰ���ظ����޹�����
- */
 ; (async function () {
 
   const yawf = window.yawf;
@@ -9,6 +6,7 @@
   const init = yawf.init;
 
   const priority = util.priority;
+  const css = util.css;
 
   const config = yawf.config;
 
@@ -19,7 +17,7 @@
   }, { priority: priority.FIRST, async: true });
 
   util.debug('yawf loading, hide all');
-  const hideAll = util.css.add('.WB_miniblog { visibility: hidden; opacity: 0; }');
+  const hideAll = css.add('.WB_miniblog { visibility: hidden; opacity: 0; }');
   init.onReady(() => {
     hideAll.remove();
     util.debug('yawf loaded, disable hide all');

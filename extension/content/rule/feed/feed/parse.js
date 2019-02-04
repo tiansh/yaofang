@@ -413,15 +413,15 @@
     return [author];
   };
   author.id = feed => {
-    const doms = author.dom(feed);
-    return doms.map(dom => {
+    const domList = author.dom(feed);
+    return domList.map(dom => {
       const id = new URLSearchParams(dom.getAttribute('usercard')).get('id');
       return id;
     });
   };
   author.name = feed => {
-    const doms = author.dom(feed);
-    return doms.map(dom => {
+    const domList = author.dom(feed);
+    return domList.map(dom => {
       const name = dom.title;
       return name;
     });
@@ -435,15 +435,15 @@
     return original ? [original] : [];
   };
   original.id = feed => {
-    const doms = original.dom(feed);
-    return doms.map(dom => {
+    const domList = original.dom(feed);
+    return domList.map(dom => {
       const id = new URLSearchParams(dom.getAttribute('usercard')).get('id');
       return id;
     });
   };
   original.name = feed => {
-    const doms = original.dom(feed);
-    return doms.map(dom => {
+    const domList = original.dom(feed);
+    return domList.map(dom => {
       const name = dom.title;
       return name;
     });
@@ -453,14 +453,14 @@
   const mention = feedParser.mention = {};
   mention.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
-    const doms = [].concat(...contents.map(content => content.querySelectorAll(
+    const domList = [].concat(...contents.map(content => content.querySelectorAll(
       'a[href*="loc=at"][namecard*="name"]',
     )));
-    return doms;
+    return domList;
   };
   mention.name = (feed, { short = false, long = true } = {}) => {
-    const doms = original.dom(feed, { short, long });
-    return doms.map(dom => {
+    const domList = original.dom(feed, { short, long });
+    return domList.map(dom => {
       const name = new URLSearchParams(dom.getAttribute('usercard')).get('name');
       return name;
     });
@@ -470,14 +470,17 @@
   const topic = feedParser.topic = {};
   topic.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
-    const doms = [].concat(...contents.map(content => content.querySelectorAll(
-      'a[suda-uatrack*="1022-topic"], a.a_topic',
-    )));
-    return doms;
+    const domList = [];
+    contents.forEach(content => {
+      if (!content) return;
+      const topics = content.querySelectorAll('a[suda-uatrack*="1022-topic"], a.a_topic');
+      domList.push(...topics);
+    });
+    return domList;
   };
   topic.text = (feed, { short = false, long = true } = {}) => {
-    const doms = topic.dom(feed, { short, long });
-    return doms.map(dom => {
+    const domList = topic.dom(feed, { short, long });
+    return domList.map(dom => {
       const text = dom.title || dom.textContent;
       return text.replace(/[#\ue627]/g, '').trim();
     });
@@ -487,14 +490,14 @@
   const link = feedParser.link = {};
   link.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
-    const doms = [].concat(...contents.map(content => content.querySelectorAll(
+    const domList = [].concat(...contents.map(content => content.querySelectorAll(
       'a[action-type="feed_list_url"]:not([suda-uatrack*="1022-topic"])',
     )));
-    return doms;
+    return domList;
   };
   link.text = (feed, { short = false, long = true } = {}) => {
-    const doms = source.dom(feed, { short, long });
-    return doms.map(dom => {
+    const domList = source.dom(feed, { short, long });
+    return domList.map(dom => {
       const text = dom.title || dom.textContent;
       return text;
     });
@@ -503,12 +506,12 @@
   // 来源
   const source = feedParser.source = {};
   source.dom = feed => {
-    const doms = feed.querySelectorAll('.WB_from a:not([date])');
-    return Array.from(doms);
+    const domList = feed.querySelectorAll('.WB_from a:not([date])');
+    return Array.from(domList);
   };
   source.text = feed => {
-    const doms = source.dom(feed);
-    return doms.map(dom => {
+    const domList = source.dom(feed);
+    return domList.map(dom => {
       const text = (dom.title || dom.textContent).trim();
       return text;
     }).filter(source => source);
