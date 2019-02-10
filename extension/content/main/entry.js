@@ -72,7 +72,8 @@
       button.addEventListener('click', onClick);
       setTimeout(async () => {
         await searchStyle.ready;
-        const size = button.clientWidth * button.clientHeight;
+        const [{ width, height }] = button.getClientRects();
+        const size = width * height;
         // 如果用户选择不显示漏斗按钮，那么要恢复搜索框的宽度
         // 扩展不提供显示或不显示的选项，但是会提供自定义 CSS 功能
         if (!size) searchStyle.remove();

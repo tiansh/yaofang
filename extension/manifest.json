@@ -110,7 +110,9 @@
       "content/rule/clean/other.js",
 
       "content/rule/layout/layout.js",
+      "content/rule/layout/navbar.js",
       "content/rule/layout/sidebar.js",
+      "content/rule/layout/other.js",
       
       "content/rule/feeds/feeds.js",
       "content/rule/feeds/text.js",

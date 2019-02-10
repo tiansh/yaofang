@@ -3,7 +3,7 @@
   const yawf = window.yawf = window.yawf || {};
   const util = yawf.util = yawf.util || {};
 
-  let language = null;
+  let language = util.language = null;
   const i18n = new Proxy(Object.create(null), {
     get: (self, key) => {
       if (!language) return null;
@@ -35,6 +35,7 @@
       else if (lower === 'zh-tw') language = 'tw';
       else if (lower === 'en') language = 'en';
       else return false;
+      util.language = language;
       return true;
     },
   });

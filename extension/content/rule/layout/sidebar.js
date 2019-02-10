@@ -13,7 +13,7 @@
 
   const sidebar = layout.sidebar = {};
 
-  i18n.sideBarToolGroupTitle = {
+  i18n.sidebarToolGroupTitle = {
     cn: '边栏',
     tw: '邊欄',
     en: 'Sidebar',
@@ -21,8 +21,28 @@
 
   sidebar.sidebar = rule.Group({
     parent: layout.layout,
-    template: () => i18n.sideBarToolGroupTitle,
+    template: () => i18n.sidebarToolGroupTitle,
   });
+
+  const floatingAfterMerge = (prefer = 'left') => () => {
+    if (!sidebar.floatingLeft.getConfig()) return;
+    if (!sidebar.floatingRight.getConfig()) return;
+    if (!sidebar.merge.getConfig()) return;
+    if (prefer === 'left') {
+      sidebar.floatingRight.setConfig(false);
+    } else {
+      sidebar.floatingLeft.setConfig(false);
+    }
+  };
+
+  const sidebarOn = config => {
+    if (sidebar.merge.ref.side.getConfig() !== config) {
+      sidebar.merge.ref.side.setConfig(config);
+    }
+    if (sidebar.allSidebarOn.ref.side.getConfig() !== config) {
+      sidebar.allSidebarOn.ref.side.setConfig(config);
+    }
+  };
 
   Object.assign(i18n, {
     sidebarShowMessages: {
@@ -122,6 +142,10 @@
         default: 'right',
       },
       i: { type: 'bubble', icon: 'warn', template: () => i18n.sidebarMergeDetail },
+    },
+    init() {
+      this.addConfigListener(floatingAfterMerge());
+      this.ref.side.addConfigListener(sidebarOn);
     },
     ainit: function mergeLeftRight() {
       // 发现页面的逻辑不一样，做处理很麻烦，所以不做处理
@@ -296,12 +320,7 @@
     template: () => i18n.floatingLeft,
     // 如果合并了左右边栏，那么左栏浮动的时候右栏不能浮动
     init() {
-      this.addConfigListener(config => {
-        if (!config) return;
-        if (!sidebar.merge.getConfig()) return;
-        if (!sidebar.floatingRight.getConfig()) return;
-        sidebar.floatingRight.setConfig(false);
-      });
+      this.addConfigListener(floatingAfterMerge('left'));
     },
     ainit() {
       // 禁用左栏浮动的相关代码在禁用右边栏浮动的逻辑那里统一处理
@@ -309,13 +328,13 @@
       // 这时候左栏如果还要浮动，那么就要重新让他动起来
       // 这里的程序是为了让左栏再动起来的
       if (!sidebar.merge.getConfig()) return;
-      css.add(`
+      css.append(`
 .WB_main_r .WB_main_l { will-change: scroll-position; }
 .WB_main_r[yawf-fixed] .WB_main_l { position: fixed; top: 60px !important; overflow: hidden; height: auto !important; width: 150px; }
 body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
 `);
       // if (layout.nav.autoHide.getConfig()) {
-      //   util.css.add('.WB_main_r[yawf-fixed] .WB_main_l { top: 10px !important; }');
+      //   util.css.append('.WB_main_r[yawf-fixed] .WB_main_l { top: 10px !important; }');
       // }
 
       // 当左侧不够长时，需要滚动条，更新滚动条的状态
@@ -396,6 +415,8 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
     parent: sidebar.sidebar,
     template: () => i18n.floatingRight,
     init() {
+      this.addConfigListener(floatingAfterMerge('right'));
+
       const merge = sidebar.merge.getConfig();
       const fleft = sidebar.floatingLeft.getConfig();
       const fright = sidebar.floatingRight.getConfig();
@@ -435,6 +456,46 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
         });
       };
       observer.add(removeFixed);
+    },
+  });
+
+  Object.assign(i18n, {
+    allSidebarOn: { cn: '统一各类页面侧栏|到{{side}}', tw: '統一各類頁面側欄|到{{side}}', en: 'Relocate side bar for all pages | to {{side}}' },
+    allSidebarOnLeft: { cn: '左侧', tw: '左側', en: 'left side' },
+    allSidebarOnRight: { cn: '右侧', tw: '右側', en: 'right side' },
+  });
+
+  sidebar.allSidebarOn = rule.Rule({
+    id: 'allSidebarOn',
+    parent: sidebar.sidebar,
+    template: () => i18n.allSidebarOn,
+    ref: {
+      side: {
+        type: 'select',
+        select: [
+          { value: 'left', text: () => i18n.allSidebarOnLeft },
+          { value: 'right', text: () => i18n.allSidebarOnRight },
+        ],
+      },
+    },
+    init() {
+      this.ref.side.addConfigListener(sidebarOn);
+    },
+    ainit() {
+      const side = this.ref.side.getConfig();
+      observer.add(function choseSideRunner() {
+        let b, c, p;
+        if (side === 'left') {
+          b = document.querySelector('#plc_main>.WB_frame_c:first-child+.WB_frame_b:last-child'); if (!b) return;
+          p = b.parentNode;
+          p.insertBefore(b, p.firstChild);
+        } else if (side === 'right') {
+          c = document.querySelector('#plc_main>.WB_frame_b:first-child+.WB_frame_c:last-child'); if (!c) return;
+          p = c.parentNode;
+          b = p.firstElementChild;
+          p.appendChild(b);
+        }
+      });
     },
   });
 

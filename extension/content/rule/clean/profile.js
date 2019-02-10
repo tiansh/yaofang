@@ -35,21 +35,20 @@
   clean.CleanGroup('profile', () => i18n.cleanProfileGroupTitle);
   clean.CleanRule('moveThings', () => i18n.cleanProfileMoveThings, 1, '.profile_move_things { display: none !important; }');
   clean.CleanRule('cover', () => i18n.cleanProfileCover, 1, function () {
-    util.css.append(`
-.PCD_header, .PCD_header .pf_wrap, .PCD_header .shadow { height: 130px; }
-.PCD_header .pf_photo { margin: 10px 20px 10px calc(50% - 280px); float: left; }
-.PCD_header .pf_username, .PCD_header .pf_intro { text-shadow: 0 0 4px #000; }
-.PCD_header .pf_username, .PCD_header .pf_intro, .PCD_header .pf_opt { text-align: left; margin-left: 140px; }
-.PCD_header .pf_wrap .pf_use_num, .PCD_header .pf_wrap .pf_copy_icon, .PCD_header .upcover { display: none; }
-.PCD_header .S_shadow, .PCD_header .cover_wrap, .PCD_header .pf_wrap { background: none !important; }
-.PCD_header .shadow { margin: 0 calc(50% - 300px); width: 600px; }
-.PCD_header .pf_intro { height: 36px; line-height: 18px; }
-.PCD_header .pf_opt { margin-top: 8px; }
+    css.append(`
+.PCD_header.PCD_header,
+.PCD_header.PCD_header .pf_wrap { height: 130px; overflow: hidden; }
+.PCD_header.PCD_header .cover_wrap { display: none; }
+.PCD_header.PCD_header .shadow { width: 440px; height: 108px; margin: 11px auto; position: relative; padding: 0 20px 0 140px; }
+.PCD_header.PCD_header .pf_photo { position: absolute; left: 20px; top: 0; margin: 0; }
+.PCD_header.PCD_header .upcover { display: none; }
+.PCD_header.PCD_header .pf_username,
+.PCD_header.PCD_header .pf_intro { text-align: left; }
     `);
     observer.add(function fullProfileIntroduction() {
       const intro = document.querySelector('.PCD_header .pf_intro:not([yawf-full-intro])');
       if (!intro) return;
-      intro.setAttribute('yawf-full-intro', (intro.textContent = intro.getAttribute('title')));
+      intro.setAttribute('yawf-full-intro', (intro.textContent = intro.title));
     });
   });
   clean.CleanRule('bgImg', () => i18n.cleanProfileBGImg, 1, '.S_page, .S_page .WB_miniblog { background-image: url("\'\'") !important; }');
@@ -89,7 +88,7 @@
     if (!titles.length) return;
     titles.forEach(function (title) {
       const name = title && title.textContent.trim() || '';
-      const container = title.closest('.WB_frame_b, .WB_frame_c');
+      const container = title.closest('.WB_frame_b > div, .WB_frame_c > div');
       if (!container.hasAttribute('yawf-obj-name')) {
         container.setAttribute('yawf-obj-name', name);
       }
