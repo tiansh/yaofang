@@ -74,7 +74,7 @@
       if (userlink.matches('.WB_detail > .WB_info > .W_fb[usercard]')) user.type = 'author';
       if (userlink.matches('.WB_expand > .WB_info > .W_fb[usercard]')) user.type = 'original';
       if (userlink.matches('.WB_feed_type a[href*="loc=at"][namecard*="name"]')) user.type = 'mention';
-    }(target.querySelector('[usercard*="name="], [usercard*="id="]') || target.closest('[usercard*="name="], [usercard*="id="]')));
+    }(target.closest('[usercard*="name="], [usercard*="id="]')));
     // 个人主页的头像
     ; (function (photo) {
       if (!photo) return;
@@ -111,6 +111,9 @@
     }
     if (!topic && target.matches('a[suda-uatrack*="1022-stock"]')) {
       topic = target.textContent.replace(/^[\s$]+|[\s$]+$/g, '');
+    }
+    if (!topic && target.matches('.hot_topic a[title][suda-uatrack*="key=hottopic_r2"]')) {
+      topic = target.title.replace(/^[\s#]+|[\s#]+$/g, '');
     }
     if (!topic) return [];
     const template = i18n.topicContextTitle;
