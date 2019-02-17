@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
+  const filter = yawf.filter;
 
   const i18n = util.i18n;
   const css = util.css;
@@ -41,8 +42,9 @@
     cleanFeedPop: { cn: '阅读数和推广', tw: '閱讀數和推廣', en: 'Reading Count &amp; Promote' },
     cleanFeedLike: { cn: '赞 - 微博', tw: '讚 - 微博', en: 'Like - Feed' },
     cleanFeedLikeComment: { cn: '赞 - 评论', tw: '讚 - 評論', en: 'Like - Comment' },
+    cleanFeedLikeAttitude: { cn: '赞 - 表情', tw: '讚 - 表情', en: 'Like - Attitude' },
     cleanFeedForward: { cn: '转发', tw: '轉發', en: 'Forward' },
-    cleanFeedFavourite: { cn: '收藏', tw: '收藏', en: 'Favourite' },
+    cleanFeedFavorite: { cn: '收藏', tw: '收藏', en: 'Favorite' },
     cleanFeedPromoteOther: { cn: '帮上头条', tw: '帮上头条', en: '帮上头条' },
     cleanFeedReport: { cn: '举报', hk: '舉報', tw: '舉報/檢舉', en: 'Report' },
     cleanFeedUseCardBackground: { cn: '使用此卡片背景', tw: '使用此卡片背景', en: '使用此卡片背景' },
@@ -119,19 +121,61 @@ a[action-type="feed_list_like"]+.S_txt3,
 .WB_handle li[yawf-handle-type="fl_like"],
 .WB_handle li[yawf-handle-type="like"] .layer_multipic_preview .pos_icon { display: none !important; }`);
   clean.CleanRule('likeComment', () => i18n.cleanFeedLikeComment, 1, '.WB_handle li[yawf-comment-handle-type="like"] { display: none !important; }');
+  clean.CleanRule('likeAttitude', () => i18n.cleanFeedLikeAttitude, 1, '.W_layer_attitude { display: none !important; }');
   clean.CleanRule('forward', () => i18n.cleanFeedForward, 1, `
-a[action-type="feed_list_forward"], a[action-type="feed_list_forward"]+.S_txt3, ' +
+a[action-type="feed_list_forward"], a[action-type="feed_list_forward"]+.S_txt3,
 .WB_media_expand .WB_handle a.S_func4[href$="?type=repost"], .WB_media_expand .WB_handle a.S_func4[href$="?type=repost"]+.S_txt3, 
 .WB_feed_datail a[action-type="fl_forward"], .WB_feed_datail a[action-type="fl_forward"]+.S_txt3, 
 .WB_expand .WB_handle.W_fr li:nth-child(1), 
 .WB_handle li[yawf-handle-type="fl_forward"], .WB_handle li[yawf-handle-type="tab"]:nth-child(2) 
 { display: none !important; }`);
-  clean.CleanRule('favourite', () => i18n.cleanFeedFavourite, 1, `
-a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3, ' +
+  clean.CleanRule('favorite', () => i18n.cleanFeedFavorite, 1, `
+a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3,
 .WB_feed_datail a[action-type="fl_favorite"], .WB_feed_datail a[action-type="fl_favorite"]+.S_txt3, 
 .WB_handle .WB_row_line li[yawf-handle-type="fl_favorite"] { display: none !important; }`);
   clean.CleanRule('promoteOther', () => i18n.cleanFeedPromoteOther, 1, '.screen_box .layer_menu_list a[action-data*="promote.vip.weibo.com"] { display: none !important; }');
   clean.CleanRule('report', () => i18n.cleanFeedReport, 1, '.screen_box .layer_menu_list a[onclick*="service.account.weibo.com/reportspam"], .WB_handle ul li[yawf-comment-handle-type="report"] { display: none !important; }');
   clean.CleanRule('useCardBackground', () => i18n.cleanFeedUseCardBackground, 1, '.screen_box .layer_menu_list a[action-type="fl_cardCover"] { display: none !important; }');
+
+  filter.feed.onBefore(function (feed) {
+    const lis = Array.from(feed.querySelectorAll('.WB_feed_type .WB_handle .WB_row_line li, .WB_feed_together .WB_func .WB_handle li'));
+    lis.forEach(li => {
+      let type = li.querySelector('a').getAttribute('action-type');
+      if (!type && li.querySelector('a[suda-uatrack="key=profile_feed&value=popularize_host"]')) type = 'fl_pop';
+      if (!type && li.querySelector('span[title*="评论"], span[title*="評論"], span[title*="comment"]')) type = 'fl_comment'; // 由于用户设置，无法进行评论
+      li.setAttribute('yawf-handle-type', type);
+    });
+    const fwli = Array.from(feed.querySelectorAll('.WB_feed_expand .WB_func .WB_handle li'));
+    if (fwli.length === 3) fwli.forEach(function (li, index) {
+      li.setAttribute('yawf-handle-type', ['fl_forward', 'fl_comment', 'fl_like'][index]);
+    }); else if (fwli.length === 4) fwli.forEach(function (li, index) {
+      li.setAttribute('yawf-handle-type', ['fl_read', 'fl_forward', 'fl_comment', 'fl_like'][index]);
+    });
+  });
+
+  // 标记微博评论按钮
+  observer.add(function markCommentButton() {
+    const cli = Array.from(document.querySelectorAll([
+      '.list_ul[node-type="feed_list_commentList"] .WB_handle ul li:not([yawf-comment-handle-type])',
+      '.list_ul[node-type="comment_list"] .WB_handle ul li:not([yawf-comment-handle-type])',
+      '.WB_feed_comment .WB_handle ul li:not([yawf-comment-handle-type])'
+    ].join(',')));
+    cli.forEach(li => {
+      const a = li.querySelector('a');
+      let type = null;
+      if (a.matches('[onclick*="service.account.weibo.com/reportspam"]')) type = 'report';
+      else if (a.matches('[action-type="delete"]')) type = 'delete';
+      else if (a.matches('[action-type="commentDialogue"]')) type = 'conversition';
+      else if (a.matches('[action-type="reply"]')) type = 'reply';
+      else if (a.matches('[action-type="replycomment"]')) type = 'reply';
+      else if (a.matches('[action-type="fl_like"]')) type = 'like';
+      li.setAttribute('yawf-comment-handle-type', type || '');
+    });
+  });
+
+  css.append(`
+body .WB_handle ul { display: flex; flex-wrap: nowrap; align-items: stretch; margin-left: -4px; }
+body .WB_handle ul li { flex: 1 1 auto; float: none; width: auto; }
+`);
 
 }());

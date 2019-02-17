@@ -1,0 +1,120 @@
+body {
+  padding: 0;
+  margin: 0;
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  -moz-user-select: none;
+  user-select: none;
+
+  --preview-height: 100px;
+
+  background-image: url("chrome://global/skin/media/imagedoc-darknoise.png");
+}
+
+#container {
+  position: absolute;
+  top: 0;
+  bottom: var(--preview-height);
+  left: 0;
+  right: 0;
+  overflow: auto;
+  z-index: 0;
+}
+
+#container.cur-zoom-in {
+  cursor: zoom-in;
+}
+#container.cur-zoom-out {
+  cursor: zoom-out;
+}
+#container.left {
+  cursor: url("./left.svg") 24 24, pointer;
+}
+#container.right {
+  cursor: url("./right.svg") 24 24, pointer;
+}
+
+#viewarea {
+  display: table-cell;
+  position: relative;
+  vertical-align: middle;
+  text-align: center;
+  width: 100vw;
+  height: calc(100vh - var(--preview-height));
+}
+
+#container.x-auto #viewer {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+#container.y-auto #viewer {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+#container.x-fit #viewer {
+  max-width: calc(100vw - 40px);
+}
+
+#container.y-fit #viewer {
+  max-height: calc(100vh - calc(40px + var(--preview-height)));
+}
+
+#resize_bar {
+  position: absolute;
+  left: 0;
+  bottom: var(--preview-height);
+  width: 100vw;
+  height: 8px;
+  transform: translate(0, 50%);
+  z-index: 1;
+  cursor: ns-resize;
+}
+
+#resize_bar::before {
+  content: " ";
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+#preview {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  height: var(--preview-height);
+  z-index: 0;
+  overflow: hidden;
+}
+
+#preview a {
+  float: left;
+  margin: 10px;
+  height: calc(var(--preview-height) - 20px);
+  width: calc(var(--preview-height) - 20px);
+  overflow: hidden;
+}
+
+#preview .current {
+  outline: 4px solid #ff3333aa;
+  outline-offset: 1px;
+}
+
+#preview img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+#viewer {
+  background: hsl(0, 0%, 90%) url("chrome://global/skin/media/imagedoc-lightnoise.png") repeat scroll 0 0;
+}
+
+ 

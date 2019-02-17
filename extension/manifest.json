@@ -23,11 +23,12 @@
 
       "background/message/message.js",
 
-      "background/request/blocking.js",
-
-      "background/contextmenu/contextmenu.js",
+      "background/controller/request/blocking.js",
+      "background/controller/contextmenu/contextmenu.js",
+      "background/controller/font/font.js",
+      "background/controller/image/viewer.js",
       
-      "background/interests/interests.js"
+      "background/page/interests/interests.js"
     ]
   },
 
@@ -113,9 +114,12 @@
       "content/rule/layout/navbar.js",
       "content/rule/layout/sidebar.js",
       "content/rule/layout/other.js",
+      "content/rule/layout/theme.js",
       
       "content/rule/feeds/feeds.js",
-      "content/rule/feeds/text.js",
+      "content/rule/feeds/layout.js",
+      "content/rule/feeds/content.js",
+      "content/rule/feeds/media.js",
 
       "content/rule/about/about.js",
       "content/rule/about/debug.js",

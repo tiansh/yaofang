@@ -557,7 +557,7 @@
       const selector = `input[type="number"][yawf-config-input="${this.configId}"]`;
       const number = container.querySelector(selector);
       const config = this.getConfig();
-      if (number && +number.value !== this.config) {
+      if (number && +number.value !== config) {
         number.value = config;
       }
       return container;
@@ -606,13 +606,58 @@
       const selector = `input[type="range"][yawf-config-input="${this.configId}"]`;
       const range = container.querySelector(selector);
       const config = this.getConfig();
-      if (range && +range.value !== this.config) {
+      if (range && +range.value !== config) {
         range.value = config;
       }
       return container;
     }
   }
   rule.class.RangeConfigItem = RangeConfigItem;
+
+  /**
+   * 一个颜色选择框
+   * 对应一个 color 输入框
+   */
+  class ColorConfigItem extends ConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+    }
+    get initial() { return '#ffffff'; }
+    normalize(value) {
+      if (typeof value !== 'string') return this.initial;
+      if (!/#[0-9a-f]{6}/i.test(value)) return this.initial;
+      return value;
+    }
+    render() {
+      const container = document.createElement('span');
+      container.setAttribute('yawf-config-item', this.configId);
+      container.classList.add('yawf-config-color');
+      const input = document.createElement('input');
+      input.type = 'color';
+      input.value = this.getConfig();
+      input.addEventListener('input', event => {
+        if (!event.isTrusted) input.value = this.getConfig();
+        else this.setConfig(input.value);
+      });
+      input.addEventListener('blur', event => {
+        input.value = this.getConfig();
+      });
+      input.setAttribute('yawf-config-input', this.configId);
+      container.appendChild(input);
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `input[type="color"][yawf-config-input="${this.configId}"]`;
+      const color = container.querySelector(selector);
+      const config = this.getConfig();
+      if (color && color.value !== config) {
+        color.value = config;
+      }
+      return container;
+    }
+  }
+  rule.class.ColorConfigItem = ColorConfigItem;
 
   /**
    * 显示一个小图标，鼠标划上去可以显示弹出起泡
@@ -1132,6 +1177,7 @@
     if (item.type === 'select') return new SelectConfigItem(item, parent);
     if (item.type === 'number') return new NumberConfigItem(item, parent);
     if (item.type === 'range') return new RangeConfigItem(item, parent);
+    if (item.type === 'color') return new ColorConfigItem(item, parent);
     if (item.type === 'bubble') return new BubbleConfigItem(item, parent);
     if (item.type === 'strings') return new StringCollectionConfigItem(item, parent);
     if (item.type === 'regexen') return new RegExpCollectionConfigItem(item, parent);
@@ -1313,6 +1359,7 @@
 .yawf-config-range-wrap { display: none; position: absolute; left: 0; right: 0; margin: 0; bottom: calc(100% + 2px); height: 80px; background: #f0f0f0; background: Menu; }
 .yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
+.yawf-config-color input[type="color"] { width: 45px; box-sizing: border-box; height: 20px; vertical-align: middle; }
 .yawf-config-collection-input { margin: 5px; }
 .yawf-config-collection-list { display: block; margin: 5px; }
 .yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; }

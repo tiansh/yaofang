@@ -6,14 +6,14 @@
 
   const i18n = util.i18n;
 
-  i18n.styleTabTitle = {
+  i18n.feedsTabTitle = {
     cn: '微博展示',
     en: 'Feeds',
   };
 
-  const style = yawf.rules.style = {};
-  style.style = rule.Tab({
-    template: () => i18n.styleTabTitle,
+  const feeds = yawf.rules.feeds = {};
+  feeds.feeds = rule.Tab({
+    template: () => i18n.feedsTabTitle,
   });
 
 }());

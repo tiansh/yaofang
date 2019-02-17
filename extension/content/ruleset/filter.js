@@ -1,7 +1,7 @@
 /**
  * 这个文件用于自动检查页面中出现的微博和评论，并触发过滤规则
  * 涉及函数包括
- *   yawf.observer.<type>.<action>
+ *   yawf.filter.<type>.<action>
  * <type>: feed / comment 处理微博 / 评论
  * <action>:
  *   add(rule: feed => string, { priority: number }): 添加一个规则

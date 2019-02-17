@@ -218,7 +218,8 @@
 
       css.append(`
 [yawf-merge-left] .WB_frame .WB_main_l,
-[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame .yawf-WB_left_nav, body[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame .WB_left_nav { width: 229px; padding: 0; float: none; }
+[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame .yawf-WB_left_nav,
+[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame .WB_left_nav { width: 229px; padding: 0; float: none; }
 [yawf-merge-left]:not([yawf-weibo-only]) .WB_frame { width: 840px !important; padding: 10px; background-position: -300px center; }
 [yawf-merge-left] .WB_frame .yawf-WB_left_nav .lev_line fieldset, body[yawf-merge-left] .WB_frame .WB_left_nav .lev_line fieldset { padding-left: 190px; }
 [yawf-merge-left] .WB_left_nav .lev a:hover, .WB_left_nav .lev_curr, .WB_left_nav .lev_curr:hover, .WB_left_nav .levmore .more { background: rgba(128, 128, 128, 0.1) !important; }
@@ -235,7 +236,8 @@
 
 @media screen and (max-width: 1006px) {
   body[yawf-merge-left] .W_main { width: 600px !important; }
-  body[yawf-merge-left] .WB_frame { width: 600px !important; }
+  body[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame,
+  body[yawf-merge-left][yawf-weibo-only] .WB_frame { width: 600px !important; }
   body[yawf-merge-left] a.W_gotop { margin-left: 310px; }
   body[yawf-merge-left="left"] .WB_main .WB_main_c { float: none; }
   body[yawf-merge-left="left"] .W_fold { right: auto; left: 0; -webkit-transform: scaleX(-1); transform: scaleX(-1); }

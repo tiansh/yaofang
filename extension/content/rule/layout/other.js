@@ -5,6 +5,7 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const init = yawf.init;
+  const message = yawf.message;
 
   const layout = yawf.rules.layout;
 
@@ -22,6 +23,43 @@
   details.details = rule.Group({
     parent: layout.layout,
     template: () => i18n.detailsToolGroupTitle,
+  });
+
+
+  i18n.styleTextFontFamily = {
+    cn: '替换网页字体为|西文{{west}}|中文{{chinese}}',
+    tw: '替換網頁字形為|西文{{west}}|中文{{chinese}}',
+    en: 'Customize fonts on webpage | Western {{west}} | Chinese {{chinese}}',
+  };
+
+  const supportedFonts = message.invoke.getSupportedFontList();
+
+  layout.fontFamily = rule.Rule({
+    id: 'font_family',
+    parent: details.details,
+    template: () => i18n.styleTextFontFamily,
+    ref: {
+      west: {
+        type: 'select',
+        select: supportedFonts.then(fonts => (
+          fonts.west.map(([cssName, name]) => ({ value: name, text: name }))
+        )),
+      },
+      chinese: {
+        type: 'select',
+        select: supportedFonts.then(fonts => (
+          fonts.chinese.map(([cssName, name]) => ({ value: name, text: name }))
+        )),
+      },
+    },
+    async ainit() {
+      const west = this.ref.west.getConfig();
+      const chinese = this.ref.chinese.getConfig();
+      const fonts = await supportedFonts;
+      const [westCssname] = fonts.west.find(([_, name]) => name === west);
+      const [chineseCssname] = fonts.chinese.find(([_, name]) => name === chinese);
+      css.append(`html body, html body.WB_macT, html body.WB_xpT, html .WB_webim { font-family: ${westCssname}, ${chineseCssname}; }`);
+    },
   });
 
   Object.assign(i18n, {
@@ -48,6 +86,7 @@
     ref: {
       shape: {
         type: 'select',
+        initial: 'square',
         select: [
           { value: 'circle', text: () => i18n.avatarShapeCircle },
           { value: 'square', text: () => i18n.avatarShapeSquare },
@@ -111,7 +150,7 @@
           if (iy !== ny) {
             return `${iy}-${im}-${id} ${ih}:${iu}`;
           } else if (im !== nm || id !== nd) {
-            return i18n.timeMonthDay.replace(/\{\d\}/g, n => [im, id, ih, iu][n[1] - 1])
+            return i18n.timeMonthDay.replace(/\{\d\}/g, n => [im, id, ih, iu][n[1] - 1]);
           } else if (ih !== nh && diff > 3600) {
             return `${i18n.timeToday} ${ih}:${iu}`;
           } else if (diff > 50) {
@@ -121,15 +160,37 @@
           }
         };
 
-        const updateDate = function () {
+        const formatter = Intl.DateTimeFormat(
+          { cn: 'zh-CN', hk: 'zh-HK', tw: 'zh-TW', en: 'en-US' }[util.language],
+          {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            weekday: 'long',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'long',
+          }
+        );
+        const formatTimeDetail = function (date) {
+          return formatter.format(date);
+        };
+
+        const updateDate = function (element) {
+          const date = parseInt(element.getAttribute('yawf-date'), 10);
+          element.textContent = formatTime(date);
+          element.title = formatTimeDetail(date);
+        };
+
+        const updateAllDate = function () {
           const dates = document.querySelectorAll('[yawf-date]');
           Array.from(dates).forEach(element => {
-            element.textContent = formatTime(parseInt(element.getAttribute('yawf-date'), 10));
+            updateDate(element);
           });
         };
 
         const handleDateElements = function handleDateElements() {
-          const [feedListTimeTip, ...moreFeedListTimeTip] = document.querySelectorAll('[node-type="feed_list_timeTip"][date]')
+          const [feedListTimeTip, ...moreFeedListTimeTip] = document.querySelectorAll('[node-type="feed_list_timeTip"][date]');
           moreFeedListTimeTip.forEach(element => element.remove());
           if (feedListTimeTip) (function (tip) {
             const olds = document.querySelectorAll('[node-type="yawf-feed_list_timeTip"][date]');
@@ -151,11 +212,11 @@
             element.removeAttribute('date');
           });
 
-          if (feedListTimeTip || dateElements.length) updateDate();
+          if (feedListTimeTip || dateElements.length) updateAllDate();
         };
 
         observer.add(handleDateElements);
-        setInterval(updateDate, 1e3);
+        setInterval(updateAllDate, 1e3);
 
         const parseTextTime = function (text) {
           let parseDate = null;
@@ -200,14 +261,16 @@
             const time = parseTextTime(text);
             if (!time) return;
             util.debug('parse time %o(%s) to %o(%s)', textNode, text, new Date(time), new Date(time));
-            textNode.textContent = formatTime(time) + (tail ? ` ${tail} ` : '');
+            textNode.textContent = tail ? ` ${tail} ` : '';
+            const timeElement = document.createElement('span');
+            timeElement.setAttribute('yawf-date', time);
+            updateDate(timeElement);
           });
         };
 
         observer.add(handleTextDateElements);
-      }
+      },
     });
   }
-
 
 }());

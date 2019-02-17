@@ -34,7 +34,6 @@
     },
   });
 
-
   filter.feed.onBefore(async function (feed) {
     const unfold = Array.from(feed.querySelectorAll('[action-type="fl_unfold"]'));
     // 这段逻辑基于 lib.feed.plugins.moreThan140
@@ -48,16 +47,23 @@
       const full = text.cloneNode(false);
       full.setAttribute('node-type', full.getAttribute('node-type') + '_full');
       dom.content(full, html);
-      full.style.display = 'none';
       text.parentNode.insertBefore(full, text.nextSibling);
       const charCount = feedCharacterCount(full);
+      const lineBreakCount = full.querySelectorAll('br').length;
       const foldButtonContainer = document.createElement('div');
       foldButtonContainer.innerHTML = '<a href="javascript:void(0);" ignore="ignore" class="WB_text_opt" action-type="fl_fold"><i class="W_ficon ficon_arrow_up">d</i></a>';
-      const foldButton = foldButtonContainer.firstChild;
-      foldButton.insertBefore(document.createTextNode(i18n.foldText), foldButton.firstChild);
-      full.appendChild(foldButton);
       const countTip = i18n.textCount.replace('{1}', () => charCount > 1000 ? Math.round(charCount / 100) * 100 : Math.round(charCount / 10) * 10);
       button.insertBefore(document.createTextNode(countTip), button.querySelector('i'));
+      // 自动展开不超过指定字数的微博
+      const expandLong = yawf.rules.feeds.content.expandLong;
+      if (expandLong.getConfig() && expandLong.ref.count.getConfig() >= charCount + lineBreakCount * (expandLong.ref.br.getConfig() - 1)) {
+        text.style.display = 'none';
+      } else {
+        full.style.display = 'none';
+        const foldButton = foldButtonContainer.firstChild;
+        foldButton.insertBefore(document.createTextNode(i18n.foldText), foldButton.firstChild);
+        full.appendChild(foldButton);
+      }
     });
     return Promise.all(unfolding).then(() => { });
   });
