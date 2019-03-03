@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
 
   const request = yawf.request;
@@ -34,7 +34,7 @@
     },
   });
 
-  filter.feed.onBefore(async function (feed) {
+  observer.feed.onBefore(async function (feed) {
     const unfold = Array.from(feed.querySelectorAll('[action-type="fl_unfold"]'));
     // 这段逻辑基于 lib.feed.plugins.moreThan140
     // 包括直接把 HTML 插入进去的逻辑也是根据这段来做的

@@ -26,7 +26,7 @@
   clean.CleanRule('logoImg', () => i18n.cleanNavLogoImg, 1, {
     ainit: function () {
       const rule = this;
-      observer.add(function replaceLogo() {
+      observer.dom.add(function replaceLogo() {
         const box = document.querySelector('.WB_global_nav .gn_logo .box');
         if (!box) { setTimeout(replaceLogo, 100); return; }
         const img = box.getElementsByTagName('img')[0];

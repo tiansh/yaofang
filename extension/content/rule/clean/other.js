@@ -86,7 +86,7 @@
         const adskincover = document.querySelector('#skin_cover_s[style*="/skin35"], #skin_cover_s[style*="/skin36"]');
         if (adskincover) adskincover.style.backgroundImage = `url("//img.t.sinajs.cn/t6/skin/${targetSkin}/images/profile_cover_s.jpg?version=${encodeURIComponent(version)}")`;
       };
-      observer.add(updateSkin);
+      observer.dom.add(updateSkin);
 
       const removeAdIframes = function removeAdIframes() {
         const iframes = Array.from(document.querySelectorAll('iframe[src*="s.alitui.weibo.com"]'));
@@ -94,7 +94,7 @@
           iframe.parentNode.removeChild(iframe);
         });
       };
-      observer.add(removeAdIframes);
+      observer.dom.add(removeAdIframes);
     },
   });
   clean.CleanRule('tracker', () => i18n.cleanOtherTracker, 1, {

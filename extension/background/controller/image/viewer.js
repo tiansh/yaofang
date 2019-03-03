@@ -6,7 +6,7 @@
   const yawf = window.yawf;
   const message = yawf.message;
 
-  const showImageViewer = function ({ images, current, background = false }) {
+  const showImageViewer = function showImageViewer({ images, current, background = false }) {
     const sender = this;
     const url = new URL(browser.runtime.getURL('/external/image/viewer/index.html'));
     images.forEach(image => url.searchParams.append('i', image));

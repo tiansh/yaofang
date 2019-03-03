@@ -3,11 +3,10 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
   const observer = yawf.observer;
   const request = yawf.request;
 
-  const feeds = yawf.rules.feeds;
+  const filter = yawf.rules.filter;
 
   const i18n = util.i18n;
 
@@ -51,9 +50,9 @@
     },
   });
 
-  const homepage = feeds.homepage = {};
+  const homepage = filter.homepage = {};
   homepage.homepage = rule.Group({
-    parent: feeds.feeds,
+    parent: filter.filter,
     template: () => i18n.feedsHomepageGroupTitle,
   });
 
@@ -93,7 +92,7 @@
         location.replace(url);
       }
     };
-    observer.add(updateLocation);
+    observer.dom.add(updateLocation);
 
     const updateHomeLinksWithGid = function updateHomeLinksWithGid() {
       /** @type {HTMLAnchorElement[]} */
@@ -108,7 +107,7 @@
         link.href = url.href;
       });
     };
-    observer.add(updateHomeLinksWithGid);
+    observer.dom.add(updateHomeLinksWithGid);
   };
 
   let groupListLazyPromiseResolve;
@@ -191,7 +190,7 @@
         if (!Array.isArray(groups)) return;
         if (groups.length < 2) return;
         query.delete('gid');
-        observer.add(function multiGroupPageFix() {
+        observer.dom.add(function multiGroupPageFix() {
           watchFeedList(query);
           watchMembers();
         });

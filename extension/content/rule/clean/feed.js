@@ -4,7 +4,6 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
-  const filter = yawf.filter;
 
   const i18n = util.i18n;
   const css = util.css;
@@ -69,7 +68,7 @@
 .WB_feed.WB_feed_v3 .WB_feed_vipcover .WB_feed_detail { padding-top: 20px; }
 `);
   clean.CleanRule('lastPic', () => i18n.cleanFeedLastPic, 1, function () {
-    observer.add(function hideLastPic() {
+    observer.dom.add(function hideLastPic() {
       const last = document.querySelector('.WB_feed_type .WB_expand_media .WB_media_view:not([yawf-piclast]) .pic_choose_box li:last-child a.current');
       if (last) last.closest('.WB_media_view').setAttribute('yawf-piclast', 'yawf-piclast');
       const notLast = document.querySelector('.WB_feed_type .WB_expand_media .WB_media_view[yawf-piclast] .pic_choose_box li:not(:last-child) a.current');
@@ -86,7 +85,7 @@
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedCardDetail } },
   });
   clean.CleanRule('articalPay', () => i18n.cleanFeedArticalPay, 1, function () {
-    observer.add(function hideArticalPay() {
+    observer.dom.add(function hideArticalPay() {
       const element1 = document.querySelector('.feed_app_btn_a a[action-data*="px.e.weibo.com"]');
       if (element1) element1.closest('.feed_app_btn_a').remove();
       const element2 = document.querySelector('.WB_cardwrap #pl_article_articlePay');
@@ -137,7 +136,7 @@ a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3
   clean.CleanRule('report', () => i18n.cleanFeedReport, 1, '.screen_box .layer_menu_list a[onclick*="service.account.weibo.com/reportspam"], .WB_handle ul li[yawf-comment-handle-type="report"] { display: none !important; }');
   clean.CleanRule('useCardBackground', () => i18n.cleanFeedUseCardBackground, 1, '.screen_box .layer_menu_list a[action-type="fl_cardCover"] { display: none !important; }');
 
-  filter.feed.onBefore(function (feed) {
+  observer.feed.onBefore(function (feed) {
     const lis = Array.from(feed.querySelectorAll('.WB_feed_type .WB_handle .WB_row_line li, .WB_feed_together .WB_func .WB_handle li'));
     lis.forEach(li => {
       let type = li.querySelector('a').getAttribute('action-type');
@@ -154,11 +153,11 @@ a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3
   });
 
   // 标记微博评论按钮
-  observer.add(function markCommentButton() {
+  observer.dom.add(function markCommentButton() {
     const cli = Array.from(document.querySelectorAll([
       '.list_ul[node-type="feed_list_commentList"] .WB_handle ul li:not([yawf-comment-handle-type])',
       '.list_ul[node-type="comment_list"] .WB_handle ul li:not([yawf-comment-handle-type])',
-      '.WB_feed_comment .WB_handle ul li:not([yawf-comment-handle-type])'
+      '.WB_feed_comment .WB_handle ul li:not([yawf-comment-handle-type])',
     ].join(',')));
     cli.forEach(li => {
       const a = li.querySelector('a');

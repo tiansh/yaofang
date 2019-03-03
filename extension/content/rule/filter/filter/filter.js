@@ -7,15 +7,15 @@
 
   const i18n = util.i18n;
 
-  i18n.feedsTabTitle = {
+  i18n.filterTabTitle = {
     cn: '微博过滤',
     tw: '微博篩選',
-    en: 'Feeds',
+    en: 'Filter',
   };
 
-  const feeds = yawf.rules.feeds = {};
-  feeds.feeds = rule.Tab({
-    template: () => i18n.feedsTabTitle,
+  const filter = yawf.rules.filter = {};
+  filter.filter = rule.Tab({
+    template: () => i18n.filterTabTitle,
   });
 
 }());

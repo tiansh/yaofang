@@ -26,7 +26,8 @@
   const stupidInnerHtmlAssign = function (element, innerHtml) {
     const fragment = parseHtml(innerHtml);
     element.innerHTML = '';
-    while (fragment.firstChild) element.appendChild(fragment.firstChild);
+    element.appendChild(fragment);
+    return element;
   };
   dom.content = stupidInnerHtmlAssign;
 

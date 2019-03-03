@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
 
   const more = yawf.rules.more;
 
@@ -41,7 +41,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function deletedForwardFilter(feed) {
+      observer.feed.filter(function deletedForwardFilter(feed) {
         if (!rule.isEnabled()) return null;
         const isForward = feed.getAttribute('isforward') === '1';
         if (!isForward) return null;
@@ -71,7 +71,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function commentAndForwardFilter(feed) {
+      observer.feed.filter(function commentAndForwardFilter(feed) {
         if (!rule.isEnabled()) return null;
         const replyText = ['回复', '回復', '回覆', 'Reply', 'reply'];
         if (feed.getAttribute('isforward') !== '1') return null;
@@ -102,7 +102,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function voteFeedFilter(feed) {
+      observer.feed.filter(function voteFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('.WB_from a[href*="//vote.weibo.com/"]')) return 'hide';
         if (feed.querySelector('.WB_feed_spec_cont a[action-data*="vote.weibo.com"]')) return 'hide';
@@ -133,7 +133,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function redPackFeedFilter(feed) {
+      observer.feed.filter(function redPackFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('.PCD_event_red2014')) return 'hide';
         if (feed.querySelector('.WB_feed_spec_red2015')) return 'hide';
@@ -163,7 +163,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function koiForwardFeedFilter(feed) {
+      observer.feed.filter(function koiForwardFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('a[action-type="fl_forward"] .icon_jinli')) return 'hide';
         return null;
@@ -190,7 +190,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function appItemFeedFilter(feed) {
+      observer.feed.filter(function appItemFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('.WB_feed_spec[exp-data*="key=tblog_weibocard"][exp-data*="1042005-appItem"]')) return 'hide';
         return null;
@@ -217,7 +217,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function wendaFeedFilter(feed) {
+      observer.feed.filter(function wendaFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         // 这条规则不在显示某人的全部问答页面生效，避免显示空页面
         if (feed.matches('[id^="Pl_Core_WendaList__"] *')) return null;
@@ -246,7 +246,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function wenwoDrFeedFilter(feed) {
+      observer.feed.filter(function wenwoDrFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('div[action-data*="objectid=2017896001:"]')) return 'hide';
         if (feed.querySelector('a[suda-uatrack*="2017896001-product"]')) return 'hide';
@@ -290,7 +290,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function yizhiboFeedFilter(feed) {
+      observer.feed.filter(function yizhiboFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         const type = rule.ref.type.getConfig();
         const live = feed.querySelector('.WB_video[suda-uatrack*="2227747001-live"]');
@@ -324,7 +324,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function stockFeedFilter(feed) {
+      observer.feed.filter(function stockFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('a[suda-uatrack*="1022-stock"]')) return 'hide';
         return null;
@@ -351,7 +351,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function paidFeedFilter(feed) {
+      observer.feed.filter(function paidFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         const searchParams = new URLSearchParams(location.search);
         const paidOnly = +searchParams.get('vplus') || searchParams.get('is_vclub');
@@ -381,7 +381,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function multipleTopicsFilter(feed) {
+      observer.feed.filter(function multipleTopicsFilter(feed) {
         if (!rule.isEnabled()) return null;
         const limit = rule.ref.num.getConfig();
         const topics = feedParser.topic.dom(feed);

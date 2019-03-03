@@ -3,10 +3,8 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
-
-  const author = yawf.rules.author;
 
   const i18n = util.i18n;
 
@@ -44,7 +42,7 @@
     }
     init() {
       const rule = this;
-      filter.feed.add(function authorFilterFeedFilter(/** @type {Element} */feed) {
+      observer.feed.filter(function authorFilterFeedFilter(/** @type {Element} */feed) {
         const [author] = feedParser.author.id(feed);
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => account.id === author);
@@ -54,7 +52,6 @@
       }, { priority: this.filterPriority });
     }
   }
-
 
   rule.groups({
     baseClass: AuthorFeedRule,

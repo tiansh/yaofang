@@ -109,9 +109,9 @@
 .WB_global_nav.WB_global_nav .gn_logo .box .logo { margin-left: 0; }
 .WB_global_nav_us.WB_global_nav_us .gn_position { margin-right: 0; }
 `);
-        observer.remove(moveNavList);
+        observer.dom.remove(moveNavList);
       };
-      observer.add(moveNavList);
+      observer.dom.add(moveNavList);
     },
   });
 

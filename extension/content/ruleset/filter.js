@@ -1,7 +1,7 @@
 /**
  * 这个文件用于自动检查页面中出现的微博和评论，并触发过滤规则
  * 涉及函数包括
- *   yawf.filter.<type>.<action>
+ *   yawf.observer.<type>.<action>
  * <type>: feed / comment 处理微博 / 评论
  * <action>:
  *   add(rule: feed => string, { priority: number }): 添加一个规则
@@ -15,17 +15,12 @@
   const yawf = window.yawf;
 
   const util = yawf.util;
-  const storage = yawf.storage;
-  const config = yawf.config;
   const init = yawf.init;
   const observer = yawf.observer;
 
   const priority = util.priority;
   const css = util.css;
   const i18n = util.i18n;
-
-  const filter = yawf.filter = {};
-
 
   /**
    * 用于收集针对微博或评论的过滤规则，并根据优先级逐一检查
@@ -82,7 +77,7 @@
       this.busy = false;
       this.clean = null;
     }
-    add(filter, { priority = 0 } = {}) {
+    filter(filter, { priority = 0 } = {}) {
       this.filters.add(filter, priority);
     }
     /** @param {Array<Function>} callbacks */
@@ -161,8 +156,8 @@
    * 针对微博的过滤规则
    * 对应脚本版 observer.weibo.*
    */
-  filter.feed = new FilterObserver();
-  filter.feed.apply = function (feed, { result, filter = null, reason = null }) {
+  observer.feed = new FilterObserver();
+  observer.feed.apply = function (feed, { result, filter = null, reason = null }) {
     feed.setAttribute('yawf-feed-display', result || 'unset');
     if (result && result !== 'unset') {
       const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]').title;
@@ -173,15 +168,15 @@
     if (result === 'hide') return false;
     return true;
   };
-  filter.feed.onFinally(removeHiddenItem);
-  filter.feed.onFinally(foldFeedUnfold);
+  observer.feed.onFinally(removeHiddenItem);
+  observer.feed.onFinally(foldFeedUnfold);
 
   /**
    * 针对评论的过滤规则
    * 对应脚本版 observer.comment
    */
-  filter.comment = new FilterObserver();
-  filter.comment.apply = function (comment, { result, filter = null, reason = null }) {
+  observer.comment = new FilterObserver();
+  observer.comment.apply = function (comment, { result, filter = null, reason = null }) {
     comment.setAttribute('yawf-comment-display', result || 'unset');
     if (result && result !== 'unset') {
       util.debug('Comment filter %o -> %o by %o due to %o', comment, result, filter, reason);
@@ -189,29 +184,29 @@
     if (result === 'hide') return false;
     return true;
   };
-  filter.comment.onFinally(removeHiddenItem);
+  observer.comment.onFinally(removeHiddenItem);
 
 
   init.onLoad(function () {
     // 自动检测页面中的微博并触发过滤规则
-    observer.add(function feedFilter() {
+    observer.dom.add(function feedFilter() {
       const feeds = document.querySelectorAll([
         '[action-type="feed_list_item"]:not([yawf-feed])',
         '[node-type="feed_list"] .WB_feed_type:not([yawf-feed])',
       ].join(','));
       if (!feeds.length) return;
       feeds.forEach(feed => feed.setAttribute('yawf-feed', ''));
-      filter.feed.active(feeds);
+      observer.feed.active(feeds);
     });
     // 自动检测页面中的评论并触发过滤规则
-    observer.add(function commentFilter() {
+    observer.dom.add(function commentFilter() {
       const comments = document.querySelectorAll([
         '.list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment])',
         '.list_ul[node-type="comment_list"] .list_li:not([yawf-comment]) ',
       ].join(','));
       if (!comments.length) return;
       comments.forEach(comment => comment.setAttribute('yawf-comment', ''));
-      filter.comment.active(comments);
+      observer.comment.active(comments);
     });
   }, { priority: priority.LAST });
 
@@ -236,15 +231,15 @@
   });
 
   // 单条微博页面永远不应当隐藏微博
-  filter.feed.add(function singleWeiboPageUnsetRule() {
+  observer.feed.filter(function singleWeiboPageUnsetRule() {
     return document.querySelector('[id^="Pl_Official_WeiboDetail__"]') ? 'unset' : null;
   }, { priority: 1e6 });
   // 头条文章是一条微博，类似于单条微博，不应当隐藏
-  filter.feed.add(function singleWeiboPageUnsetRule(feed) {
+  observer.feed.filter(function singleWeiboPageUnsetRule(feed) {
     return feed.matches('.WB_artical *') ? 'unset' : null;
   }, { priority: 1e6 });
   // 无论因为何种原因，同一页面上同一条微博不应出现两次
-  filter.feed.add(function hideDuplicate(feed) {
+  observer.feed.filter(function hideDuplicate(feed) {
     if (feed.hasAttribute('yawf-not-duplicate')) return null;
     const mid = feed.getAttribute('mid'); if (!mid) return null;
     const all = Array.from(document.querySelectorAll('.WB_feed_type:not([yawf-not-duplicate])'));

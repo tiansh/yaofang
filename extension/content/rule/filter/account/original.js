@@ -4,7 +4,7 @@
   const util = yawf.util;
   const init = yawf.init;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
 
   const rules = yawf.rules;
@@ -59,7 +59,7 @@
     }
     init() {
       const rule = this;
-      filter.feed.add(function originalFilterFeedFilter(/** @type {Element} */feed) {
+      observer.feed.filter(function originalFilterFeedFilter(/** @type {Element} */feed) {
         const original = new Set(feedParser.original.id(feed));
         if (rules.original.id.discover.isEnabled() && init.page.type() === 'discover') {
           feedParser.author.id(feed).forEach(id => original.add(id));

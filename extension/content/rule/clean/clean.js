@@ -101,7 +101,7 @@
       });
     };
     Object.defineProperty(tagElements, 'name', { value: `tagElements${name}` });
-    observer.add(tagElements);
+    observer.dom.add(tagElements);
   };
 
 }());

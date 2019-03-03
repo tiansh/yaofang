@@ -28,7 +28,7 @@ module.exports = {
     'no-multiple-empty-lines': ['warn', { max: 2 }],
     'quotes': ['warn', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     'arrow-parens': ['warn', 'as-needed'],
-    'quote-props': ['warn', 'as-needed', { numbers: true }],
+    'quote-props': ['warn', 'as-needed'],
     'dot-notation': ['warn'],
 
     'arrow-spacing': ['warn'],

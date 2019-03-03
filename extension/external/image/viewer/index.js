@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const modeStringX = ['x-auto', 'x-fit', 'x-center'];
   const modeStringY = ['y-auto', 'y-fit', 'y-center'];
-  const cursor = ['cur-zoom-out', 'cur-zoom-in', 'cur-zoom-in', 'cur-default']
+  const cursor = ['cur-zoom-out', 'cur-zoom-in', 'cur-zoom-in', 'cur-default'];
   // 0: image larger than container, use scroll bar to view image
   // 1: image larger than container, shrink to fit container
   // 2: image smaller than container, put at center
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   viewer.addEventListener('load', () => { updateViewMode(false); });
-  container.addEventListener('mousemove', event => { updateMouseStyle(event.clientX); })
+  container.addEventListener('mousemove', event => { updateMouseStyle(event.clientX); });
   container.addEventListener('click', event => { onContainerClick(event.clientX); });
   document.addEventListener('keydown', event => { onKeyDown(event.keyCode) || event.preventDefault(); });
   window.addEventListener('hashchange', event => { showImage(getCurrentImage()); });

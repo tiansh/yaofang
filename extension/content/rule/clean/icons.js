@@ -56,7 +56,7 @@
   clean.CleanRule('gongyi', () => i18n.cleanIconsGongyi, 1, '.ico_gongyi, .ico_gongyi1, .ico_gongyi2, .ico_gongyi3, .ico_gongyi4, .ico_gongyi5, .icon_gongyi, .icon_gongyi2, .icon_gongyi3, .icon_gongyi4, .icon_gongyi5 { display: none !important; }', showIcons(['icon_gongyi']));
   clean.CleanRule('zongyika', () => i18n.cleanIconsZongyika, 1, '.zongyika2014, .icon_zongyika2014 { display: none !important; }', showIcons(['icon_zongyika2014']));
   clean.CleanRule('others', () => i18n.cleanIconsOthers, 1, () => {
-    observer.add(function () {
+    observer.dom.add(function () {
       const icons = Array.from(document.querySelectorAll('a > .W_icon_yystyle'));
       icons.forEach(function (icon) {
         icon.parentNode.remove();

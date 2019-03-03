@@ -45,7 +45,7 @@
 .PCD_header.PCD_header .pf_username,
 .PCD_header.PCD_header .pf_intro { text-align: left; }
     `);
-    observer.add(function fullProfileIntroduction() {
+    observer.dom.add(function fullProfileIntroduction() {
       const intro = document.querySelector('.PCD_header .pf_intro:not([yawf-full-intro])');
       if (!intro) return;
       intro.setAttribute('yawf-full-intro', (intro.textContent = intro.title));
@@ -80,7 +80,7 @@
     '.PCD_person_info a.WB_cardmore[href^="/p/"][href$="info?mod=pedit"]': 'yawf-pr-pcd-person-info-my',
   });
 
-  observer.add(function tagProfileLeftNames() {
+  observer.dom.add(function tagProfileLeftNames() {
     const titles = Array.from(document.querySelectorAll([
       '.WB_frame_b > div:not([yawf-obj-name]) .main_title',
       '.WB_frame_c > div:not([yawf-obj-name]) .main_title',

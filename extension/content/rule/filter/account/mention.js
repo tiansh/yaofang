@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
   const request = yawf.request;
 
@@ -45,7 +45,7 @@
     }
     init() {
       const rule = this;
-      filter.feed.add(function mentionFilterFeedFilter(/** @type {Element} */feed) {
+      observer.feed.filter(function mentionFilterFeedFilter(/** @type {Element} */feed) {
         const mentions = new Set(feedParser.mention.name(feed));
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => mentions.has(account));

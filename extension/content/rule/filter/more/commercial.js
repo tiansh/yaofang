@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
   const init = yawf.init;
 
@@ -40,7 +40,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function adFeedFilter(feed) {
+      observer.feed.filter(function adFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         // 修改这里时请注意，悄悄关注也会显示关注按钮，但是相关微博不应被隐藏
         if (feed.getAttribute('feedtype') === 'ad') return 'hide';
@@ -80,7 +80,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function fansTopFeedFilter(feed) {
+      observer.feed.filter(function fansTopFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('[adcard="fanstop"]')) return 'hide';
         return null;
@@ -106,7 +106,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function weiboProductFeedFilter(feed) {
+      observer.feed.filter(function weiboProductFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('.WB_feed_spec[exp-data*="key=tblog_weibocard"][exp-data*="1022-product"]')) return 'hide';
         if (feed.querySelector('.WB_feed_spec[exp-data*="key=tblog_weibocard"][exp-data*="2017845002-product"]')) return 'hide';
@@ -166,7 +166,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function taobaoProductFeedFilter(feed) {
+      observer.feed.filter(function taobaoProductFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('.icon_cd_tmall, .icon_cd_tb, .icon_cd_ju')) return 'hide';
         if (feed.querySelector('a[href^="https://shoptb.sc.weibo.com/"]')) return 'hide';
@@ -193,7 +193,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function weiboProductFeedFilter(feed) {
+      observer.feed.filter(function weiboProductFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('div[action-data*="objectid=1042025:"]')) return 'hide';
         if (feed.querySelector('a[suda-uatrack*="1042025-webpage"]')) return 'hide';
@@ -221,7 +221,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function userLikeFeedFilter(feed) {
+      observer.feed.filter(function userLikeFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         if (init.page.type() !== 'profile') return null;
         const { oid, onick } = init.page.$CONFIG;
@@ -254,7 +254,7 @@
     },
     init() {
       const rule = this;
-      filter.feed.add(function fakeWeiboFilter(feed) {
+      observer.feed.filter(function fakeWeiboFilter(feed) {
         if (feed.matches('[id^="Pl_Core_WendaList__"] *')) return null;
         if (feed.hasAttribute('mid')) return null;
         if (rule.isEnabled()) return 'hide';

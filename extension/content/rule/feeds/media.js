@@ -29,7 +29,7 @@
       cn: '查看图片添加“查看原图”链接|打开{{open}}||{{direct}}点击缩略图时直接查看原图',
       hk: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖',
       tw: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖',
-      en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View orignal pictures by clicking on thumbnail'
+      en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View orignal pictures by clicking on thumbnail',
     },
     viewOriginalPage: { cn: '包含原图的网页', tw: '包含原圖的網頁', en: 'page with original picture' },
     viewOriginalImage: { cn: '原图', tw: '原圖', en: 'original picture' },
@@ -126,7 +126,7 @@
           update();
         });
       };
-      observer.add(addImageHandlerLink);
+      observer.dom.add(addImageHandlerLink);
 
       if (direct) {
         document.addEventListener('click', function (event) {

@@ -105,7 +105,7 @@
         const item = leftNavItem(type, configItem.text());
         messages.appendChild(item);
       });
-      observer.add(function sidebarShowMessages() {
+      observer.dom.add(function sidebarShowMessages() {
         const groupList = document.querySelector('#v6_pl_leftnav_group [node-type="groupList"]:not([yawf-message])');
         if (!groupList) return;
         let home = groupList.querySelector('.lev a[href*="/home?"]');
@@ -303,7 +303,7 @@
         };
       }());
 
-      observer.add(function sidebarMerge() {
+      observer.dom.add(function sidebarMerge() {
         positionLeft();
         fixStylish();
         forceReflush();
@@ -408,7 +408,7 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
 
       document.addEventListener('scroll', updateLeftPosition);
       window.addEventListener('resize', updateLeftPosition);
-      observer.add(updateLeftPosition);
+      observer.dom.add(updateLeftPosition);
     },
   });
 
@@ -457,7 +457,7 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
           replaceTarget.replaceWith(cloned);
         });
       };
-      observer.add(removeFixed);
+      observer.dom.add(removeFixed);
     },
   });
 
@@ -485,7 +485,7 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
     },
     ainit() {
       const side = this.ref.side.getConfig();
-      observer.add(function choseSideRunner() {
+      observer.dom.add(function choseSideRunner() {
         let b, c, p;
         if (side === 'left') {
           b = document.querySelector('#plc_main>.WB_frame_c:first-child+.WB_frame_b:last-child'); if (!b) return;

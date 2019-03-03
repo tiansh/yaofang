@@ -73,7 +73,7 @@
           link.target = '_blank';
           link.textContent = i18n.setSkinListPageTitle;
           return link;
-        }
+        },
       },
     },
     ainit() {
@@ -110,7 +110,7 @@
           skinStyle.parentNode.insertBefore(customStyle, skinStyle.nextSibling);
         }
       };
-      observer.add(setSkin);
+      observer.dom.add(setSkin);
     },
     init() {
       const rule = this;

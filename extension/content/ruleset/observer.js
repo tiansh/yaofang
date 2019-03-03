@@ -2,20 +2,18 @@
  * 这个文件用于检查页面中是否有新元素添加或元素变化，并自动触发各类回调
  * 由于微博会频繁更新界面上显示的日期（××分钟前）文本，
  *   这里特别过滤掉了日期显示的相关变化，如果仅包括此类变化则不触发回调
- * yawf.observer.add(callback: Function) 添加一个回调
- * yawf.observer.remove(callback: Function) 取消一个回调
+ * yawf.observer.dom.add(callback: Function) 添加一个回调
+ * yawf.observer.dom.remove(callback: Function) 取消一个回调
  */
 ; (async function () {
 
   const yawf = window.yawf;
 
   const util = yawf.util;
-  const storage = yawf.storage;
-  const config = yawf.config;
   const init = yawf.init;
 
-  const filter = yawf.filter = {};
-  const observer = yawf.observer = {};
+  const observer = yawf.observer = yawf.observer || {};
+  observer.dom = {};
 
   const priority = util.priority;
   const performance = util.performance;
@@ -27,7 +25,7 @@
    * 当页面有任何变化时回调
    * @param {Function} callback
    */
-  observer.add = function (callback) {
+  observer.dom.add = function (callback) {
     callbacks.push(callback);
     return callback;
   };
@@ -36,7 +34,7 @@
    * 移除之前添加的回调
    * @param {Function} callback
    */
-  observer.remove = function (callback) {
+  observer.dom.remove = function (callback) {
     let found = false;
     while (true) {
       const index = callbacks.findIndex(item => item === callback);

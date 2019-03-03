@@ -215,7 +215,7 @@
           if (feedListTimeTip || dateElements.length) updateAllDate();
         };
 
-        observer.add(handleDateElements);
+        observer.dom.add(handleDateElements);
         setInterval(updateAllDate, 1e3);
 
         const parseTextTime = function (text) {
@@ -268,7 +268,7 @@
           });
         };
 
-        observer.add(handleTextDateElements);
+        observer.dom.add(handleTextDateElements);
       },
     });
   }

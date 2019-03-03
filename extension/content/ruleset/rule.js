@@ -313,17 +313,39 @@
      */
     normalize(value) { return value; }
     /**
+     * 重载这个函数来指定使用什么来存储
+     * 默认保存在当前用户之下
+     */
+    get configPool() {
+      return config.user;
+    }
+    /**
+     * 初始化设置项
+     * 这个函数仅应由 initConfig 调用
+     */
+    preparConfig() {
+      if (this.config) return this.config;
+      if (!this.id) throw Error('id is required to init config');
+      this.config = this.configPool.key(this.id);
+      return this.config;
+    }
+    /**
      * 一个项目不一定总是需要包含设置项
      * 如果没有调用过任何 getConfig, setConfig 等方法，则不会为该项目分配设置项
      * 在第一次调用任何和设置项相关的方法时，我们试图分配设置项
      */
     initConfig() {
       if (this.configInitialized) return;
-      if (!this.config) {
-        if (!this.id) throw Error('id is required to init config');
-        this.config = config.user.key(this.id);
-      }
       this.configInitialized = true;
+      this.preparConfig();
+      this.addConfigUiListener();
+    }
+    /**
+     * 初始化设置项变化时对 UI 的反馈
+     * 这个函数仅应由 initConfig 调用
+     */
+    addConfigUiListener() {
+      this.initConfig();
       this.config.addListener(newValue => {
         const items = this.getRenderItems();
         items.forEach(item => this.renderValue(item));
@@ -387,6 +409,19 @@
     }
   }
   rule.class.ConfigItem = ConfigItem;
+
+  /**
+   * 一个没有界面的设置项
+   */
+  class OffscreenConfigItem extends ConfigItem {
+    addConfigUiListener() { /* 因为没有 UI，所以什么都不做 */ }
+    render() { return null; }
+    text() { return ''; }
+    getRenderItems() { return null; }
+    getRenderResult() { return null; }
+    renderValue() { return null; }
+  }
+  rule.class.OffscreenConfigItem = OffscreenConfigItem;
 
   /**
    * 一个布尔设置项
@@ -1185,6 +1220,7 @@
     if (item.type === 'usernames') return new UserNameCollectionConfigItem(item, parent);
     if (item.type === 'topics') return new TopicCollectionConfigItem(item, parent);
     if (item.type === 'groups') return new GroupIdCollectionConfigItem(item, parent);
+    if (item.type === 'offscreen') return new OffscreenConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };
 

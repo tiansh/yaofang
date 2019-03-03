@@ -5,25 +5,9 @@
 
   const yawf = window.yawf;
   const message = yawf.message;
+  const util = yawf.util;
 
-  /**
-   * @template T
-   * @param {T & Function} f
-   * @returns {T}
-   */
-  const once = function (f) {
-    let executed = false, value = null;
-    const name = f.name;
-    const wrap = function (...args) {
-      if (executed) return value;
-      value = f(...args);
-      f = null;
-      executed = true;
-      return value;
-    };
-    Object.defineProperty(wrap, 'name', { get: () => name });
-    return wrap;
-  };
+  const functools = util.functools;
 
   const textWidth = (function () {
     const fontsize = 14;
@@ -38,7 +22,13 @@
   }());
 
   const sampleTextWidth = function (fontname) {
-    const sampleText = 'The quick brown fox jumps over the lazy dog7531902468,.!-������Ƅt�����ӣ�������';
+    const sampleText = [
+      'The quick brown fox jumps over the lazy dog',
+      '7531902468',
+      ',.!-',
+      '天地玄黄，宇宙洪荒。',
+      '知所先後，則近道矣。'
+    ].join('');
     return textWidth(fontname, sampleText);
   };
 
@@ -47,7 +37,7 @@
     'Times', 'Times New Roman', '宋体', '黑体', 'Microsoft YaHei',
   ];
 
-  const setupBaseline = once(function () {
+  const setupBaseline = functools.once(function () {
     return basicFonts.map(fontname => sampleTextWidth(fontname));
   });
 
@@ -58,7 +48,7 @@
     ));
   };
 
-  const checkAllFonts = once(function () {
+  const checkAllFonts = functools.once(function () {
     const checklist = {
       west: [
         ['Times', 'Times'],
@@ -100,7 +90,7 @@
     return checklist;
   });
 
-  const getSupportedFontList = once(function getSupportedFontList() {
+  const getSupportedFontList = functools.once(function getSupportedFontList() {
     return checkAllFonts();
   });
 

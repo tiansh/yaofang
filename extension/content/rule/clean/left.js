@@ -81,7 +81,7 @@
     };
     css.append('#v6_pl_leftnav_group .lev:not([yawf-checked-lev]) { visibility: hidden; }');
     init.onLoad(function () {
-      observer.add(listener);
+      observer.dom.add(listener);
       listener();
     }, { priority: priority.LAST });
     return function (id) {

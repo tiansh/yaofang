@@ -25,6 +25,12 @@
     hk: 'hk',
     tw: 'tw',
   };
+  i18n.languageCode = {
+    en: 'en',
+    cn: 'zh-CN',
+    hk: 'zh-HK',
+    tw: 'zh-TW',
+  };
 
   Object.defineProperty(util, 'i18n', {
     get: () => i18n,

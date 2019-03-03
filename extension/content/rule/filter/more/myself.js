@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
   const init = yawf.init;
 
@@ -37,7 +37,7 @@
     initial: true,
     init() {
       const rule = this;
-      filter.feed.add(function showMyFeed(feed) {
+      observer.feed.filter(function showMyFeed(feed) {
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.uid;
         const author = feedParser.author.id(feed);
@@ -60,7 +60,7 @@
     template: () => i18n.showMyOriginalDetail,
     init() {
       const rule = this;
-      filter.feed.add(function showMyOriginal(feed) {
+      observer.feed.filter(function showMyOriginal(feed) {
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.uid;
         const original = feedParser.original.id(feed);
@@ -83,7 +83,7 @@
     template: () => i18n.showMentionMeDetail,
     init() {
       const rule = this;
-      filter.feed.add(function adFeedFilter(feed) {
+      observer.feed.filter(function adFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.nick;
         const mentions = feedParser.mention.name(feed);

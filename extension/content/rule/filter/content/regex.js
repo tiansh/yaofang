@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
 
   const content = yawf.rules.content;
@@ -55,7 +55,7 @@
     }
     init() {
       const rule = this;
-      filter.feed.add(function regexFeedFilter(/** @type {Element} */feed) {
+      observer.feed.filter(function regexFeedFilter(/** @type {Element} */feed) {
         const text = feedParser.text.detail(feed);
         const regexen = rule.ref.items.getConfigCompiled();
         const matchReg = regexen.find(regex => regex.test(text));

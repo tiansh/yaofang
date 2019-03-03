@@ -104,7 +104,7 @@
           link.className = 'yawf-link';
         });
       };
-      observer.add(showLinkUrl);
+      observer.dom.add(showLinkUrl);
     },
   });
 
@@ -139,7 +139,7 @@
           textNode.parentNode.normalize();
         });
       };
-      observer.add(useTextEmoji);
+      observer.dom.add(useTextEmoji);
     },
   });
 
@@ -176,7 +176,7 @@
           from.replaceWith(container.firstChild);
         });
       };
-      observer.add(customizeSource);
+      observer.dom.add(customizeSource);
     },
   });
 

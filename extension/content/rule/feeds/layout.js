@@ -3,7 +3,6 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
   const observer = yawf.observer;
 
   const feeds = yawf.rules.feeds;
@@ -59,7 +58,7 @@
     parent: layout.layout,
     template: () => i18n.sourceAtBottom,
     ainit() {
-      filter.feed.onBefore(function (feed) {
+      observer.feed.onBefore(function (feed) {
         const from = feed.querySelector('.WB_detail > .WB_info + .WB_from');
         if (!from) return;
         from.parentNode.appendChild(from);
@@ -154,7 +153,7 @@
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) { width: 120px; height: 80px; min-width: 36px; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) .wbv-control-bar { display: none !important; }
 `);
-      observer.add(function smallVideo() {
+      observer.dom.add(function smallVideo() {
         const videos = Array.from(document.querySelectorAll('.WB_video_h5_v2 .WB_h5video_v2:not([yawf-watch-pouse])'));
         videos.forEach(video => {
           video.setAttribute('yawf-watch-pause', '');
@@ -186,7 +185,7 @@
 .WB_feed.WB_feed_v3 .layer_view_morepic .view_pic { padding: 0 40px 20px; }
 .WB_feed.WB_feed_v3 .WB_media_view .pic_choose_box .stage_box { width: 440px; }
 `);
-/*
+      /*
       if (
         !filter.items.style.layout.width_weibo.conf ||
         filter.items.style.layout.width_weibo.ref.width.conf < 650 &&

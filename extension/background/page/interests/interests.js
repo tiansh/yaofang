@@ -12,7 +12,7 @@
     // 避免继续跳转造成无限跳转
     if (++counter > 5) return {};
     setTimeout(() => { counter = 0; }, 10e3);
-    return { redirectUrl: new URL('/', details.url).href };
+    return { redirectUrl: new URL('/home', details.url).href };
   }, {
     urls: [
       '*://weibo.com/nguide/*',

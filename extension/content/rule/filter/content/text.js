@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
-  const filter = yawf.filter;
+  const observer = yawf.observer;
   const feedParser = yawf.feed;
 
   const content = yawf.rules.content;
@@ -44,7 +44,7 @@
     }
     init() {
       const rule = this;
-      filter.feed.add(function textFeedFilter(/** @type {Element} */feed) {
+      observer.feed.filter(function textFeedFilter(/** @type {Element} */feed) {
         const text = feedParser.text.simple(feed);
         const keywords = rule.ref.items.getConfig();
         const contain = keywords.find(keyword => text.includes(keyword));
