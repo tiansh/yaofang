@@ -32,7 +32,8 @@
   };
 
   commercial.ad = rule.Rule({
-    id: 'ad_feed',
+    id: 'filter_ad_feed',
+    version: 1,
     parent: commercial.commercial,
     template: () => i18n.adFeedFilter,
     ref: {
@@ -72,7 +73,8 @@
   };
 
   commercial.fansTop = rule.Rule({
-    id: 'fans_top',
+    id: 'filter_fans_top',
+    version: 1,
     parent: commercial.commercial,
     template: () => i18n.fansTopFeedFilter,
     ref: {
@@ -98,7 +100,8 @@
   };
 
   commercial.weiboProduct = rule.Rule({
-    id: 'weibo_product',
+    id: 'filter_weibo_product',
+    version: 1,
     parent: commercial.commercial,
     template: () => i18n.weiboProductFeedFilter,
     ref: {
@@ -124,7 +127,7 @@
     en: 'Weibo with Taobao / Tmall / Juhuasuan commodity{{i}}',
   };
   i18n.taobaoProductFeedFilterDetail = {
-    cn: '带有{{taobaoCard}}、{{tmallCard}}或{{juhuasuanCard}}的微博',
+    cn: '带有{{taobao}}、{{tmall}}或{{juhuasuan}}的微博',
   };
   i18n.taobaoProduct = {
     cn: '淘宝商品',
@@ -137,7 +140,8 @@
   };
 
   commercial.taobaoProduct = rule.Rule({
-    id: 'tb_tm_feed',
+    id: 'filter_tb_tm_feed',
+    version: 1,
     parent: commercial.commercial,
     template: () => i18n.taobaoProductFeedFilter,
     ref: {
@@ -146,9 +150,9 @@
         icon: 'ask',
         template: () => i18n.taobaoProductFeedFilterDetail,
         ref: Object.assign(...[
-          { id: 'taobaoCard', className: 'icon_cd_tb', content: () => i18n.taobaoProduct },
-          { id: 'tmallCard', className: 'icon_cd_tmall', content: () => i18n.tmallProduct },
-          { id: 'juhuasuanCard', className: 'icon_cd_ju', content: () => i18n.juhuasuanProduct },
+          { id: 'taobao', className: 'icon_cd_tb', content: () => i18n.taobaoProduct },
+          { id: 'tmall', className: 'icon_cd_tmall', content: () => i18n.tmallProduct },
+          { id: 'juhuasuan', className: 'icon_cd_ju', content: () => i18n.juhuasuanProduct },
         ].map(({ id, className, content }) => ({
           [id]: {
             render() {
@@ -185,7 +189,8 @@
   };
 
   commercial.weiboPay = rule.Rule({
-    id: 'weibo_pay',
+    id: 'filter_weibo_pay',
+    version: 1,
     parent: commercial.commercial,
     template: () => i18n.weiboPayGiftFeedFilter,
     ref: {
@@ -213,7 +218,8 @@
   };
 
   commercial.userLike = rule.Rule({
-    id: 'user_like',
+    id: 'filter_user_like',
+    version: 1,
     parent: commercial.commercial,
     template: () => i18n.userLikeFeedFilter,
     ref: {
@@ -246,7 +252,8 @@
   // 这些内容不是真正的消息，各类过滤规则处理这些内容可能有各种问题
   // 所以这条规则被设置为最高的优先级，而且如果关闭了这个设置项，就直接让这些东西显示出来
   commercial.fakeWeibo = rule.Rule({
-    id: 'fake_weibo',
+    id: 'filter_fake_weibo',
+    version: 1,
     parent: commercial.commercial,
     template: () => i18n.fakeWeiboFilter,
     ref: {

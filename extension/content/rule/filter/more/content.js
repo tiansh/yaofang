@@ -33,7 +33,8 @@
   };
 
   content.deletedForward = rule.Rule({
-    id: 'deleted_forward',
+    id: 'filter_deleted_forward',
+    version: 1,
     parent: content.content,
     template: () => i18n.deletedForwardFilter,
     ref: {
@@ -63,7 +64,8 @@
   };
 
   content.commentAndForward = rule.Rule({
-    id: 'comment_and_forward',
+    id: 'filter_comment_and_forward',
+    version: 1,
     parent: content.content,
     template: () => i18n.commentAndForwardFilter,
     ref: {
@@ -94,7 +96,8 @@
   };
 
   content.vote = rule.Rule({
-    id: 'vote',
+    id: 'filter_vote',
+    version: 1,
     parent: content.content,
     template: () => i18n.voteFeedFilter,
     ref: {
@@ -125,7 +128,8 @@
   };
 
   content.redPack = rule.Rule({
-    id: 'red_pack',
+    id: 'filter_red_pack',
+    version: 1,
     parent: content.content,
     template: () => i18n.redPackFeedFilter,
     ref: {
@@ -155,7 +159,8 @@
   };
 
   content.koiForward = rule.Rule({
-    id: 'koi_forward',
+    id: 'filter_koi_forward',
+    version: 1,
     parent: content.content,
     template: () => i18n.koiForwardFeedFilter,
     ref: {
@@ -182,7 +187,8 @@
   };
 
   content.appItem = rule.Rule({
-    id: 'app_item',
+    id: 'filter_app_item',
+    version: 1,
     parent: content.content,
     template: () => i18n.appItemFeedFilter,
     ref: {
@@ -209,7 +215,8 @@
   };
 
   content.wenda = rule.Rule({
-    id: 'wenda',
+    id: 'filter_wenda',
+    version: 1,
     parent: content.content,
     template: () => i18n.wendaFeedFilter,
     ref: {
@@ -238,7 +245,8 @@
   };
 
   content.wenwoDr = rule.Rule({
-    id: 'wenwo_dr',
+    id: 'filter_wenwo_dr',
+    version: 1,
     parent: content.content,
     template: () => i18n.wenwoDrFeedFilter,
     ref: {
@@ -276,7 +284,8 @@
   };
 
   content.yizhibo = rule.Rule({
-    id: 'yizhibo',
+    id: 'filter_yizhibo',
+    version: 1,
     parent: content.content,
     template: () => i18n.yizhiboFeedFilter,
     ref: {
@@ -316,7 +325,8 @@
   };
 
   content.stock = rule.Rule({
-    id: 'stock',
+    id: 'filter_stock',
+    version: 1,
     parent: content.content,
     template: () => i18n.stockFeedFilter,
     ref: {
@@ -343,7 +353,8 @@
   };
 
   content.paid = rule.Rule({
-    id: 'paid',
+    id: 'filter_paid',
+    version: 1,
     parent: content.content,
     template: () => i18n.paidFeedFilter,
     ref: {
@@ -372,7 +383,8 @@
   };
 
   content.multipleTopics = rule.Rule({
-    id: 'multiple_topics_feed',
+    id: 'filter_multiple_topics_feed',
+    version: 1,
     parent: content.content,
     template: () => i18n.multipleTopicsFeedFilter,
     ref: {

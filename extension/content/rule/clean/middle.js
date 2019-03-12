@@ -18,8 +18,8 @@
   });
 
   clean.CleanGroup('middle', () => i18n.cleanMiddleGroupTitle);
-  clean.CleanRule('recommendedTopic', () => i18n.cleanMiddleRecommendedTopic, 1, '#v6_pl_content_publishertop div[node-type="recommendTopic"] { display: none !important; }');
-  clean.CleanRule('feedRecommand', () => i18n.cleanMiddleFeedRecommand, 1, 'a.notes[node-type="feed_list_newBar"][href^="http"]:not([action-type="feed_list_newBar"]), .WB_feed_newuser[node-type="recommfeed"] { display: none !important; }');
-  clean.CleanRule('memberTip', () => i18n.cleanMiddleMemberTip, 1, '[node-type="feed_list_shieldKeyword"] { display: none !important; }');
+  clean.CleanRule('recommended_topic', () => i18n.cleanMiddleRecommendedTopic, 1, '#v6_pl_content_publishertop div[node-type="recommendTopic"] { display: none !important; }');
+  clean.CleanRule('feed_recommand', () => i18n.cleanMiddleFeedRecommand, 1, 'a.notes[node-type="feed_list_newBar"][href^="http"]:not([action-type="feed_list_newBar"]), .WB_feed_newuser[node-type="recommfeed"] { display: none !important; }');
+  clean.CleanRule('member_tip', () => i18n.cleanMiddleMemberTip, 1, '[node-type="feed_list_shieldKeyword"] { display: none !important; }');
 
 }());

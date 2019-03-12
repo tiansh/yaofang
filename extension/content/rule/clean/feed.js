@@ -51,23 +51,23 @@
 
   clean.CleanGroup('feed', () => i18n.cleanFeedGroupTitle);
   clean.CleanRule('recommand', () => i18n.cleanFeedRecommand, 1, '[node-type="recommfeed"] { display: none !important; }');
-  clean.CleanRule('feedOuterTip', () => i18n.cleanFeedOuterTip, 1, {
+  clean.CleanRule('feed_outer_tip', () => i18n.cleanFeedOuterTip, 1, {
     acss: '.WB_feed .W_tips { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedOuterTip } },
   });
-  clean.CleanRule('feedTip', () => i18n.cleanFeedCommentTip, 1, {
+  clean.CleanRule('feed_tip', () => i18n.cleanFeedCommentTip, 1, {
     acss: '[node-type="feed_privateset_tip"] { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedCommentTipDetail } },
   });
-  clean.CleanRule('groupTip', () => i18n.cleanFeedGroupTip, 1, '.WB_feed_type .WB_cardtitle_b { display: none !important; }');
-  clean.CleanRule('vipBackground', () => i18n.cleanFeedVIPBackground, 1, `
+  clean.CleanRule('group_tip', () => i18n.cleanFeedGroupTip, 1, '.WB_feed_type .WB_cardtitle_b { display: none !important; }');
+  clean.CleanRule('vip_background', () => i18n.cleanFeedVIPBackground, 1, `
 .WB_feed_detail[style*="feed_cover/star_"],
 .WB_feed_detail[style*="feed_cover/vip_"] { background: none !important; }
 .WB_vipcover, .WB_starcover { display: none !important; }
 .WB_feed_vipcover .WB_feed_detail { padding-top: 10px; }
 .WB_feed.WB_feed_v3 .WB_feed_vipcover .WB_feed_detail { padding-top: 20px; }
 `);
-  clean.CleanRule('lastPic', () => i18n.cleanFeedLastPic, 1, function () {
+  clean.CleanRule('last_pic', () => i18n.cleanFeedLastPic, 1, function () {
     observer.dom.add(function hideLastPic() {
       const last = document.querySelector('.WB_feed_type .WB_expand_media .WB_media_view:not([yawf-piclast]) .pic_choose_box li:last-child a.current');
       if (last) last.closest('.WB_media_view').setAttribute('yawf-piclast', 'yawf-piclast');
@@ -78,13 +78,13 @@
     });
     css.append('.WB_feed_type .WB_expand_media .WB_media_view[yawf-piclast] .rightcursor { cursor: url("//img.t.sinajs.cn/t6/style/images/common/small.cur"), auto !important; }');
   });
-  clean.CleanRule('picTag', () => i18n.cleanFeedPicTag, 1, '.WB_media_view .media_show_box .artwork_box .tag_showpicL, .WB_media_view .media_show_box .artwork_box .tag_showpicR, .icon_taged_pic { display: none !important; }');
-  clean.CleanRule('sonTitle', () => i18n.cleanFeedSonTitle, 1, '.WB_feed_type .WB_feed_together .wft_hd { display: none !important; }');
+  clean.CleanRule('pic_tag', () => i18n.cleanFeedPicTag, 1, '.WB_media_view .media_show_box .artwork_box .tag_showpicL, .WB_media_view .media_show_box .artwork_box .tag_showpicR, .icon_taged_pic { display: none !important; }');
+  clean.CleanRule('son_title', () => i18n.cleanFeedSonTitle, 1, '.WB_feed_type .WB_feed_together .wft_hd { display: none !important; }');
   clean.CleanRule('card', () => i18n.cleanFeedCard, 1, {
     acss: '.WB_pic_app, .WB_feed_spec, .WB_music { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedCardDetail } },
   });
-  clean.CleanRule('articalPay', () => i18n.cleanFeedArticalPay, 1, function () {
+  clean.CleanRule('artical_pay', () => i18n.cleanFeedArticalPay, 1, function () {
     observer.dom.add(function hideArticalPay() {
       const element1 = document.querySelector('.feed_app_btn_a a[action-data*="px.e.weibo.com"]');
       if (element1) element1.closest('.feed_app_btn_a').remove();
@@ -95,7 +95,7 @@
     });
   });
   clean.CleanRule('tag', () => i18n.cleanFeedTag, 1, '.WB_tag { display: none !important; }');
-  clean.CleanRule('relatedLink', () => i18n.cleanFeedRelatedLink, 1, {
+  clean.CleanRule('related_link', () => i18n.cleanFeedRelatedLink, 1, {
     acss: '.WB_feed_type .WB_tag_rec { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedRelatedLinkDetail } },
   });
@@ -119,8 +119,8 @@ a[action-type="feed_list_like"]+.S_txt3,
 .WB_expand .WB_handle.W_fr li:nth-child(3), 
 .WB_handle li[yawf-handle-type="fl_like"],
 .WB_handle li[yawf-handle-type="like"] .layer_multipic_preview .pos_icon { display: none !important; }`);
-  clean.CleanRule('likeComment', () => i18n.cleanFeedLikeComment, 1, '.WB_handle li[yawf-comment-handle-type="like"] { display: none !important; }');
-  clean.CleanRule('likeAttitude', () => i18n.cleanFeedLikeAttitude, 1, '.W_layer_attitude { display: none !important; }');
+  clean.CleanRule('like_comment', () => i18n.cleanFeedLikeComment, 1, '.WB_handle li[yawf-comment-handle-type="like"] { display: none !important; }');
+  clean.CleanRule('like_attitude', () => i18n.cleanFeedLikeAttitude, 1, '.W_layer_attitude { display: none !important; }');
   clean.CleanRule('forward', () => i18n.cleanFeedForward, 1, `
 a[action-type="feed_list_forward"], a[action-type="feed_list_forward"]+.S_txt3,
 .WB_media_expand .WB_handle a.S_func4[href$="?type=repost"], .WB_media_expand .WB_handle a.S_func4[href$="?type=repost"]+.S_txt3, 
@@ -132,9 +132,9 @@ a[action-type="feed_list_forward"], a[action-type="feed_list_forward"]+.S_txt3,
 a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3,
 .WB_feed_datail a[action-type="fl_favorite"], .WB_feed_datail a[action-type="fl_favorite"]+.S_txt3, 
 .WB_handle .WB_row_line li[yawf-handle-type="fl_favorite"] { display: none !important; }`);
-  clean.CleanRule('promoteOther', () => i18n.cleanFeedPromoteOther, 1, '.screen_box .layer_menu_list a[action-data*="promote.vip.weibo.com"] { display: none !important; }');
+  clean.CleanRule('promote_other', () => i18n.cleanFeedPromoteOther, 1, '.screen_box .layer_menu_list a[action-data*="promote.vip.weibo.com"] { display: none !important; }');
   clean.CleanRule('report', () => i18n.cleanFeedReport, 1, '.screen_box .layer_menu_list a[onclick*="service.account.weibo.com/reportspam"], .WB_handle ul li[yawf-comment-handle-type="report"] { display: none !important; }');
-  clean.CleanRule('useCardBackground', () => i18n.cleanFeedUseCardBackground, 1, '.screen_box .layer_menu_list a[action-type="fl_cardCover"] { display: none !important; }');
+  clean.CleanRule('use_card_background', () => i18n.cleanFeedUseCardBackground, 1, '.screen_box .layer_menu_list a[action-type="fl_cardCover"] { display: none !important; }');
 
   observer.feed.onBefore(function (feed) {
     const lis = Array.from(feed.querySelectorAll('.WB_feed_type .WB_handle .WB_row_line li, .WB_feed_together .WB_func .WB_handle li'));

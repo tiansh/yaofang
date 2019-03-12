@@ -16,12 +16,6 @@
     en: 'Filter by Content Regex',
   };
 
-  const regex = content.regex = {};
-  regex.regex = rule.Group({
-    parent: content.content,
-    template: () => i18n.contentRegexGroupTitle,
-  });
-
   Object.assign(i18n, {
     regexContentShow: {
       cn: '总是显示匹配以下正则表达式的微博||正则式{{items}}',
@@ -70,8 +64,9 @@
     baseClass: RegexFeedRule,
     tab: 'content',
     key: 'regex',
+    version: 1,
     type: 'regexen',
-    title: () => i18n.contentTextGroupTitle,
+    title: () => i18n.contentRegexGroupTitle,
     details: {
       hide: {
         title: () => i18n.regexContentHide,

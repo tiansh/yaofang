@@ -88,6 +88,7 @@
       };
       observer.dom.add(updateSkin);
 
+      // 一些广告内容的 iframe，如果这些东西只是隐藏没有被摘掉的话，里面的 JavaScript 会不停的报错，直到把你的控制台弄崩
       const removeAdIframes = function removeAdIframes() {
         const iframes = Array.from(document.querySelectorAll('iframe[src*="s.alitui.weibo.com"]'));
         iframes.forEach(function (iframe) {
@@ -95,6 +96,15 @@
         });
       };
       observer.dom.add(removeAdIframes);
+
+      // 视频播放完毕之后会自动推荐下一个视频，之前很多是相关推荐，但现在也有不少是广告，所以不单独做一个选项，直接放在这里了
+      observer.dom.add(function videoNoAutoNext() {
+        const close = document.querySelector('.video_box_next [action-type="next_close"]:not([yawf-no-auto-next])');
+        if (!close) return;
+        close.setAttribute('yawf-no-auto-next', '');
+        close.click();
+      });
+
     },
   });
   clean.CleanRule('tracker', () => i18n.cleanOtherTracker, 1, {
@@ -107,7 +117,7 @@
   });
   clean.CleanRule('music', () => i18n.cleanOtherMusic, 1, '.PCD_mplayer { display: none !important; }');
   clean.CleanRule('template', () => i18n.cleanOtherTemplate, 1, '.icon_setskin { display: none !important; }');
-  clean.CleanRule('homeTip', () => i18n.cleanOtherHomeTip, 1, '#v6_pl_content_hometip { display: none !important }');
+  clean.CleanRule('home_tip', () => i18n.cleanOtherHomeTip, 1, '#v6_pl_content_hometip { display: none !important }');
   clean.CleanRule('footer', () => i18n.cleanOtherFooter, 1, {
     acss: '.global_footer, .WB_footer { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherFooterDetail } },
@@ -116,18 +126,18 @@
     acss: '#WB_webim, .WB_webim { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherIMDetail } },
   });
-  clean.CleanRule('imNews', () => i18n.cleanOtherIMNews, 1, '.webim_news { display: none !important; }');
+  clean.CleanRule('im_news', () => i18n.cleanOtherIMNews, 1, '.webim_news { display: none !important; }');
   clean.CleanRule('tip', () => i18n.cleanOtherTip, 1, {
     acss: '.W_layer_tips { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherTipDetail } },
   });
-  clean.CleanRule('relatedFeeds', () => i18n.cleanOtherRelatedFeeds, 1, {
+  clean.CleanRule('related_feeds', () => i18n.cleanOtherRelatedFeeds, 1, {
     acss: '[yawf-obj-name="相关推荐"] { display: none !important; } #WB_webim .wbim_chat_box, #WB_webim .wbim_min_chat  { right: 20px !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherRelatedFeedsDetail } },
   });
-  clean.CleanRule('relatedVideo', () => i18n.cleanOtherRelatedVideo, 1, '.video_box_more { display: none !important; }');
-  clean.CleanRule('relatedArtical', () => i18n.cleanOtherRelatedArtical, 1, '.WB_artical [node-type="recommend"] { display: none !important; }');
-  clean.CleanRule('sendWeibo', () => i18n.cleanOtherSendWeibo, 1, {
+  clean.CleanRule('related_video', () => i18n.cleanOtherRelatedVideo, 1, '.video_box_more { display: none !important; }');
+  clean.CleanRule('related_artical', () => i18n.cleanOtherRelatedArtical, 1, '.WB_artical [node-type="recommend"] { display: none !important; }');
+  clean.CleanRule('send_weibo', () => i18n.cleanOtherSendWeibo, 1, {
     acss: '.send_weibo_simple { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherSendWeiboDetail } },
   });

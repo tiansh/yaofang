@@ -60,6 +60,7 @@
     baseClass: MentionFeedRule,
     tab: 'mention',
     key: 'name',
+    version: 1,
     type: 'usernames',
     title: () => i18n.accountMentionGroupTitle,
     details: {

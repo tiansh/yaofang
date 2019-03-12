@@ -57,6 +57,7 @@
     baseClass: AuthorFeedRule,
     tab: 'author',
     key: 'id',
+    version: 1,
     type: 'users',
     title: () => i18n.accountAuthorGroupTitle,
     details: {

@@ -30,13 +30,13 @@
   clean.CleanGroup('right', () => i18n.cleanRightGroupTitle);
   clean.CleanRule('info', () => i18n.cleanRightInfo, 1, '#v6_pl_rightmod_myinfo { display: none !important; }');
   clean.CleanRule('ranks', () => i18n.cleanRightRanks, 1, '#v6_pl_rightmod_rank, [yawf-id="rightmod_taobao_movie"], [yawf-id="rightmod_recom_movie"] { display: none !important; }');
-  clean.CleanRule('hotTopic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }');
+  clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }');
   clean.CleanRule('interest', () => i18n.cleanRightInterest, 1, '[yawf-id="rightmod_recom_interest"] { display: none !important; }');
   clean.CleanRule('member', () => i18n.cleanRightMember, 1, '#v6_trustPagelet_recom_member { display: none !important; }');
   clean.CleanRule('groups', () => i18n.cleanRightGroups, 1, '#v6_pl_rightmod_groups { display: none; }');
-  clean.CleanRule('recomGroupUser', () => i18n.cleanRightRecomGroupUser, 1, '#v6_pl_rightmod_recomgroupuser { display: none; }');
-  clean.CleanRule('hongbaoRank', () => i18n.cleanRightHongbaoRank, 1, '#v6_pl_rightmod_hongbao { display: none !important; }');
-  clean.CleanRule('attFeed', () => i18n.cleanRightAttFeed, 1, {
+  clean.CleanRule('recom_group_user', () => i18n.cleanRightRecomGroupUser, 1, '#v6_pl_rightmod_recomgroupuser { display: none; }');
+  clean.CleanRule('hongbao_rank', () => i18n.cleanRightHongbaoRank, 1, '#v6_pl_rightmod_hongbao { display: none !important; }');
+  clean.CleanRule('att_feed', () => i18n.cleanRightAttFeed, 1, {
     acss: '#v6_pl_rightmod_attfeed { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanRightAttFeedDetail } },
   });

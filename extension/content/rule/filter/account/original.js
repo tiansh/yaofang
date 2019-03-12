@@ -47,7 +47,8 @@
 
   const discoverRule = function () {
     original.id.discover = new rule.class.Rule({
-      id: 'original.discover',
+      id: 'filter_original_discover',
+      version: 1,
       parent: original.id.id,
       template: () => i18n.accountOriginalDiscover,
     });
@@ -78,6 +79,7 @@
     tab: 'original',
     key: 'id',
     type: 'users',
+    version: 1,
     title: () => i18n.accountOriginalGroupTitle,
     details: {
       hide: {

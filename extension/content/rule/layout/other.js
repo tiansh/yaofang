@@ -36,6 +36,7 @@
 
   layout.fontFamily = rule.Rule({
     id: 'font_family',
+    version: 1,
     parent: details.details,
     template: () => i18n.styleTextFontFamily,
     ref: {
@@ -80,7 +81,8 @@
   });
 
   details.avatarShape = rule.Rule({
-    id: 'avatarShape',
+    id: 'layout_avatar_shape',
+    version: 1,
     parent: details.details,
     template: () => i18n.avatarShape,
     ref: {
@@ -125,7 +127,8 @@
 
     // 使用本地时区
     details.timezone = rule.Rule({
-      id: 'timezone',
+      id: 'layout_locale_timezone',
+      version: 1,
       parent: details.details,
       template: () => i18n.useLocaleTimezone,
       ainit() {

@@ -34,6 +34,7 @@
     before: { hide: beforeHide = null, show: beforeShow = null, fold: beforeFold = null } = {},
     details: { hide = null, show = null, fold = null },
     fast = null,
+    version,
   }) {
     const tab = rules[tabName];
 
@@ -54,7 +55,8 @@
     actions.forEach(({ action, details: { title, priority = null }, before }) => {
       if (typeof before === 'function') before();
       group[action] = new Base({
-        id: [tabName, key, action].join('.'),
+        id: ['filter', tabName, key, action].join('_'),
+        version,
         parent: group[key],
         priority: priority === null ? {
           show: 1e5,

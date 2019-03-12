@@ -10,7 +10,7 @@
     const downloadId = await browser.downloads.download({ url, filename });
     return new Promise(async resolve => {
       const downloadFinish = function () {
-        browser.downloads.onChanged.removeListener(downloadOnChanged)
+        browser.downloads.onChanged.removeListener(downloadOnChanged);
         resolve();
       };
       const downloadOnChanged = function ({ id, state }) {
@@ -18,7 +18,7 @@
         if (!state || state.current !== 'complete') return;
         downloadFinish();
       };
-      browser.downloads.onChanged.addListener(downloadOnChanged)
+      browser.downloads.onChanged.addListener(downloadOnChanged);
       const [downloadItem] = await browser.downloads.search({ id: downloadId });
       if (downloadItem.state === 'complete') downloadFinish();
     });

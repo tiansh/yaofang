@@ -19,14 +19,20 @@
     const re = /<script>FM\.view\({"ns":"pl\.relation\.myFollow\.index".*"html":(?=.*member_box)(".*")}\)<\/script>\n/;
     const dom = util.dom.content(document.createElement('div'), JSON.parse(resp.match(re)[1]));
 
-    const urlTemplate = new URL(dom.querySelector('.W_pages a.page[href]').href);
-    const pageLinks = dom.querySelectorAll('.W_pages .page');
-    const pageCount = Number(pageLinks[pageLinks.length - 2].textContent) || 1;
+    const allPages = (function () {
+      try {
+        const urlTemplate = dom.querySelector('.W_pages a.page[href]').href;
+        const pageLinks = dom.querySelectorAll('.W_pages .page');
+        const pageCount = Number(pageLinks[pageLinks.length - 2].textContent) || 1;
 
-    const allPages = Array.from(Array(pageCount)).map((_, index) => {
-      urlTemplate.searchParams.set('_page', index + 1);
-      return urlTemplate.href;
-    });
+        return Array.from(Array(pageCount)).map((_, index) => {
+          return urlTemplate.replace(/_page=\d+/, '_page=' + (index + 1));
+        });
+      } catch (e) {
+        // only one page
+      }
+      return [url];
+    }());
 
     const followItem = Array.from(dom.querySelectorAll('.member_box .member_wrap .mod_pic .pic_box a > img'));
     const followInPage = followItem.map(img => {
@@ -43,7 +49,7 @@
           id: `user-${id}`,
           type: 'user',
           user: id,
-          href: href,
+          url: href,
           avatar: avatar,
           name: description,
           description,
@@ -58,7 +64,7 @@
           id: 'stock-' + id,
           type: 'stock',
           stock: id,
-          href: href,
+          url: href,
           avatar: avatar,
           name: description,
           description,
@@ -74,7 +80,7 @@
           id: 'topic-' + title,
           type: 'topic',
           topic: title,
-          href: href,
+          url: href,
           avatar: avatar,
           name: description,
           description: description,
@@ -86,7 +92,7 @@
         return {
           id: 'unknown-' + href,
           type: 'unknown',
-          href: href,
+          url: href,
           avatar: avatar,
           description: title,
           name: title,

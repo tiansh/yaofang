@@ -13,12 +13,17 @@
   const rule = yawf.rule;
   const tabs = rule.tabs;
 
-  i18n.configDialogTitle = {
-    cn: '设置 - 药方 (YAWF)',
-    tw: '設定 - 藥方 (YAWF)',
-    en: 'Settings - Yet Another Weibo Filter (YAWF)',
-  };
+  Object.assign(i18n, {
+    configDialogTitle: {
+      cn: '设置 - 药方 (YAWF)',
+      tw: '設定 - 藥方 (YAWF)',
+      en: 'Settings - YAWF (Yet Another Weibo Filter)',
+    },
+    searchEmptyInput: { cn: '键入以搜索设置项', tw: '鍵入以搜尋設定項', en: 'Type to search settings', },
+    searchEmptyResult: { cn: '未找到与您输入匹配的设置项', tw: '未找到與您輸入匹配的設置項', en: 'No Matched Settings' },
+  });
 
+  /** @type {{ [e: string]: () => HTMLElement }} */
   const configDom = {};
   configDom.left = () => {
     const container = document.createElement('div');
@@ -27,7 +32,7 @@
   };
   configDom.search = () => {
     const container = document.createElement('ul');
-    container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab yawf-config-tab-search" style="display: none"><label class="minitb_lk S_txt1"><input id="yawf-config-search" class="yawf-config-search" type="search"><span class="yawf-config-search-logo W_ficon S_txt2">f</span></label></li>';
+    container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab yawf-config-tab-search"><label class="minitb_lk S_txt1"><input id="yawf-config-search" class="yawf-config-search" type="search"><span class="yawf-config-search-logo W_ficon S_txt2">f</span></label></li>';
     return container.removeChild(container.firstChild);
   };
   configDom.item = title => {
@@ -48,6 +53,43 @@
     return container.removeChild(container.firstChild);
   };
 
+  const renderTip = (layer, text) => {
+    layer.innerHTML = '<div class="WB_empty"><div class="WB_innerwrap"><div class="empty_con clearfix"><p class="icon_bed"><i class="W_icon icon_warnB"></i></p><p class="text"></p></div></div></div>';
+    layer.querySelector('.text').textContent = text;
+  };
+
+  const renderSearch = (layer, input) => {
+    const searchTexts = input.match(/\S+/g).filter(x => !x.includes(':'));
+    const [_verMatch, verOp, verNum] = input.match(/\bver(?:sion)?:([><]?=?)(\d+)\b/) || [];
+    const versionTest = {
+      '>': v => v > verNum,
+      '<': v => v < verNum,
+      '>=': v => v >= verNum,
+      '<=': v => v <= verNum,
+      '=': v => v === +verNum,
+      '': v => v === +verNum,
+    }[verOp] || (() => true);
+    layer.innerHTML = '';
+    if (!searchTexts.length && verNum == null) {
+      renderTip(layer, i18n.searchEmptyInput);
+      return;
+    }
+    const items = rule.query({
+      filter(item) {
+        if (!item.version) return false;
+        if (!versionTest(item.version)) return false;
+        const text = item.text();
+        if (searchTexts.some(t => !text.includes(t))) return false;
+        return true;
+      },
+    });
+    if (items.length === 0) {
+      renderTip(layer, i18n.searchEmptyResult);
+      return;
+    }
+    render(layer, items);
+  };
+
   /**
    * @param {Element} inner
    * @param {Array<Tab>} tabs
@@ -58,31 +100,42 @@
     const right = inner.appendChild(configDom.right());
     const tablist = left.querySelector('ul');
     const search = tablist.appendChild(configDom.search());
+    const searchInput = search.querySelector('input');
     const layer = right.appendChild(configDom.layer());
     /** @type {Element?} */
     let current = null;
     /** @type {WeakMap<Element, Function>} */
     const tabInit = new WeakMap();
-    tabs.forEach(tab => {
+    const tabLeft = tabs.map(tab => {
       const tabLeft = tablist.appendChild(configDom.item(tab.getRenderResult()));
       tabInit.set(tabLeft, () => {
-        layer.innerHTML = '';
         render(layer, rule.query({ base: [tab] }));
       });
-      if (!current) current = tabLeft;
+      return tabLeft;
     });
+    tabInit.set(search, () => { renderSearch(layer, searchInput.value); });
     const setCurrent = tabLeft => {
+      if (current === tabLeft) return;
       if (current) current.classList.remove('current');
       current = tabLeft;
       tabLeft.classList.add('current');
+      if (search !== tabLeft && searchInput.value) searchInput.value = '';
+      layer.innerHTML = '';
       tabInit.get(tabLeft)();
     };
     // 自动选中第一个选项卡
-    setCurrent(current);
+    setCurrent(tabLeft[0]);
     left.addEventListener('click', event => {
       const tabLeft = event.target.closest('.yawf-config-tab');
       if (!tabLeft) return;
+      if (tabLeft === search) return;
       setCurrent(tabLeft);
+    });
+    // 当在搜索框里面输入内容的时候，选中搜索框并刷新结果
+    searchInput.addEventListener('input', event => {
+      if (!searchInput.value && current !== search) return;
+      if (current !== search) setCurrent(search);
+      else renderSearch(layer, searchInput.value);
     });
   };
 
@@ -109,6 +162,7 @@
       }
     });
   };
+  rule.render = render;
 
   rule.dialog = function (rules = null) {
     try {

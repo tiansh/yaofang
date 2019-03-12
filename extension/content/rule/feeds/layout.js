@@ -30,7 +30,8 @@
   };
 
   layout.foldSpace = rule.Rule({
-    id: 'feed_fold_space',
+    id: 'feed_no_space',
+    version: 1,
     parent: layout.layout,
     template: () => i18n.feedFoldSpace,
     acss: `
@@ -54,7 +55,8 @@
   };
 
   layout.sourceAtBottom = rule.Rule({
-    id: 'source_at_bottom',
+    id: 'feed_source_at_bottom',
+    version: 1,
     parent: layout.layout,
     template: () => i18n.sourceAtBottom,
     ainit() {
@@ -80,7 +82,8 @@
   };
 
   layout.nowrapAfterAuthor = rule.Rule({
-    id: 'nowrapAfterAuthor',
+    id: 'feed_author_content_nowrap',
+    version: 1,
     parent: layout.layout,
     template: () => i18n.nowrapAfterAuthor,
     acss: `
@@ -109,7 +112,8 @@
   };
 
   layout.smallImage = rule.Rule({
-    id: 'smallImage',
+    id: 'feed_small_image',
+    version: 1,
     parent: layout.layout,
     template: () => i18n.smallImage,
     ref: {
@@ -231,7 +235,8 @@
   };
 
   layout.reorderFeedButton = rule.Rule({
-    id: 'reorderFeedButton',
+    id: 'feed_button_order',
+    version: 1,
     parent: layout.layout,
     template: () => i18n.reorderFeedButton,
     ref: Object.assign({}, reorderRefGroup([
@@ -273,7 +278,8 @@ ${[0, 1, 2, 3, 4].map(index => `
   });
 
   layout.reorderCommentButton = rule.Rule({
-    id: 'reorderCommentButton',
+    id: 'feed_button_order_comment',
+    version: 1,
     parent: layout.layout,
     template: () => i18n.reorderCommentButton,
     ref: Object.assign({}, reorderRefGroup([

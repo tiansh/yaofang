@@ -59,6 +59,7 @@
     baseClass: SourceFeedRule,
     tab: 'source',
     key: 'text',
+    version: 1,
     type: 'strings',
     title: () => i18n.sourceGroupTitle,
     details: {

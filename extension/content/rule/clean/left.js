@@ -95,12 +95,12 @@
   clean.CleanRule('fav', () => i18n.cleanLeftFav, 1, leftHide('fav'));
   clean.CleanRule('like', () => i18n.cleanLeftLike, 1, leftHide('like'));
   clean.CleanRule('hot', () => i18n.cleanLeftHot, 1, leftHide('hot'));
-  clean.CleanRule('tV', () => i18n.cleanLeftTV, 1, leftHide('tv'));
+  clean.CleanRule('tv', () => i18n.cleanLeftTV, 1, leftHide('tv'));
   clean.CleanRule('friends', () => i18n.cleanLeftFriends, 1, leftHide('friends'));
-  clean.CleanRule('groupToMe', () => i18n.cleanLeftGroupToMe, 1, leftHide('groupsfeed'));
+  clean.CleanRule('group_to_me', () => i18n.cleanLeftGroupToMe, 1, leftHide('groupsfeed'));
   clean.CleanRule('special', () => i18n.cleanLeftSpecial, 1, leftHide('special'));
   clean.CleanRule('whisper', () => i18n.cleanLeftWhisper, 1, leftHide('whisper'));
-  clean.CleanRule('vPlus', () => i18n.cleanLeftVPlus, 1, leftHide('vplus'));
+  clean.CleanRule('v_plus', () => i18n.cleanLeftVPlus, 1, leftHide('vplus'));
   clean.CleanRule('new', () => i18n.cleanLeftNew, 1, '.WB_left_nav .lev .W_new, .yawf-WB_left_nav .lev .W_new { display: none !important; }');
   clean.CleanRule('news', () => i18n.cleanLeftNews, 1, '.WB_left_nav .level_1_Box .W_new_count, .yawf-WB_left_nav .level_1_Box .W_new_count { display: none !important; }');
   clean.CleanRule('count', () => i18n.cleanLeftCount, 1, '.WB_left_nav .pl_leftnav_group .W_new_count, .WB_left_nav .lev .W_new_count, .yawf-WB_left_nav .pl_leftnav_group .W_new_count, .yawf-WB_left_nav .lev .W_new_count { display: none !important; }');

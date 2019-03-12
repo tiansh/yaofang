@@ -59,6 +59,7 @@
     baseClass: TopicFeedRule,
     tab: 'topic',
     key: 'text',
+    version: 1,
     type: 'topics',
     title: () => i18n.topicGroupTitle,
     details: {

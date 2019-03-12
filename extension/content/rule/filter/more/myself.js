@@ -31,7 +31,8 @@
   };
 
   showthese.showMyFeed = rule.Rule({
-    id: 'my_feed',
+    id: 'filter_my_feed',
+    version: 1,
     parent: showthese.showthese,
     template: () => i18n.showMyFeedDetail,
     initial: true,
@@ -55,7 +56,8 @@
   };
 
   showthese.showMyOriginal = rule.Rule({
-    id: 'my_original',
+    id: 'filter_my_original',
+    version: 1,
     parent: showthese.showthese,
     template: () => i18n.showMyOriginalDetail,
     init() {
@@ -78,7 +80,8 @@
   };
 
   showthese.showMentionMe = rule.Rule({
-    id: 'mention_me',
+    id: 'filter_mention_me',
+    version: 1,
     parent: showthese.showthese,
     template: () => i18n.showMentionMeDetail,
     init() {

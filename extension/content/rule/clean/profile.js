@@ -33,7 +33,7 @@
   });
 
   clean.CleanGroup('profile', () => i18n.cleanProfileGroupTitle);
-  clean.CleanRule('moveThings', () => i18n.cleanProfileMoveThings, 1, '.profile_move_things { display: none !important; }');
+  clean.CleanRule('move_things', () => i18n.cleanProfileMoveThings, 1, '.profile_move_things { display: none !important; }');
   clean.CleanRule('cover', () => i18n.cleanProfileCover, 1, function () {
     css.append(`
 .PCD_header.PCD_header,
@@ -51,21 +51,21 @@
       intro.setAttribute('yawf-full-intro', (intro.textContent = intro.title));
     });
   });
-  clean.CleanRule('bgImg', () => i18n.cleanProfileBGImg, 1, '.S_page, .S_page .WB_miniblog { background-image: url("\'\'") !important; }');
-  clean.CleanRule('badgeIcon', () => i18n.cleanProfileBadgeIcon, 1, '.pf_badge_icon { display: none !important; }');
+  clean.CleanRule('bg_img', () => i18n.cleanProfileBGImg, 1, '.S_page, .S_page .WB_miniblog { background-image: url("\'\'") !important; }');
+  clean.CleanRule('badge_icon', () => i18n.cleanProfileBadgeIcon, 1, '.pf_badge_icon { display: none !important; }');
   clean.CleanRule('verify', () => i18n.cleanProfileVerify, 1, '[yawf-id="yawf-pr-pcd-person-info-my"] .verify_area, [yawf-id="yawf-pr-pcd-person-info"] .verify_area { display: none !important; }');
-  clean.CleanRule('editPersonInfo', () => i18n.cleanProfileEditPersonInfo, 1, '[yawf-id="yawf-pr-pcd-person-info-my"] { display: none !important; }');
+  clean.CleanRule('edit_person_info', () => i18n.cleanProfileEditPersonInfo, 1, '[yawf-id="yawf-pr-pcd-person-info-my"] { display: none !important; }');
   clean.CleanRule('stats', () => i18n.cleanProfileStats, 1, '[yawf-id="yawf-pr-pcd-counter"] { display: none !important; }');
-  clean.CleanRule('myData', () => i18n.cleanProfileMyData, 1, '[id^="Pl_Official_MyMicroworld__"], .WB_frame_b [id^="Pl_Official_MyPopularity__"] { display: none !important; }');
-  clean.CleanRule('suggestUser', () => i18n.cleanProfileSuggestUser, 1, '[id^="Pl_Core_RightUserList__"], .WB_frame_b [id^="Pl_Core_RightUserList__"] { display: none !important; }');
+  clean.CleanRule('my_data', () => i18n.cleanProfileMyData, 1, '[id^="Pl_Official_MyMicroworld__"], .WB_frame_b [id^="Pl_Official_MyPopularity__"] { display: none !important; }');
+  clean.CleanRule('suggest_user', () => i18n.cleanProfileSuggestUser, 1, '[id^="Pl_Core_RightUserList__"], .WB_frame_b [id^="Pl_Core_RightUserList__"] { display: none !important; }');
   clean.CleanRule('group', () => i18n.cleanProfileGroup, 1, '[id^="Pl_Core_UserGrid__"] { display: none !important; }');
   clean.CleanRule('relation', () => i18n.cleanProfileRelation, 1, '[id^="Pl_Core_RightUserGrid__"], .WB_frame_b [id^="Pl_Core_RightUserGrid__"] { display: none !important; }');
   clean.CleanRule('album', () => i18n.cleanProfileAlbum, 1, '[id^="Pl_Core_RightPicMulti__"], .WB_frame_b [id^="Pl_Core_RightPicMulti__"], [yawf-obj-name="相冊"], [yawf-obj-name="相册"], [yawf-id="yawf-core-right-pic-multi"] { display: none !important; }');
-  clean.CleanRule('hotTopic', () => i18n.cleanProfileHotTopic, 1, '[id^="Pl_Core_RightTextSingle__"], .WB_frame_b [id^="Pl_Core_RightTextSingle__"] { display: none !important; }');
-  clean.CleanRule('hotWeibo', () => i18n.cleanProfileHotWeibo, 1, '[id^="Pl_Core_RightPicText__"], .WB_frame_b [id^="Pl_Core_RightPicText__"] { display: none !important; }');
-  clean.CleanRule('userList', () => i18n.cleanProfileUserList, 1, '[id^="Pl_Core_Ut1UserList__"], .WB_frame_b [id^="Pl_Core_RightPicText__"] { display: none !important; }');
+  clean.CleanRule('hot_topic', () => i18n.cleanProfileHotTopic, 1, '[id^="Pl_Core_RightTextSingle__"], .WB_frame_b [id^="Pl_Core_RightTextSingle__"] { display: none !important; }');
+  clean.CleanRule('hot_weibo', () => i18n.cleanProfileHotWeibo, 1, '[id^="Pl_Core_RightPicText__"], .WB_frame_b [id^="Pl_Core_RightPicText__"] { display: none !important; }');
+  clean.CleanRule('user_list', () => i18n.cleanProfileUserList, 1, '[id^="Pl_Core_Ut1UserList__"], .WB_frame_b [id^="Pl_Core_RightPicText__"] { display: none !important; }');
   clean.CleanRule('hongbao', () => i18n.cleanProfileHongbao, 1, '[yawf-id="yawf-pr-hongbao"], .WB_red2017 { display: none !important; }');
-  clean.CleanRule('wenwoDr', () => i18n.cleanProfileWenwoDr, 1, '[yawf-obj-name="爱问医生"] { display: none !important; }'); // 对应模块没有繁体或英文翻译
+  clean.CleanRule('wenwo_dr', () => i18n.cleanProfileWenwoDr, 1, '[yawf-obj-name="爱问医生"] { display: none !important; }'); // 对应模块没有繁体或英文翻译
   clean.CleanRule('timeline', () => i18n.cleanProfileTimeline, 1, '[id^="Pl_Official_TimeBase__"] { display: none !important; }');
 
   clean.tagElements('Profile', [

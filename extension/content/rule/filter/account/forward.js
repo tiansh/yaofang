@@ -57,7 +57,8 @@
   rule.groups({
     baseClass: AuthorForwardFeedRule,
     tab: 'author',
-    key: 'forward.id',
+    key: 'forward_id',
+    version: 1,
     type: 'users',
     title: () => i18n.accountAuthorForwardGroupTitle,
     details: {

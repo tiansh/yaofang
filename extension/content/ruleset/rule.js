@@ -1089,7 +1089,7 @@
     renderItem({ id }) {
       const useritem = document.createElement('div');
       useritem.classList.add('yawf-config-user-item');
-      useritem.setAttribute('namecard', `id=${id}`);
+      useritem.setAttribute('usercard', `id=${id}`);
       const useravatar = document.createElement('div');
       useravatar.classList.add('yawf-config-user-avatar');
       useritem.appendChild(useravatar);
@@ -1355,11 +1355,12 @@
   /**
    * 从所有设置项中根据条件筛选出一些设置项
    * 之后可用于展示对话框等操作
-   * @param {{ base: Tab[] }} base 描述搜索范围
+   * @param {{ base: Tab[], filter: (rule: Rule) => boolean, includeDisabled: boolean }} base 描述搜索范围
    */
   const query = rule.query = function ({
     base = tabs,
     includeDisabled = false,
+    filter = null,
   } = {}) {
     const result = new Set();
     ; (function query(items) {
@@ -1369,6 +1370,7 @@
         }
         if (!(item instanceof Rule)) return;
         if (!includeDisabled && item.disabled) return;
+        if (filter && !filter(item)) return;
         result.add(item);
       });
     }(base));

@@ -50,7 +50,8 @@
   });
 
   theme.apply = rule.Rule({
-    id: 'theme_apply',
+    id: 'layout_theme_apply',
+    version: 1,
     parent: theme.theme,
     template: () => i18n.setSkin,
     ref: {
@@ -141,7 +142,8 @@
   };
 
   theme.darkNav = rule.Rule({
-    id: 'dark_nav',
+    id: 'layout_nav_dark',
+    version: 1,
     parent: theme.theme,
     template: () => i18n.navbarDark,
     acss: `
@@ -168,7 +170,8 @@
   };
 
   theme.color = rule.Rule({
-    id: 'theme_color',
+    id: 'layout_theme_color',
+    version: 1,
     parent: theme.theme,
     template: () => i18n.colorOverride,
     ref: {

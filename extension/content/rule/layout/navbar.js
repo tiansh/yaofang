@@ -31,7 +31,8 @@
   };
 
   navbar.autoHide = rule.Rule({
-    id: 'autoHide',
+    id: 'layout_nav_auto_hide',
+    version: 1,
     parent: navbar.navbar,
     template: () => i18n.navbarAutoHide,
     ainit() {
@@ -75,7 +76,8 @@
   });
 
   navbar.oldLayout = rule.Rule({
-    id: 'oldLayout',
+    id: 'layout_nav_classical',
+    version: 1,
     parent: navbar.navbar,
     template: () => i18n.reorderNavbar,
     ref: {

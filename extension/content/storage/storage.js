@@ -96,7 +96,24 @@
       this.storage = storage;
       /** @type {Map<string, Set<Function>>} */
       this.watcher = new Map();
+      /** @type {Map<string, Set<Promise>>} */
+      this.processing = new Map();
       this.initialized = false;
+    }
+    ignoreOnChange(key, promise, newValue) {
+      if (!this.processing.get(key)) this.processing.set(key, new Set());
+      this.processing.get(key).add(promise);
+      promise.then(() => {
+        const set = this.processing.get(key);
+        if (!set) return;
+        set.delete(promise);
+        if (!set.size) {
+          this.processing.delete(key);
+          if (newValue !== this.value[key]) {
+            this.triggerOnChanged(key, this.value[key], newValue);
+          }
+        }
+      });
     }
     triggerOnChanged(key, newValue, oldValue) {
       const callbacks = this.watcher.get(key);
@@ -127,7 +144,9 @@
           const oldValue = values[key];
           const strOldValue = oldValue === void 0 ? void 0 : JSON.stringify(oldValue);
           if (strNewValue === strOldValue) return;
-          values[key] = strNewValue && JSON.parse(strNewValue);
+          values[key] = strNewValue === void 0 ? void 0 : JSON.parse(strNewValue);
+          const processing = this.processing.get(key);
+          if (processing && processing.size) return;
           this.triggerOnChanged(key, newValues[key], oldValue);
         });
       });
@@ -151,9 +170,8 @@
         if (strNewValue) values[key] = JSON.parse(strNewValue);
         else delete values[key];
         const set = this.storage.set(values);
-        set.then(() => {
-          this.triggerOnChanged(key, value, oldValue);
-        });
+        this.triggerOnChanged(key, value, oldValue);
+        this.ignoreOnChange(key, set, value);
       }
       return strNewValue && JSON.parse(strNewValue);
     }
@@ -181,6 +199,16 @@
     /** @param {string} key */
     key(key) {
       return new ConfigKey(this, key);
+    }
+    import(data) {
+      this.value = JSON.parse(JSON.stringify(data));
+      this.storage.set(this.value);
+    }
+    export() {
+      return JSON.parse(JSON.stringify(this.value));
+    }
+    reset() {
+      this.storage.set({});
     }
   }
 

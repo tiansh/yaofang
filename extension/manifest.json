@@ -15,7 +15,11 @@
     "storage", "unlimitedStorage",
     "menus",
     "downloads",
-    "*://*.weibo.com/*", "<all_urls>"
+    "*://*.miaopai.com/*",
+    "*://*.sina.cn/*",
+    "*://*.sinaimg.cn/*",
+    "*://*.t.cn/*",
+    "*://*.weibo.com/*"
   ],
 
   "background": {
@@ -45,6 +49,7 @@
     ],
     "js": [
       "common/util/functools.js",
+      "common/util/urls.js",
       "content/util/priority.js",
       "content/util/debug.js",
       "content/util/i18n.js",
@@ -129,6 +134,8 @@
       "content/rule/feeds/media.js",
 
       "content/rule/about/about.js",
+      "content/rule/about/export.js",
+      "content/rule/about/whatsnew.js",
       "content/rule/about/debug.js",
       "content/rule/about/script.js",
 

@@ -31,6 +31,7 @@
 
   content.fontSize = rule.Rule({
     id: 'feed_font_size',
+    version: 1,
     parent: content.content,
     template: () => i18n.styleTextFontSize,
     ref: {
@@ -71,7 +72,8 @@
   };
 
   content.expandLong = rule.Rule({
-    id: 'expandLong',
+    id: 'feed_long_expand',
+    version: 1,
     parent: content.content,
     template: () => i18n.autoExpandLongFeeds,
     ref: {
@@ -88,7 +90,8 @@
   };
 
   content.showLinkUrl = rule.Rule({
-    id: 'showLinkUrl',
+    id: 'feed_link_use_url',
+    version: 1,
     parent: content.content,
     template: () => i18n.showLinkUrl,
     init() {
@@ -125,7 +128,8 @@
   };
 
   content.useTextEmoji = rule.Rule({
-    id: 'useTextEmoji',
+    id: 'feed_unicode_emoji',
+    version: 1,
     parent: content.content,
     template: () => i18n.useTextEmoji,
     ainit() {
@@ -150,7 +154,8 @@
   };
 
   content.customizeSource = rule.Rule({
-    id: 'customizeSource',
+    id: 'feed_no_custom_source',
+    version: 1,
     parent: content.content,
     template: () => i18n.customizeSource,
     ainit() {

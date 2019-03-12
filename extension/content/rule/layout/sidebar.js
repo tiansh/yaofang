@@ -66,7 +66,8 @@
   });
 
   sidebar.messages = rule.Rule({
-    id: 'left_nav_msgs',
+    id: 'layout_left_messages',
+    version: 1,
     parent: sidebar.sidebar,
     template: () => i18n.sidebarShowMessages,
     ref: {
@@ -129,7 +130,8 @@
   });
 
   sidebar.merge = rule.Rule({
-    id: 'merge',
+    id: 'layout_side_merge',
+    version: 1,
     parent: sidebar.sidebar,
     template: () => i18n.sidebarMerge,
     ref: {
@@ -317,7 +319,8 @@
   });
 
   sidebar.floatingLeft = rule.Rule({
-    id: 'floatingLeft',
+    id: 'layout_left_move',
+    version: 1,
     parent: sidebar.sidebar,
     template: () => i18n.floatingLeft,
     // 如果合并了左右边栏，那么左栏浮动的时候右栏不能浮动
@@ -413,7 +416,8 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
   });
 
   sidebar.floatingRight = rule.Rule({
-    id: 'floatingRight',
+    id: 'layout_right_move',
+    version: 1,
     parent: sidebar.sidebar,
     template: () => i18n.floatingRight,
     init() {
@@ -468,7 +472,8 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
   });
 
   sidebar.allSidebarOn = rule.Rule({
-    id: 'allSidebarOn',
+    id: 'layout_side_position',
+    version: 1,
     parent: sidebar.sidebar,
     template: () => i18n.allSidebarOn,
     ref: {

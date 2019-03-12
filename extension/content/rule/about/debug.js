@@ -26,7 +26,8 @@
   };
 
   debug.enable = rule.Rule({
-    id: 'debug',
+    id: 'script_enable_debug',
+    version: 1,
     parent: debug.debug,
     template: () => i18n.debugText,
     ainit: function () {

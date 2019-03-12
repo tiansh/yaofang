@@ -22,8 +22,8 @@
     cleanNavNew: { cn: '提示红点', tw: '提示紅點', en: 'Red dot tips' },
   });
 
-  clean.CleanGroup('_nav', () => i18n.cleanNavGroupTitle);
-  clean.CleanRule('logoImg', () => i18n.cleanNavLogoImg, 1, {
+  clean.CleanGroup('nav', () => i18n.cleanNavGroupTitle);
+  clean.CleanRule('logo_img', () => i18n.cleanNavLogoImg, 1, {
     ainit: function () {
       const rule = this;
       observer.dom.add(function replaceLogo() {
@@ -42,7 +42,7 @@
   clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }');
   clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '.gn_nav_list>li:nth-child(3) { display: none !important; }');
   clean.CleanRule('game', () => i18n.cleanNavGame, 1, '.gn_nav_list>li:nth-child(4) { display: none !important; }');
-  clean.CleanRule('hotSearch', () => i18n.cleanNavHotSearch, 1, {
+  clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
     init: function () {
       const rule = this;
       backend.onRequest('hotSearch', details => {
@@ -51,7 +51,7 @@
       });
     },
   });
-  clean.CleanRule('noticeNew', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
+  clean.CleanRule('notice_new', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
   clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }');
 
 }());

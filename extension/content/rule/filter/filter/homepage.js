@@ -118,7 +118,8 @@
     return groups.map(({ name, id }) => ({ text: name, value: id }));
   });
   homepage.singleGroup = rule.Rule({
-    id: 'single_group',
+    id: 'filter_homepage_single_group',
+    version: 1,
     parent: homepage.homepage,
     template: () => i18n.feedsHomepageSingleGroup,
     ref: {
@@ -144,7 +145,8 @@
   });
 
   homepage.multiGroup = rule.Rule({
-    id: 'multi_group',
+    id: 'filter_homepage_multi_group',
+    version: 1,
     parent: homepage.homepage,
     template: () => i18n.feedsHomepageMultiGroup,
     ref: {

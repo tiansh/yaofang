@@ -60,6 +60,7 @@
     baseClass: TextFeedRule,
     tab: 'content',
     key: 'text',
+    version: 1,
     type: 'strings',
     title: () => i18n.contentTextGroupTitle,
     details: {

@@ -14,6 +14,8 @@
 
   const i18n = util.i18n;
   const functools = util.functools;
+  const ui = util.ui;
+  const css = util.css;
 
   const getContext = functools.once(async function () {
     const followConfig = await config.pool('Follow', { uid: init.page.$CONFIG.uid });
@@ -72,7 +74,8 @@
       normalize(value) {
         if (!value) return null;
         if (!value.timestamp) return null;
-        if (!Array.isArray(value.list)) return null;
+        if (!Array.isArray(value.add)) return null;
+        if (!Array.isArray(value.lost)) return null;
         return value;
       },
     });
@@ -121,7 +124,7 @@
   const checkListDiff = function (list, newList, lastChange) {
     // 如果之前没有数据，那么也就不用对比
     if (!Array.isArray(list)) return { add: [], lost: [] };
-    const { add: lastAdd, lost: lastLost } = lastChange || {};
+    const { add: lastAdd = [], lost: lastLost = [] } = lastChange || {};
     const sameFollowItem = (x, y) => x.id === y.id;
     // 先根据原有名单和未提交的更改恢复更早的名单
     const oldList = list.filter(x => !lastAdd.find(y => x.id === y.id)).concat(lastLost);
@@ -129,6 +132,17 @@
     const add = newList.filter(x => !oldList.find(y => sameFollowItem(y, x)));
     const lost = oldList.filter(y => !newList.find(x => sameFollowItem(y, x)));
     return { add, lost };
+  };
+
+  // 去除重复数据
+  const removeDuplicate = function (list) {
+    if (!Array.isArray(list)) return [];
+    const seen = new Set();
+    return list.filter(item => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
   };
 
   // 触发刷新流程，如果此时已经完成则强制重新开始
@@ -169,14 +183,24 @@
       return;
     }
 
-    const newList = fetchData.getConfig().list;
-    const oldList = lastList.getConfig();
-    const changeList = (lastChange.getConfig() || {}).list;
-    const { add, lost } = checkListDiff(oldList && oldList.list, newList, changeList);
+    try {
+      const newList = removeDuplicate(fetchData.getConfig().list);
+      const oldList = lastList.getConfig();
+      const changeList = (lastChange.getConfig() || {}).list;
+      const { add, lost } = checkListDiff(oldList && oldList.list, newList, changeList);
 
-    lastList.setConfig({ timestamp: Date.now(), list: newList });
-    lastChange.setConfig({ timestamp: Date.now(), add, lost });
-    fetchData.setConfig({});
+      const finishTime = Date.now();
+      lastList.setConfig({ timestamp: finishTime, list: newList });
+      if (add.length || lost.length) {
+        lastChange.setConfig({ timestamp: finishTime, add, lost });
+      } else {
+        lastChange.setConfig(null);
+      }
+      fetchData.setConfig({});
+    } catch (e) {
+      util.debug('Fetch Follow: error while update result');
+      util.debug(e);
+    }
   };
 
   const clearFollowList = async function () {
@@ -233,7 +257,7 @@
     autoCheckFollowing: {
       cn: '自动检查关注列表并提示变化|{{frequency}}{{i}}||{{buttons}}||{{fetching}}',
       tw: '自動檢查關注清單並提示變化|{{frequency}}{{i}}||{{buttons}}||{{fetching}}',
-      en: 'Automatically checks and prompt any changes about following list | {{frequency}}{{i}}||{{buttons}}||{{fetching}}'
+      en: 'Automatically checks and prompt any changes about following list | {{frequency}}{{i}}||{{buttons}}||{{fetching}}',
     },
     autoCheckFollowingDetail: {
       cn: '开启本功能后脚本会每隔一段时间，检查您的关注列表，并和上一次得到的结果比较，将不同之处展示出来。脚本检查关注列表只能像您在网页中检查关注列表一样，一页一页的翻看，因此检查可能需要较长的时间，如果您关注了大量的帐号，请考虑降低自动检查的频率。',
@@ -248,7 +272,7 @@
     autoCheckFollowingNow: { cn: '立即更新数据', tw: '立即更新資料', en: 'Update Now' },
     autoCheckFollowingRunning: { cn: '（正在更新）', en: '(Updating)' },
     autoCheckFollowingDialogTitle: { cn: '关注列表变化', tw: '關注清單變化', en: 'Following List Changes' },
-    autoCheckFollowingTitle: { cn: '关注列表变化', tw: '關注清單變化', en: 'Following List Changes' },
+    autoCheckFollowingTitle: { cn: '关注列表变化 - 药方 (YAWF)', tw: '關注清單變化 - 藥方 (YAWF)', en: 'Following List Changes - YAWF (Yet Another Weibo Filter)' },
     autoCheckFollowingTip: {
       cn: '您的关注列表自从上次检查并确认至今发生了如下变化，请您复查：',
       hk: '您的關注清單自從上次檢查並確認至今發生了如下變化，請您複查：',
@@ -259,8 +283,56 @@
     autoCheckFollowingLost: { cn: '减少如下关注', tw: '減少如下關注', en: 'Recent Unfollowed' },
   });
 
+  /**
+   * @typedef {{ id: string, type: 'user'|'stock'|'topic'|'unknown', url: string, avatar: string, name: string, description: string }} FollowInfo
+   * @param {{ timestamp: number, add: FollowInfo[], lost: FollowInfo[] }}
+   */
+  const showChangeList = function ({ timestamp, add, lost }) {
+    let resolve;
+    const promise = new Promise(r => { resolve = r; });
+    const followChangeDialog = ui.dialog({
+      id: 'yawf-follow-change',
+      title: i18n.autoCheckFollowingDialogTitle,
+      /** @param {Element} container */
+      render(container) {
+        container.innerHTML = '<div class="yawf-following-notice-body"><div class="yawf-following-notice-detail"></div><div class="yawf-following-add" style="display: none;"><div class="yawf-following-add-title"></div><div class="yawf-following-add-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div><div class="yawf-following-lost" style="display: none;"><div class="yawf-following-lost-title"></div><div class="yawf-following-lost-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div></div><div class="yawf-following-notice-footer"><span class="yawf-following-notice-last-time-text"></span><span class="yawf-following-notice-last-time"></span></div>';
+        container.querySelector('.yawf-following-notice-detail').textContent = i18n.autoCheckFollowingTip;
+        container.querySelector('.yawf-following-add-title').textContent = i18n.autoCheckFollowingAdd;
+        container.querySelector('.yawf-following-lost-title').textContent = i18n.autoCheckFollowingLost;
+        container.querySelector('.yawf-following-notice-last-time-text').textContent = i18n.autoCheckFollowingLastTime;
+        container.querySelector('.yawf-following-notice-last-time').textContent = formatLastTime(timestamp);
+        [
+          { area: container.querySelector('.yawf-following-add'), list: add },
+          { area: container.querySelector('.yawf-following-lost'), list: lost },
+        ].forEach(({ area, list }) => {
+          if (!list || !Array.isArray(list) || !list.length) return;
+          area.style.display = '';
+          const ul = area.querySelector('ul');
+          list.forEach(item => {
+            const wrap = document.createElement('ul');
+            wrap.innerHTML = '<li class="yawf-config-collection-item W_btn_b W_btn_tag"><div class="yawf-config-collection-item-content"><div class="yawf-config-user-item"><div class="yawf-config-user-avatar"><img /></div><a class="yawf-config-user-name" target="_blank"></a></div></div></li>';
+            if (item.type === 'user') wrap.querySelector('.yawf-config-user-item').setAttribute('usercard', `id=${item.user}`);
+            wrap.querySelector('img').setAttribute('src', item.avatar);
+            const name = wrap.querySelector('.yawf-config-user-name');
+            name.textContent = item.name;
+            name.href = item.url;
+            const li = wrap.firstChild;
+            ul.appendChild(li);
+          });
+        });
+      },
+      button: {
+        ok() { resolve(true); followChangeDialog.hide(); },
+        close() { resolve(null); followChangeDialog.hide(); },
+      },
+    });
+    followChangeDialog.show();
+    return promise;
+  };
+
   following.autoCheckFollowing = rule.Rule({
-    id: 'autoCheckFollowing',
+    id: 'filter_follow_check',
+    version: 1,
     parent: following.following,
     template: () => i18n.autoCheckFollowing,
     ref: {
@@ -293,7 +365,7 @@
             updateFollowList();
           });
           checkNowButton.querySelector('span').textContent = i18n.autoCheckFollowingNow;
-          if (fetchData && fetchData.allPages) checkNowButton.style.display = 'none';
+          if (fetchData && fetchData.lock) checkNowButton.style.display = 'none';
           else checkingText.style.display = 'none';
           return buttonArea;
         },
@@ -301,7 +373,7 @@
           const fetchData = this.getConfig();
           const checkingText = buttonArea.querySelector('.yawf-following-checking');
           const checkNowButton = buttonArea.querySelector('.yawf-following-check-now');
-          if (fetchData && fetchData.allPages) {
+          if (fetchData && fetchData.lock) {
             checkNowButton.style.display = 'none';
             checkingText.style.display = '';
           } else {
@@ -362,17 +434,27 @@
     init() {
       const enabled = this.isEnabled();
       const frequency = this.ref.frequency.getConfig();
-      const { fetchData, lastList } = followingContext;
+      const { fetchData, lastList, lastChange } = followingContext;
       let shouldUpdate = false;
       const fetchContext = fetchData.getConfig();
       const list = lastList.getConfig();
-      if (fetchContext.allPages) shouldUpdate = true;
-      if (enabled && !list || !list.list) shouldUpdate = true;
+      if (fetchContext.lock) shouldUpdate = true;
+      if (enabled && (!list || !list.list)) shouldUpdate = true;
       if (enabled && list && list.timestamp < Date.now() - frequency) shouldUpdate = true;
-      if (shouldUpdate) updateFollowList();
-      setTimeout(init, 1e7);
+      if (shouldUpdate) setTimeout(updateFollowList, 10e3);
+      const change = lastChange.getConfig();
+      if (change && change.timestamp) {
+        showChangeList(change).then(confirm => confirm && lastChange.setConfig(null));
+      }
     },
   });
+
+  css.append(`
+.yawf-following-add-title, .yawf-following-lost-title { font-weight: bold; margin: 10px 0 5px; } 
+.yawf-following-notice-body { padding: 20px 20px 0; width: 600px; } 
+.yawf-following-notice-footer { padding: 20px; } 
+.yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
+`);
 
 
 }());
