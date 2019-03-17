@@ -9,6 +9,7 @@
   const rule = yawf.rule;
   const request = yawf.request;
   const download = yawf.download;
+  const observer = yawf.observer;
 
   const filter = yawf.rules.filter;
 
@@ -224,7 +225,7 @@
     // 在前面放一列序号，这样即便不能处理 BOM ，也可以躲开最前面一行的序数，不会出什么问题
     const content = '\ufeff#,name,homepage,avatar\r\n' + list.map((item, index) => {
       const name = csvItem(item.name);
-      const homepage = csvItem(new URL(item.href, 'https://weibo.com').href);
+      const homepage = csvItem(new URL(item.url, 'https://weibo.com').href);
       const avatar = csvItem(new URL(item.avatar, 'https://weibo.com').href);
       return [index + 1, name, homepage, avatar].join(',');
     }).join('\r\n') + '\r\n'; // CRLF 换行符支持效果最好，而且也更合乎规范
@@ -456,5 +457,45 @@
 .yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
 `);
 
+  i18n.uncheckFollowPresenter = {
+    cn: '话题页面发布框取消默认勾选关注主持人',
+    tw: '話題頁面發佈框取消預設勾選關注主持人',
+    en: 'Uncheck follow presenter in topic page'
+  };
+
+  following.uncheckFollowPresenter = rule.Rule({
+    id: 'uncheck_follow_presenter',
+    version: 1,
+    parent: following.following,
+    template: () => i18n.uncheckFollowPresenter,
+    ainit() {
+      observer.dom.add(function uncheckFollowPresenter() {
+        const inputs = Array.from(document.querySelectorAll('input[type="checkbox"][checked][action-data*="follow"]:not([yawf-uncheck-follow])'));
+        inputs.forEach(checkbox => {
+          checkbox.setAttribute('yawf-uncheck', '');
+          if (checkbox.checked) checkbox.click();
+        });
+      });
+    },
+  });
+
+  i18n.showArticalWithoutFollow = {
+    cn: '头条文章不关注作者直接显示全文',
+    tw: '頭條文章不關注作者直接顯示全文',
+    en: 'Show whole artical without follow the author'
+  };
+
+  following.showArticalWithoutFollow = rule.Rule({
+    id: 'show_artical_without_follow',
+    version: 1,
+    parent: following.following,
+    template: () => i18n.showArticalWithoutFollow,
+    ainit() {
+      css.append(`
+.WB_editor_iframe { height: auto !important; }
+.artical_add_box [node-type="maskContent"] { display: none; }
+`);
+    },
+  });
 
 }());

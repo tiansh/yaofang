@@ -11,9 +11,9 @@
   const util = yawf.util;
   const init = yawf.init;
 
-  const rand = new Uint8Array(64);
-  crypto.getRandomValues(rand);
-  const randStr = [...rand].map(value => value.toString(16).padStart(2, 0)).join('');
+  const strings = util.strings;
+
+  const randStr = strings.randKey();
   const key = `yawf_${randStr}`;
   util.inject(function (key) {
     let lastReport = null;
@@ -26,7 +26,7 @@
       window.dispatchEvent(event);
     };
     if ('$CONFIG' in window) {
-      reportResult(null);
+      location.reload();
       return;
     }
     let $CONFIG = void 0;

@@ -9,6 +9,7 @@
 
   const i18n = util.i18n;
   const css = util.css;
+  const strings = util.strings;
 
   const layout = feeds.layout = {};
 
@@ -92,8 +93,8 @@
 .WB_text::before { content: " "; display: block; float: right; width: 14px; height: 1px; }
 
 .WB_info + .WB_from { display: none; }
-.WB_face .opt { margin: 10px 0 0 0; position: static; right: auto; top: auto; }
-.WB_face .opt .W_btn_b { width: 48px; }
+body .WB_feed_v3 .WB_face .opt.opt { margin: 10px 0 0 0; position: static; right: auto; top: auto; }
+body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 
 .WB_face { line-height: 0; }
 .WB_detail { min-height: 50px; }
@@ -189,18 +190,52 @@
 .WB_feed.WB_feed_v3 .layer_view_morepic .view_pic { padding: 0 40px 20px; }
 .WB_feed.WB_feed_v3 .WB_media_view .pic_choose_box .stage_box { width: 440px; }
 `);
-      /*
-      if (
-        !filter.items.style.layout.width_weibo.conf ||
-        filter.items.style.layout.width_weibo.ref.width.conf < 650 &&
-        this.ref.repost.conf
-      ) css.append(`
+      const feedWidth = layout.increaseFeedWidth.isEnabled() ? layout.increaseFeedWidth.ref.width.getConfig() : 600;
+      if (feedWidth < 650 && repost) css.append(`
 .WB_h5video { margin-left: -22px; }
 .WB_h5video.hv-s1, .WB_h5video.hv-s3-2, .WB_h5video.hv-s3-5 { margin-left: 0; }
+.yawf-WB_video[yawf-video-play] { margin-left: -22px; }
 `);
-*/
       // FIXME 八图或九图时，展开后图片列表显示不完整
     },
+  });
+
+  i18n.increaseFeedWidth = {
+    cn: '加宽微博宽度|为{{width}}像素',
+    tw: '加寬微博寬度|為{{width}}像素',
+    en: 'Increase width of feeds | to {{width}}px',
+  };
+
+  layout.increaseFeedWidth = rule.Rule({
+    id: 'feed_increase_width',
+    version: 1,
+    parent: layout.layout,
+    template: () => i18n.increaseFeedWidth,
+    ref: {
+      width: {
+        type: 'range',
+        min: 600,
+        initial: 750,
+        max: 1280,
+        step: 10,
+      },
+    },
+    init() {
+      const width = this.isEnabled() ? this.ref.width.getConfig() : 600;
+      css.append(`
+:root { --yawf-feed-width: ${width}px; }
+
+body .WB_frame { width: calc(var(--yawf-feed-width) + 400px); }
+body .WB_frame #plc_main { width: calc(var(--yawf-feed-width) + 250px); }
+body .B_discover .WB_frame_c,
+body .WB_main_c { width: var(--yawf-feed-width); }
+body .WB_tab_a .tab_box { display: flex; }
+body .WB_tab_a .tab_box::after { content: none; }
+body .WB_tab_a .tab_box_a .fr_box { flex: 1 0 0; }
+body .WB_feed_v3 .WB_face .opt { right: calc(132px - var(--yawf-feed-width)); }
+body .W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 400px) / 2) }
+`);
+    }
   });
 
   Object.assign(i18n, {
@@ -229,6 +264,7 @@
 
   const keepOrderItemsDiff = item => {
     item.addConfigListener((newValue, oldValue) => {
+      oldValue = oldValue || item.initial;
       const that = item.refs.find(that => that !== item && that.getConfig() === newValue);
       if (that) that.setConfig(oldValue);
     });
@@ -298,6 +334,49 @@ ${[0, 1, 2, 3, 4].map(index => `
       css.append([0, 1, 2, 3, 4].map(index => `
 .WB_handle ul li[yawf-comment-handle-type="${this.ref[index].getConfig()}"] { order: ${index}; }
 `).join(''));
+    },
+  });
+
+  i18n.disableTagDialog = {
+    cn: '屏蔽收藏微博时的添加标签对话框',
+    tw: '阻擋收藏微博時的添加標籤對話方塊',
+    en: 'Block the dialog after marking weibo favorite',
+  };
+
+  const tagDialog = 'yawf_tag_dialog_' + strings.randKey();
+  yawf.stk.wrap('lib.feed.plugins.favorite.tagDialog', function (tagDialog) {
+    let enable = null, trueInnerGetter = null;
+    let inner = function () { };
+    const initialize = function () {
+      if (enable === null || trueInnerGetter === null) return;
+      if (enable) inner = trueInnerGetter();
+    };
+    Object.defineProperty(window, tagDialog, {
+      get() { return void 0; },
+      set(value) { enable = value; initialize(); },
+      enumerable: false,
+    });
+    return function (regFunc) {
+      return function (stk) {
+        trueInnerGetter = () => regFunc.call(this, stk);
+        initialize();
+        return function (...params) {
+          if (!inner) return null;
+          return inner.call(this, ...params);
+        };
+      };
+    };
+  }, tagDialog);
+
+  layout.disableTagDialog = rule.Rule({
+    id: 'feed_disable_tag_dialog',
+    version: 1,
+    parent: layout.layout,
+    template: () => i18n.disableTagDialog,
+    init() {
+      util.inject(function (tagDialog, enableDialog) {
+        window[tagDialog] = enableDialog;
+      }, tagDialog, !this.isEnabled());
     },
   });
 

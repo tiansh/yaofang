@@ -5,11 +5,13 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const init = yawf.init;
+  const rules = yawf.rules;
 
   const layout = yawf.rules.layout;
 
   const i18n = util.i18n;
   const css = util.css;
+  const priority = util.priority;
 
   const sidebar = layout.sidebar = {};
 
@@ -220,14 +222,18 @@
 
       css.append(`
 [yawf-merge-left] .WB_frame .WB_main_l,
-[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame .yawf-WB_left_nav,
-[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame .WB_left_nav { width: 229px; padding: 0; float: none; }
-[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame { width: 840px !important; padding: 10px; background-position: -300px center; }
-[yawf-merge-left] .WB_frame .yawf-WB_left_nav .lev_line fieldset, body[yawf-merge-left] .WB_frame .WB_left_nav .lev_line fieldset { padding-left: 190px; }
-[yawf-merge-left] .WB_left_nav .lev a:hover, .WB_left_nav .lev_curr, .WB_left_nav .lev_curr:hover, .WB_left_nav .levmore .more { background: rgba(128, 128, 128, 0.1) !important; }
-[yawf-merge-left] .WB_left_nav .lev_Box, .WB_left_nav fieldset { border-color: rgba(128, 128, 128, 0.5) !important; }
+[yawf-merge-left] .WB_frame .yawf-WB_left_nav,
+[yawf-merge-left] .WB_frame .WB_left_nav { width: 229px; padding: 0; float: none; }
+[yawf-merge-left] .WB_frame { width: calc(var(--yawf-feed-width) + 240px); padding: 10px; background-position: -300px center; }
+[yawf-merge-left] .WB_frame .yawf-WB_left_nav .lev_line fieldset,
+[yawf-merge-left] .WB_frame .WB_left_nav .lev_line fieldset { padding-left: 190px; }
+[yawf-merge-left] .WB_left_nav .lev a:hover, .WB_left_nav .lev_curr,
+[yawf-merge-left] .WB_left_nav .lev_curr:hover,
+[yawf-merge-left] .WB_left_nav .levmore .more { background: rgba(128, 128, 128, 0.1) !important; }
+[yawf-merge-left] .WB_left_nav .lev_Box,
+[yawf-merge-left] .WB_left_nav fieldset { border-color: rgba(128, 128, 128, 0.5) !important; }
 [yawf-merge-left] .WB_frame .WB_main_l #v6_pl_leftnav_msgbox.yawf-cardwrap h3 { padding: 0 16px; }
-[yawf-merge-left] a.W_gotop { margin-left: 430px; }
+[yawf-merge-left] a.W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 240px) / 2); }
 [yawf-merge-left] .WB_webim_page #weibochat { position: static !important; }
 [yawf-merge-left] .WB_webim_page .webim_contacts_mod { position: static !important; max-height: calc(100vh - 410px); }
 [yawf-merge-left] .WB_webim_page .webim_contacts_bd { max-height: calc(100vh - 470px); }
@@ -237,10 +243,9 @@
 [yawf-merge-left="left"] .WB_frame .WB_main_c { float: right; }
 
 @media screen and (max-width: 1006px) {
-  body[yawf-merge-left] .W_main { width: 600px !important; }
-  body[yawf-merge-left]:not([yawf-weibo-only]) .WB_frame,
-  body[yawf-merge-left][yawf-weibo-only] .WB_frame { width: 600px !important; }
-  body[yawf-merge-left] a.W_gotop { margin-left: 310px; }
+  body[yawf-merge-left] .W_main { width: var(--yawf-feed-width); }
+  body[yawf-merge-left] .WB_frame { width: var(--yawf-feed-width); }
+  body[yawf-merge-left] a.W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 20px) / 2); }
   body[yawf-merge-left="left"] .WB_main .WB_main_c { float: none; }
   body[yawf-merge-left="left"] .W_fold { right: auto; left: 0; -webkit-transform: scaleX(-1); transform: scaleX(-1); }
   body[yawf-merge-left="left"] .W_fold.W_fold_out { left: 269px; }
@@ -338,23 +343,9 @@
 .WB_main_r[yawf-fixed] .WB_main_l { position: fixed; top: 60px !important; overflow: hidden; height: auto !important; width: 150px; }
 body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
 `);
-      // if (layout.nav.autoHide.getConfig()) {
-      //   util.css.append('.WB_main_r[yawf-fixed] .WB_main_l { top: 10px !important; }');
-      // }
-
-      // 当左侧不够长时，需要滚动条，更新滚动条的状态
-      const updateScroll = function () {
-        util.func.page(function () {
-          const $YAWF$ = window.$YAWF$ = window.$YAWF$ || {};
-          const STK = window.STK;
-          if (!$YAWF$.updateLeftScroll) $YAWF$.updateLeftScroll = (function () {
-            const leftNavScroll = STK.sizzle('[node-type="leftnav_scroll"]')[0];
-            const leftNavScrolled = STK.ui.scrollView(leftNavScroll);
-            return function () { leftNavScrolled.reset(); };
-          }());
-          $YAWF$.updateLeftScroll();
-        });
-      };
+      if (layout.navbar.autoHide.getConfig()) {
+        util.css.append('.WB_main_r[yawf-fixed] .WB_main_l { top: 10px !important; }');
+      }
 
       // 限制左栏最大高度，避免超出中间区域
       const updateMaxHeight = function (left, maxHeight) {
@@ -372,7 +363,6 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
             if (srl.style.height !== height) {
               srl.style.height = height;
               srl.style.position = 'relative';
-              if (srl) updateScroll();
             }
           }
         }
@@ -505,5 +495,46 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
       });
     },
   });
+  
+  // 使用关键字、正则式和话题过滤热门话题模块
+  // 这个功能没有做开关，因为关键字等都是用户自己设置的，相当于开关了
+  init.onLoad(() => {
+    observer.dom.add(function filteRightTopic() {
+      const links = Array.from(document.querySelectorAll('.hot_topic li:not([yawf-rtopic]) a[suda-uatrack*="hottopic_r"]'));
+      if (!links.length) return;
+      const topics = rules.topic.text.hide.ref.items.getConfig();
+      const texts = rules.content.text.hide.ref.items.getConfig();
+      const regexen = rules.content.regex.hide.ref.items.getConfigCompiled();
+      links.forEach(topic => {
+        const text = topic.title.replace(/#/g, '');
+        do {
+          if (topics.includes(text)) break;
+          if (texts.some(t => text.includes(t))) break;
+          if (regexen.some(r => r.test(text))) break;
+          topic.closest('li').setAttribute('yawf-rtopic', '');
+          return;
+        } while (false);
+        topic.closest('li').remove();
+      });
+    });
+  }, { priority: priority.LAST });
+
+  i18n.showAllGroups = {
+    cn: '展开左栏分组',
+    tw: '展開左欄分組',
+    en: 'Show all groups in left sidebar',
+  };
+
+  sidebar.showAllGroups = rule.Rule({
+    id: 'layout_side_show_all_groups',
+    version: 1,
+    parent: sidebar.sidebar,
+    template: () => i18n.showAllGroups,
+    acss: `
+.lev_Box .levmore { display: none !important; }
+.lev_Box [node-type="moreList"] { display: block !important; height: auto !important; }
+`,
+  });
+
 
 }());

@@ -300,7 +300,7 @@
           hide();
           mouseIn = null;
         }
-      }, 0);
+      }, 300);
     };
     reference.addEventListener('mouseenter', enter);
     bubble.addEventListener('mouseenter', enter);

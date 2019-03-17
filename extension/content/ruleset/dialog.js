@@ -191,9 +191,6 @@
 #yawf-config .yawf-config-body { padding: 10px 20px 20px; width: 600px; max-height: 450px; overflow: auto; box-shadow: 0 4px 2px -2px rgba(64, 64, 64, 0.15) inset; position: relative; line-height: 20px; }
 #yawf-config .yawf-config-layer { padding-bottom: 20px; min-height: 400px; }
 #yawf-config .yawf-config-layer.current { display: block; }
-
-.yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
-.yawf-config-rule { display: block; margin: 5px 20px; }
 `);
 
 

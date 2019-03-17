@@ -60,6 +60,8 @@
 .WB_global_nav[${attr}]:hover .gn_topmenulist_tips { padding-top: 2px; transition: padding-top ease-in-out 0.1s 0s; }
 .WB_global_nav[${attr}] .gn_topmenulist_tips .ficon_close { top: 56px; transition: top ease-in-out 0.1s 0.33s; }
 .WB_global_nav[${attr}]:hover .gn_topmenulist_tips .ficon_close { top: 6px; transition: top ease-in-out 0.1s 0s; }
+/* 浮动元素 */
+.W_fixed_top { top: 10px !important; }
 `);
     },
   });
@@ -117,5 +119,45 @@
     },
   });
 
+  Object.assign(i18n, {
+    navHideName: { cn: '导航栏上的用户名|{{act}}{{i}}', tw: '導覽列上的用戶名|{{act}}{{i}}', en: 'Username on nav bar would be | {{act}}{{i}}' },
+    navHideNameReplace: { cn: '替换为“个人主页”', tw: '替換為「個人主頁」', en: 'replaced by text "My Profile"' },
+    navHideNameHidden: { cn: '隐藏', tw: '隱藏', en: 'hidden' },
+    navHideNameDetail: {
+      cn: '此外您还可以隐藏隐藏右栏的 [[clean_right_info]] 模块。以及打开 [[layout_nav_auto_hide]] 。'
+    },
+    navHideNameReplaceText: { cn: '个人主页', tw: '個人主頁', en: 'My Profile' },
+  });
+
+  const hideNavName = css.add('.WB_global_nav .gn_nav_list li.gn_name.S_txt1 { display: none; }');
+  navbar.navHideName = rule.Rule({
+    id: 'layout_nav_hide_name',
+    version: 1,
+    parent: navbar.navbar,
+    template: () => i18n.navHideName,
+    ref: {
+      act: {
+        type: 'select',
+        select: [
+          { value: 'hidden', text: () => i18n.navHideNameHidden },
+          { value: 'replace', text: () => i18n.navHideNameReplace },
+        ],
+      },
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.navHideNameDetail },
+    },
+    init() {
+      if (this.getConfig()) {
+        if (this.ref.act.getConfig() === 'replace') {
+          css.append(`
+.WB_global_nav .gn_nav_list li .gn_name .S_txt1::before { content: "${i18n.navHideNameReplaceText}"; display: block; }
+.WB_global_nav .gn_nav_list li .gn_name .S_txt1 { height: 26px; display: inline-block; width: 4em; }
+`);
+        } else {
+          css.append('.WB_global_nav .gn_nav_list li.gn_name.S_txt1 { display: none; }');
+        }
+      }
+      hideNavName.remove();
+    },
+  });
 
 }());

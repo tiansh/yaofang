@@ -98,6 +98,7 @@
   const rules = yawf.rules = {};
   const tabs = rule.tabs = [];
 
+  rules.all = new Map();
   rule.class = {};
 
   /**
@@ -172,11 +173,11 @@
     const tokenRender = {};
 
     /** @type {TemplateTokenRender} */
-    tokenRender.child = function (token, reference, ref) {
+    tokenRender.child = function (token, reference, ref, mode) {
       const child = ref[token.value];
       if (!child) return reference;
-      if (fullDom) {
-        const childDom = child.getRenderResult(false);
+      if (mode !== 'text') {
+        const childDom = child.getRenderResult(mode === 'recursive');
         if (childDom instanceof Node) {
           reference.appendChild(childDom);
           return reference;
@@ -190,12 +191,16 @@
       }
     };
     /** @type {TemplateTokenRender} */
-    tokenRender.rule = function (token, reference, ref) {
-      reference.appendChild(ruleRender(rule.all.get(token.value)));
+    tokenRender.rule = function (token, reference, ref, mode) {
+      if (mode === 'text') {
+        reference.appendChild(rules.all.get(token.value).text(false));
+      } else {
+        reference.appendChild(rules.all.get(token.value).render(false));
+      }
       return reference;
     };
     /** @type {TemplateTokenRender} */
-    tokenRender.splitter = function (token, reference, ref) {
+    tokenRender.splitter = function (token, reference, ref, mode) {
       const parent = reference.parentNode;
       const label = document.createElement('label');
       parent.insertBefore(label, reference.nextSibling);
@@ -206,7 +211,7 @@
       return label;
     };
     /** @type {TemplateTokenRender} */
-    tokenRender.text = function (token, reference, ref) {
+    tokenRender.text = function (token, reference, ref, mode) {
       const text = token.value.startsWith('&') ? {
         '&amp;': '&',
       }[token.value] : token.value;
@@ -227,7 +232,7 @@
       container.appendChild(reference);
       const tokens = filteredTokens(tokenize(template), types);
       tokens.reduce((reference, token) => (
-        tokenRender[token.type](token, reference, ref)
+        tokenRender[token.type](token, reference, ref, mode)
       ), reference);
       return container;
     };
@@ -1299,6 +1304,7 @@
         throw TypeError('Rule must in some Group');
       }
       super(item);
+      rules.all.set(this.id, this);
     }
     render(...args) {
       const node = super.render(...args);
@@ -1389,6 +1395,9 @@
   }, { priority: priority.DEFAULT, async: true });
 
   css.append(`
+.yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
+.yawf-config-rule { display: block; margin: 5px 20px; }
+.yawf-bubble .yawf-config-rule { display: inline; margin: 0; }
 .yawf-config-rule > label + label { margin-left: 8px; }
 .yawf-config-rule > br + label { margin-left: 20px; }
 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }

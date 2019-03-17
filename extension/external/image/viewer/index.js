@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const initPreview = function () {
     if (isSingleImage) {
-      preview.style.display = 'none';
+      document.body.classList.add('single');
       return;
     }
     images.forEach((image, index) => {
@@ -86,7 +86,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const updateViewMode = function (useNext = true) {
     const current = getViewMode();
-    if (!current) resetViewMode();
+    if (!current) {
+      resetViewMode();
+      return;
+    }
     const validModes = availableViewModes();
     const index = validModes.findIndex(mode => mode + '' === current + '');
     if (index !== -1 && useNext) {
@@ -127,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const allPositions = ['left', 'mid', 'right'];
   /** @returns {'left'|'mid'|'right'} */
   const checkMousePosition = function (mouseX) {
-    if (isSingleImage) return 0;
+    if (isSingleImage) return 'mid';
     const width = container.clientWidth;
     if (mouseX < 100 || mouseX < width * 0.2) return 'left';
     if (mouseX > width - 100 || mouseX > width * 0.8) return 'right';
@@ -194,8 +197,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let previewHeight = 100;
   const updateResizeBar = function () {
-    if (previewHeight > 200) previewHeight = 200;
-    if (previewHeight < 40) previewHeight = 0;
+    if (isSingleImage) {
+      previewHeight = 0;
+    } else {
+      if (previewHeight > 200) previewHeight = 200;
+      if (previewHeight < 40) previewHeight = 0;
+    }
     const contentHeight = window.innerHeight - previewHeight - 20;
     const contentWidth = window.innerWidth - 20;
     document.body.style.setProperty('--preview-height', previewHeight + 'px');

@@ -15,4 +15,14 @@
     return Number(str.replace('万', 'e4').replace('亿', 'e8'));
   };
 
+  /**
+   * 生成一个随机字符串
+   * @returns {string}
+   */
+  strings.randKey = () => {
+    const rand = new Uint8Array(64);
+    crypto.getRandomValues(rand);
+    return [...rand].map(value => value.toString(16).padStart(2, 0)).join('');
+  };
+
 }());

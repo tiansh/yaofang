@@ -64,6 +64,7 @@
   // 识别用户的头像、链接等
   recognize.account = async function (target) {
     if (!(target instanceof Element)) return [];
+    const find = selector => target.querySelector(selector) || target.closest(selector);
     const user = { id: null, name: null, type: 'account' };
     // 用户链接
     ; (function (userlink) {
@@ -74,12 +75,12 @@
       if (userlink.matches('.WB_detail > .WB_info > .W_fb[usercard]')) user.type = 'author';
       if (userlink.matches('.WB_expand > .WB_info > .W_fb[usercard]')) user.type = 'original';
       if (userlink.matches('.WB_feed_type a[href*="loc=at"][namecard*="name"]')) user.type = 'mention';
-    }(target.closest('[usercard*="name="], [usercard*="id="]')));
+    }(find('[usercard*="name="], [usercard*="id="]')));
     // 个人主页的头像
     ; (function (photo) {
       if (!photo) return;
       user.name = photo.getAttribute('alt');
-    }(target.closest('.photo[alt]')));
+    }(find('.photo[alt]')));
     // 用户卡片头像
     ; (function (usercard) {
       if (!usercard) return;
@@ -87,7 +88,7 @@
       if (!avatar) return;
       user.name = avatar.title;
       user.id = avatar.getAttribute('uid');
-    }(target.closest('.layer_personcard')));
+    }(find('.layer_personcard')));
     if (!user.id && !user.name) return [];
     if (!user.id || !user.name) try {
       Object.assign(user, await request.userInfo(user));

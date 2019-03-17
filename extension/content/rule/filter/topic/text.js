@@ -6,8 +6,6 @@
   const observer = yawf.observer;
   const feedParser = yawf.feed;
 
-  const topic = yawf.rules.topic;
-
   const i18n = util.i18n;
 
   Object.assign(i18n, {

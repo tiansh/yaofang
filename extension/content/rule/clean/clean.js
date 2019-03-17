@@ -65,7 +65,7 @@
 
   clean.CleanRule = function (id, template, version, action, details) {
     clean[lastCleanGroup][id] = rule.Rule(Object.assign({
-      id: lastCleanGroup + '_' + id,
+      id: 'clean_' + lastCleanGroup + '_' + id,
       template,
       parent: clean[lastCleanGroup][lastCleanGroup],
       version,
