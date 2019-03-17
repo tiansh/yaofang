@@ -19,7 +19,7 @@
       tw: '設定 - 藥方 (YAWF)',
       en: 'Settings - YAWF (Yet Another Weibo Filter)',
     },
-    searchEmptyInput: { cn: '键入以搜索设置项', tw: '鍵入以搜尋設定項', en: 'Type to search settings', },
+    searchEmptyInput: { cn: '键入以搜索设置项', tw: '鍵入以搜尋設定項', en: 'Type to search settings' },
     searchEmptyResult: { cn: '未找到与您输入匹配的设置项', tw: '未找到與您輸入匹配的設置項', en: 'No Matched Settings' },
   });
 

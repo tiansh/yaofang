@@ -55,7 +55,7 @@
     });
 
     Object.defineProperty(window, key, {
-      get() { return void 0 },
+      get() { return void 0; },
       set({ name, wrapper }) {
         wrappers.push({ name, wrapper });
       },

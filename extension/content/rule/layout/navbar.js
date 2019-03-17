@@ -124,7 +124,7 @@
     navHideNameReplace: { cn: '替换为“个人主页”', tw: '替換為「個人主頁」', en: 'replaced by text "My Profile"' },
     navHideNameHidden: { cn: '隐藏', tw: '隱藏', en: 'hidden' },
     navHideNameDetail: {
-      cn: '此外您还可以隐藏隐藏右栏的 [[clean_right_info]] 模块。以及打开 [[layout_nav_auto_hide]] 。'
+      cn: '此外您还可以隐藏隐藏右栏的 [[clean_right_info]] 模块。以及打开 [[layout_nav_auto_hide]] 。',
     },
     navHideNameReplaceText: { cn: '个人主页', tw: '個人主頁', en: 'My Profile' },
   });

@@ -495,7 +495,7 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
       });
     },
   });
-  
+
   // 使用关键字、正则式和话题过滤热门话题模块
   // 这个功能没有做开关，因为关键字等都是用户自己设置的，相当于开关了
   init.onLoad(() => {

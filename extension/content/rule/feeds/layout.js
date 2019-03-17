@@ -235,7 +235,7 @@ body .WB_tab_a .tab_box_a .fr_box { flex: 1 0 0; }
 body .WB_feed_v3 .WB_face .opt { right: calc(132px - var(--yawf-feed-width)); }
 body .W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 400px) / 2) }
 `);
-    }
+    },
   });
 
   Object.assign(i18n, {

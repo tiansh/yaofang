@@ -460,7 +460,7 @@
   i18n.uncheckFollowPresenter = {
     cn: '话题页面发布框取消默认勾选关注主持人',
     tw: '話題頁面發佈框取消預設勾選關注主持人',
-    en: 'Uncheck follow presenter in topic page'
+    en: 'Uncheck follow presenter in topic page',
   };
 
   following.uncheckFollowPresenter = rule.Rule({
@@ -482,7 +482,7 @@
   i18n.showArticalWithoutFollow = {
     cn: '头条文章不关注作者直接显示全文',
     tw: '頭條文章不關注作者直接顯示全文',
-    en: 'Show whole artical without follow the author'
+    en: 'Show whole artical without follow the author',
   };
 
   following.showArticalWithoutFollow = rule.Rule({
