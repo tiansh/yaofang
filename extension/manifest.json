@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "default_locale": "zh_CN",
 
   "icons": {
@@ -76,6 +76,7 @@
       "content/init/init.js",
       "content/init/setup.js",
       "content/init/ready.js",
+      "content/init/stkwrap.js",
 
       "content/backend/message.js",
       "content/backend/request.js",
@@ -93,6 +94,7 @@
       "content/rule/filter/common/long.js",
       "content/rule/filter/filter/filter.js",
       "content/rule/filter/filter/homepage.js",
+      "content/rule/filter/filter/profile.js",
       "content/rule/filter/filter/following.js",
       "content/rule/filter/content/content.js",
       "content/rule/filter/content/text.js",
