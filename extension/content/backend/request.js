@@ -5,7 +5,6 @@
 ; (async function () {
 
   const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util;
   const init = yawf.init;
   const message = yawf.message;
   const backend = yawf.backend = yawf.backend || {};
@@ -42,8 +41,8 @@
   };
 
   init.onDeinit(() => {
-    [...pendingRequest.entries()].forEach(([id, requests]) => {
-      requests.forEach(({ details, resolve }) => {
+    [...pendingRequest.values()].forEach(requests => {
+      requests.forEach(({ resolve }) => {
         resolve({});
       });
     });

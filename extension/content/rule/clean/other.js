@@ -2,13 +2,11 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const rule = yawf.rule;
   const backend = yawf.backend;
   const observer = yawf.observer;
   const init = yawf.init;
 
   const i18n = util.i18n;
-  const css = util.css;
 
   const clean = yawf.rules.clean;
 

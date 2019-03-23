@@ -29,7 +29,7 @@
     return true;
   };
 
-  const validPageDom = $CONFIG => {
+  const validPageDom = () => {
     // 如果有登录按钮，则说明没有登录，此时不工作
     if (document.querySelector('.gn_login')) return false;
     return true;

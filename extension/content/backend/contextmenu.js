@@ -4,8 +4,6 @@
 ; (async function () {
 
   const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util;
-  const init = yawf.init;
   const message = yawf.message;
   const contextmenu = yawf.contextmenu = {};
 

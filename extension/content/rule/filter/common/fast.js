@@ -4,11 +4,13 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const feedParser = yawf.feed;
+  const commentParser = yawf.comment;
   const request = yawf.request;
 
   const i18n = util.i18n;
 
   const fast = feedParser.fast = {};
+  const commentFast = commentParser.fast = {};
 
   Object.assign(i18n, {
     contentTextContextTitle: {
@@ -39,11 +41,20 @@
     if (!(selection instanceof Selection)) return [];
     if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
-    const [simple] = feedParser.text.simple(selection);
-    const full = feedParser.text.detail(selection);
     const template = i18n.contentTextContextTitle;
+    let simple, full, type;
+    simple = feedParser.text.simple(selection) || '';
+    full = feedParser.text.detail(selection) || '';
+    type = 'text';
+    if (!simple && !full) {
+      simple = full = commentParser.text(selection) || '';
+      type = 'comment';
+    }
+    if (!simple && !full) {
+      return [];
+    }
     const title = template.replace('{1}', () => simple);
-    return [{ title, type: 'text', value: { simple, full } }];
+    return [{ title, type, value: { simple, full } }];
   };
   rule.addFastListener(recognize.textSimple);
 
@@ -51,8 +62,15 @@
   recognize.textComplex = function (selection) {
     if (!(selection instanceof Selection)) return [];
     if (selection.rangeCount <= 1) return [];
-    const texts = feedParser.text.full(selection).filter(text => text);
-    if (!texts.length) return [];
+    let texts = feedParser.text.detail(selection).filter(text => text);
+    let type = 'multitext';
+    if (!texts.length) {
+      texts = commentParser.text(selection).filter(text => text);
+      type = 'multitextcomment';
+    }
+    if (!texts.length) {
+      return [];
+    }
     const template = i18n.contentTextContextTitle;
     const joined = texts.join('…');
     const placeholder = joined.length > 10 ? joined.slice(0, 9) + '…' : joined;
@@ -75,6 +93,7 @@
       if (userlink.matches('.WB_detail > .WB_info > .W_fb[usercard]')) user.type = 'author';
       if (userlink.matches('.WB_expand > .WB_info > .W_fb[usercard]')) user.type = 'original';
       if (userlink.matches('.WB_feed_type a[href*="loc=at"][namecard*="name"]')) user.type = 'mention';
+      if (userlink.matches('[comment_id] [usercard]')) user.type = 'commentuser';
     }(find('[usercard*="name="], [usercard*="id="]')));
     // 个人主页的头像
     ; (function (photo) {
@@ -141,10 +160,20 @@
       tw: '包含「{1}」的微博',
       en: 'Feeds contain text “{1}”',
     },
+    textCommentFastDescription: {
+      cn: '包含“{1}”的评论',
+      tw: '包含「{1}」的評論',
+      en: 'Comments contain text “{1}”',
+    },
     regexFastDescription: {
       cn: '匹配{1}的微博',
       tw: '匹配{1}的微博',
       en: 'Feeds contain text “{1}”',
+    },
+    regexCommentFastDescription: {
+      cn: '匹配{1}的评论',
+      tw: '匹配{1}的評論',
+      en: 'Comments contain text “{1}”',
     },
     accountAuthorFastDescription: {
       cn: '作者是“@{1}”的微博',
@@ -166,6 +195,11 @@
       tw: '原作者是「@{1}」的微博',
       en: 'Original Feeds by "@{1}"',
     },
+    accountCommentFastDescription: {
+      cn: '包含“@{1}”的评论',
+      tw: '包含「@{1}」的評論',
+      en: 'Comments with "@{1}"',
+    },
     topicFastDescription: {
       cn: '包含话题#{1}#的微博',
       tw: '包含话题#{1}#的微博',
@@ -179,42 +213,51 @@
   });
 
   const render = fast.render = {};
+  const commentRender = commentFast.render = {};
 
-  render.text = function (item) {
-    const container = document.createElement('span');
-    const [pre, post] = i18n.textFastDescription.split('{1}');
-    container.appendChild(document.createTextNode(pre));
-    const input = document.createElement('input');
-    container.appendChild(input);
-    container.appendChild(document.createTextNode(post));
-    input.value = item.value = item.value.simple;
-    input.addEventListener('input', event => {
-      item.value = input.value;
-    });
-    return container;
+  const textFastRender = function (description) {
+    return function (item) {
+      const container = document.createElement('span');
+      const [pre, post] = description().split('{1}');
+      container.appendChild(document.createTextNode(pre));
+      const input = document.createElement('input');
+      container.appendChild(input);
+      container.appendChild(document.createTextNode(post));
+      input.value = item.value = item.value.simple;
+      input.addEventListener('input', event => {
+        item.value = input.value;
+      });
+      return container;
+    };
   };
+  render.text = textFastRender(() => i18n.textFastDescription);
+  commentRender.text = textFastRender(() => i18n.textCommentFastDescription);
 
   const regexEscaped = function (str) {
     return str.replace(/[.*+?^${}()|[\]/\\]/g, '\\$&');
   };
-  render.regex = function (item) {
-    const container = document.createElement('span');
-    const [pre, post] = i18n.regexFastDescription.split('{1}');
-    container.appendChild(document.createTextNode(pre));
-    const input = document.createElement('input');
-    container.appendChild(input);
-    container.appendChild(document.createTextNode(post));
-    if (item.value.full.length === 1) {
-      input.value = item.value = '/' + regexEscaped(item.value.full[0]) + '/mu';
-    } else {
-      input.value = item.value = '/^' + item.value.full
-        .map(value => `(?=.*${regexEscaped(value)})`).join('') + '/mu';
-    }
-    input.addEventListener('input', event => {
-      item.value = input.value;
-    });
-    return container;
+  const regexFastRender = function (description) {
+    return function (item) {
+      const container = document.createElement('span');
+      const [pre, post] = description().split('{1}');
+      container.appendChild(document.createTextNode(pre));
+      const input = document.createElement('input');
+      container.appendChild(input);
+      container.appendChild(document.createTextNode(post));
+      if (item.value.full.length === 1) {
+        input.value = item.value = '/' + regexEscaped(item.value.full[0]) + '/mu';
+      } else {
+        input.value = item.value = '/^' + item.value.full
+          .map(value => `(?=.*${regexEscaped(value)})`).join('') + '/mu';
+      }
+      input.addEventListener('input', event => {
+        item.value = input.value;
+      });
+      return container;
+    };
   };
+  render.regex = regexFastRender(() => i18n.regexFastDescription);
+  commentRender.regex = regexFastRender(() => i18n.regexCommentFastDescription);
 
   const simpleRender = function (template, readValue = value => value) {
     return function (item) {
@@ -229,6 +272,7 @@
   render.forward = simpleRender(() => i18n.accountAuthorForwardFastDescription, value => value.name);
   render.mention = simpleRender(() => i18n.accountMentionFastDescription, value => value.name);
   render.original = simpleRender(() => i18n.accountOriginalFastDescription, value => value.name);
+  commentRender.user = simpleRender(() => i18n.accountCommentFastDescription, value => value.name);
   render.topic = simpleRender(() => i18n.topicFastDescription);
   render.source = simpleRender(() => i18n.sourceFastDescription);
 

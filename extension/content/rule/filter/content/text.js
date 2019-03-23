@@ -73,7 +73,7 @@
       },
     },
     fast: {
-      types: [['text'], []],
+      types: [['text'], ['comment']],
       radioGroup: 'text',
       render: feedParser.fast.render.text,
     },

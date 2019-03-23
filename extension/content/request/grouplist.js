@@ -2,13 +2,10 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
   const i18n = util.i18n;
   const functools = util.functools;
-
-  let groupCache = null;
 
   i18n.whisperGroupName = {
     cn: '悄悄关注',

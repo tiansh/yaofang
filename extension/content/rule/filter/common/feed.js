@@ -191,7 +191,10 @@
         const target = event.target;
         if (!(target instanceof HTMLSelectElement)) return;
         Array.from(container.querySelectorAll('select')).forEach(select => {
-          if (select.value !== target.value) select.value = target.value;
+          if (select.value === target.value) return;
+          const targetOption = [...select.options].find(option => option.value === target.value);
+          const setValue = targetOption ? targetOption.value : 'hide';
+          select.value = setValue;
         });
       });
       inner.appendChild(container);

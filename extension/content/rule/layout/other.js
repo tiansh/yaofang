@@ -105,6 +105,251 @@
     },
   });
 
+  Object.assign(i18n, {
+    fastFace: { cn: '表情选择框优先列出常用及置顶表情|{{clear}}', tw: '表情選擇框優先列出常用及置頂表情|{{clear}}', en: 'List top and recent emoji on the top of emoji selector | {{clear}}' },
+    fastFaceTop: { cn: '置顶', tw: '置頂', en: 'Top' },
+    fastFaceTopNotice: { cn: '将下方表情拖放至此置顶', tw: '將下方表情拖放至此置頂', en: 'Drag emoji and drop here to sticky' },
+    fastFaceRecent: { cn: '最近', tw: '最近', en: 'Recent' },
+    fastFaceClear: { cn: '清空列表', tw: '清除清單', en: 'Clear List' },
+  });
+
+  details.fastFace = rule.Rule({
+    id: 'layout_fast_face',
+    version: 1,
+    parent: details.details,
+    template: () => i18n.fastFace,
+    ref: Object.assign({}, ...['top', 'recent'].map(key => ({
+      [key]: {
+        initial: [],
+        normalize(value) {
+          const emptyList = Array(10).fill(null);
+          if (!Array.isArray(value)) return emptyList;
+          return value.filter(item => {
+            if (item === null) return true;
+            if (item && item.title && item.img && item.text) return true;
+            return false;
+          }).concat(emptyList).slice(0, 10);
+        },
+      },
+    })), {
+      clear: {
+        render() {
+          const container = document.createElement('div');
+          container.innerHTML = '<a class="W_btn_b yawf-clear-face" href="javascript:;"><span class="W_f14"></span></a>';
+          container.querySelector('span').textContent = i18n.fastFaceClear;
+          container.firstChild.addEventListener('click', event => {
+            if (!event.isTrusted) return;
+            details.fastFace.ref.top.setConfig();
+            details.fastFace.ref.recent.setConfig();
+          });
+          return container.firstChild;
+        },
+      },
+    }),
+    ainit() {
+      const rule = this;
+      // 显示一个表情；聊天窗口里面表情输入的格式和别的地方不一样
+      const createFaceItem = function (face, isIm) {
+        const li = document.createElement('li');
+        if (!face) return li;
+        li.title = face.title;
+        li.setAttribute('action-data', `${isIm ? 'text' : 'insert'}=${face.text}`);
+        li.setAttribute('action-type', isIm ? 'webim_phiz_face' : 'select');
+        const img = li.appendChild(document.createElement('img'));
+        img.src = face.img;
+        return li;
+      };
+      /**
+       * 将列表显示出来，调整顺序尽量保留已有的表情的位置
+       * @param {HTMLUListElement} ul
+       * @param {{title, text, img}[]} faceList
+       * @param {boolean} isIm
+       */
+      const renderListKeepOld = function (ul, faceList, isIm) {
+        const listItems = Array.from(ul.querySelectorAll('li'));
+        const newFaceTitles = new Set(faceList.map(e => e && e.title).filter(t => t));
+        const emptySlots = [];
+        listItems.forEach(li => {
+          const title = li.title;
+          const existInNew = newFaceTitles.has(title);
+          if (existInNew) newFaceTitles.delete(title);
+          else if (li.title) {
+            const newLi = createFaceItem(null, isIm);
+            li.replaceWith(newLi);
+            emptySlots.push(newLi);
+          } else {
+            emptySlots.push(li);
+          }
+        });
+        [...newFaceTitles].forEach(title => {
+          const face = faceList.find(face => face.title === title);
+          emptySlots.shift().replaceWith(createFaceItem(face, isIm));
+        });
+      };
+      /**
+       * 将列表显示出来，不调整顺序可能修改已有的表情位置
+       * @param {HTMLUListElement} ul
+       * @param {{title, text}[]} faceList
+       * @param {boolean} isIm
+       */
+      const renderListKeepIndex = function (ul, faceList, isIm) {
+        const listItems = Array.from(ul.querySelectorAll('li'));
+        faceList.forEach((face, index) => {
+          const listItem = listItems[index];
+          if (listItem.title === (face && face.title || '')) return;
+          listItem.replaceWith(createFaceItem(face, isIm));
+        });
+      };
+      const renderRecentList = function () {
+        const lists = document.querySelectorAll('.yawf-face-recent ul');
+        const faceList = rule.ref.recent.getConfig();
+        lists.forEach(list => {
+          renderListKeepOld(list, faceList, list.matches('.yawf-face-im *'));
+        });
+      };
+      const renderTopList = function () {
+        const lists = document.querySelectorAll('.yawf-face-top ul');
+        const faceList = rule.ref.top.getConfig();
+        lists.forEach(list => {
+          renderListKeepIndex(list, faceList, list.matches('.yawf-face-im *'));
+        });
+      };
+      /**
+       * 从被点击的对象（图片或者列表项）得到表情的相关信息
+       * @param {HTMLElement} target
+       */
+      const getFace = function (target) {
+        const li = target.closest('li');
+        try {
+          const face = {
+            title: li.title,
+            text: new URLSearchParams(li.getAttribute('action-data')).get('insert'),
+            img: li.querySelector('img').src,
+          };
+          if (!face.title || !face.text || !face.img) return null;
+          return face;
+        } catch (e) { return null; }
+      };
+      // 从列表中移除重复的项，并保留 10 个
+      const removeDuplicate = function (faceList) {
+        const faceTitle = new Set(), result = [];
+        faceList.forEach(face => {
+          if (!face || faceTitle.has(face.title)) return;
+          faceTitle.add(face.title);
+          result.push(face);
+        });
+        while (result.length < 10) result.push(null);
+        return result.slice(0, 10);
+      };
+      // 在用户点击表情后更新最近使用的表情
+      const updateRecent = function (event) {
+        const face = getFace(event.target);
+        if (!face) return;
+        const recent = [face].concat(rule.ref.recent.getConfig());
+        rule.ref.recent.setConfig(removeDuplicate(recent));
+        renderRecentList();
+      };
+      /**
+       * 使用拖拽置顶表情
+       * @param {HTMLElement} container
+       * @param {HTMLUListElement} ul
+       */
+      const dragFace = function (container, ul) {
+        // 显示和隐藏提示拖拽的标语
+        const notice = container.querySelector('.yawf-face-drop-area');
+        const showNotice = function () { notice.style.display = 'block'; };
+        const hideNotice = function () { notice.style.display = 'none'; };
+        // 拖拽
+        let dragging = null, listItems;
+        container.addEventListener('dragstart', event => {
+          dragging = getFace(event.target) || null;
+          // 开始拖拽的时候，标记所有目的地为可编辑的
+          listItems = Array.from(ul.childNodes);
+          listItems.forEach(li => { li.setAttribute('contenteditable', 'true'); });
+          showNotice();
+        });
+        container.addEventListener('mouseleave', () => { dragging = null; });
+        notice.addEventListener('dragenter', () => { hideNotice(); });
+        ul.addEventListener('dragenter', () => { hideNotice(); });
+        container.addEventListener('dragend', () => { hideNotice(); });
+        container.addEventListener('drop', event => {
+          // 结束拖拽的时候恢复原样
+          if (listItems) listItems.forEach(li => { li.removeAttribute('contenteditable'); }); listItems = null;
+          const img_upload = document.querySelector('.send_weibo .img_upload');
+          if (img_upload) img_upload.style.display = 'none';
+          // 然后看看起止都在哪里
+          if (dragging === null) return;
+          event.preventDefault();
+          event.stopPropagation();
+          const current = event.target.closest('li');
+          const index = Array.from(ul.childNodes).indexOf(current);
+          // 把拽到的东西加到置顶里面去
+          const list = rule.ref.top.getConfig(), old = list[index];
+          const newList = list.map((face, i) => {
+            if (i === index) return dragging;
+            if (!face) return null;
+            if (face.title === dragging.title) return old;
+            return face;
+          });
+          rule.ref.top.setConfig(newList);
+          renderTopList();
+        });
+        if (rule.ref.top.getConfig().some(e => e)) hideNotice();
+      };
+      // 监视新的表情框
+      observer.dom.add(function faceFastObserver() {
+        const tab = document.querySelector('.layer_faces .WB_minitab:first-child');
+        if (!tab) return;
+        const container = tab.parentNode;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = '<div class="faces_list yawf-face-list" node-type="scrollView"><div class="yawf-face-top yawf-face-row" node-type="list"><span class="yawf-face-title"></span><ul class="yawf-face-items"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul><span class="yawf-face-drop-area"></span></div><div class="yawf-face-recent yawf-face-row" node-type="list"><span class="yawf-face-title"></span><ul class="yawf-face-items"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul></div></div>';
+        const area = container.insertBefore(wrap.firstChild, tab);
+        area.querySelector('.yawf-face-top span').textContent = i18n.fastFaceTop;
+        area.querySelector('.yawf-face-drop-area').textContent = i18n.fastFaceTopNotice;
+        area.querySelector('.yawf-face-recent span').textContent = i18n.fastFaceRecent;
+        const topList = area.querySelector('.yawf-face-top ul');
+        const recentList = area.querySelector('.yawf-face-recent ul');
+        const chatListNode = container.querySelector('ul[node-type="_phizListNode"]');
+        const isIm = chatListNode != null;
+        container.addEventListener('click', updateRecent);
+        dragFace(container, topList);
+        if (isIm) {
+          area.classList.add('yawf-face-im');
+          fixChat([topList, recentList], chatListNode);
+        }
+        renderTopList();
+        renderRecentList();
+      });
+      // 修理一下聊天窗口里面的情况
+      // 我不确定这段代码还有没有用，总之先留着
+      const fixChat = function (lists, chatListNode) {
+        lists.forEach(list => {
+          list.addEventListener('click', event => {
+            event.stopPropagation();
+            const target = event.target.closest('li');
+            if (!target.title) return;
+            // 弄一个假的按钮，放在原本的列表末尾，骗他说我点的是原本的列表里面的
+            const fake = target.cloneNode(true);
+            fake.style.display = 'none';
+            chatListNode.appendChild(fake);
+            fake.click();
+            fake.parentNode.removeChild(fake);
+          });
+        });
+      };
+      css.append(`
+.layer_faces .faces_list.yawf-face-list { height: 79px; }
+.yawf-face-row { display: block; height: 32px; margin: 0 0 5px; }
+.yawf-face-title { float: left; font-weight: bold; line-height: 32px; padding: 0; text-align: center; width: 52px; margin: 0 -8px 0 0; }
+.yawf-face-items { float: right; margin: 0 8px; }
+.yawf-face-items li { color: transparent; }
+.yawf-face-drop-area { background: rgba(255, 255, 127, 0.5); clear: both; float: right; font-weight: bold; height: 32px; line-height: 32px; margin: -32px 8px 0; opacity: 1; padding: 0; width: 306px; text-align: center; }
+.layer_faces .faces_list { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+.layer_faces .faces_list li { overflow: hidden; }
+.layer_faces .faces_list img { border: 10px transparent solid; margin: -10px; }
+`);
+    },
+  });
 
   if (!(function isCst() {
     // 如果用户使用的是已经是和东八区一致的时区，那么我们就不提供这个功能了
@@ -261,7 +506,7 @@
             const text = textNode.textContent.trim();
             if (text === '') return;
             const [_full, match, tail] = text.match(/^(.*?)\s*(来自|來自|come from|)$/);
-            const time = parseTextTime(text);
+            const time = parseTextTime(match);
             if (!time) return;
             util.debug('parse time %o(%s) to %o(%s)', textNode, text, new Date(time), new Date(time));
             textNode.textContent = tail ? ` ${tail} ` : '';

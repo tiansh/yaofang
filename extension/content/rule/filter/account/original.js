@@ -96,7 +96,7 @@
       show: discoverRule,
     },
     fast: {
-      types: [['original', 'account'], ['author', 'mention']],
+      types: [['original', 'account'], ['author', 'mention', 'commentuser']],
       radioGroup: 'original',
       render: feedParser.fast.render.original,
     },

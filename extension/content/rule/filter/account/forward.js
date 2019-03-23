@@ -73,7 +73,7 @@
       },
     },
     fast: {
-      types: [[], ['author', 'original', 'mention', 'account']],
+      types: [[], ['author', 'original', 'mention', 'account', 'commentuser']],
       radioGroup: 'author',
       render: feedParser.fast.render.forward,
     },

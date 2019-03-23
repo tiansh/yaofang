@@ -37,7 +37,17 @@
       await downloadByUrl({ url, filename });
     }
   };
-
   message.export(downloadFile);
+
+  /**
+   * @param {{ url: string, filename: string }[]}
+   */
+  const downloadFiles = async function downloadFiles(files) {
+    for (let i = 0, l = files.length; i < l; i++) {
+      await downloadFile(files[i]);
+    }
+  };
+  message.export(downloadFiles);
+
 
 }());

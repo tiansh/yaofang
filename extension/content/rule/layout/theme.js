@@ -4,7 +4,6 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
-  const init = yawf.init;
 
   const layout = yawf.rules.layout;
 

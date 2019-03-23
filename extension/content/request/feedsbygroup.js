@@ -2,7 +2,6 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
   const dom = util.dom;
@@ -79,7 +78,7 @@
       }
     }
     async loadNextPage() {
-      const page = this.nextPage++;
+      this.nextPage++;
       const search = new URLSearchParams(this.search);
       if (this.feedsByPage.length) {
         const lastPage = this.feedsByPage[this.feedsByPage.length - 1];

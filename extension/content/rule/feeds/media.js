@@ -5,6 +5,7 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const message = yawf.message;
+  const download = yawf.download;
 
   const feeds = yawf.rules.feeds;
 
@@ -30,7 +31,7 @@
       cn: '查看图片添加“查看原图”链接|打开{{open}}||{{direct}}点击缩略图时直接查看原图',
       hk: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖',
       tw: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖',
-      en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View orignal pictures by clicking on thumbnail',
+      en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View original pictures by clicking on thumbnail',
     },
     viewOriginalPage: { cn: '包含原图的网页', tw: '包含原圖的網頁', en: 'page with original picture' },
     viewOriginalImage: { cn: '原图', tw: '原圖', en: 'original picture' },
@@ -76,7 +77,6 @@
     return { images: images, current: current % images.length };
   };
 
-
   media.viewOriginal = rule.Rule({
     id: 'feed_view_original',
     version: 1,
@@ -93,12 +93,84 @@
       },
       direct: { type: 'boolean' },
     },
-    ainit() {
-      const open = this.ref.open.getConfig();
-      const direct = this.ref.direct.getConfig();
+    init() {
+      this.ref.direct.addConfigListener(newValue => {
+        if (newValue) media.downloadImage.ref.direct.setConfig(false);
+      });
+
+      const viewEnabled = this.isEnabled();
+      const viewType = this.ref.open.getConfig();
+      const directView = viewEnabled && this.ref.direct.getConfig();
+
+      const downloadImage = media.downloadImage;
+      const downloadEnabled = downloadImage.isEnabled();
+      const downloadName = downloadImage.ref.name.getConfig();
+      const directDownload = downloadEnabled && downloadImage.ref.direct.getConfig();
+
+      if (!viewEnabled && !downloadEnabled) return;
+
+      // 查看原图
       const showOriginalPage = function ({ images, current }) {
-        message.invoke.showImageViewer({ images, current });
+        if (viewType !== 'image') {
+          message.invoke.showImageViewer({ images, current });
+        } else {
+          browser.tabs.create({ url: images[current] });
+        }
       };
+
+      const viewOriginalButton = viewLargeLink => {
+        const viewOriginalLinkContainer = document.createElement('ul');
+        viewOriginalLinkContainer.innerHTML = '<li><span class="line S_line1"><a class="S_txt1" href="javascript:;" target="_blank"><i class="W_ficon ficon_search S_ficon">l</i></a></span></li>';
+        viewOriginalLinkContainer.querySelector('i').after(i18n.viewOriginalText);
+        const viewOriginalLink = viewOriginalLinkContainer.querySelector('a');
+        let images, current;
+        const update = function () {
+          ({ images, current } = getImagesInfo(viewLargeLink));
+          viewOriginalLink.href = images[current];
+        };
+        viewOriginalLink.addEventListener('click', event => {
+          if (viewType === 'page') {
+            showOriginalPage({ images, current });
+            event.preventDefault();
+          }
+        });
+        (new MutationObserver(update)).observe(viewLargeLink, { attributes: true });
+        update();
+        return viewOriginalLinkContainer.firstChild;
+      };
+
+      // 下载图片
+      const downloadImages = function (images, ref) {
+        const files = images.map((url, index) => {
+          const oriFilename = url.slice(url.lastIndexOf('/') + 1);
+          let filename = oriFilename;
+          if (downloadName !== 'original') {
+            const extension = oriFilename.slice(oriFilename.lastIndexOf('.') + 1);
+            filename = (index + 1) + '.' + extension;
+          }
+          const feed = ref.closest('[mid], [omid], [comment_id]');
+          const feedId = feed.getAttribute('comment_id') ||
+            ref.closest('.WB_feed_expand') && feed.getAttribute('omid') ||
+            feed.getAttribute('mid') || 0;
+          const path = 'weibo-images/' + download.filename(feedId) + '/' + filename;
+          return { url, filename: path };
+        });
+        download.urls(files);
+      };
+
+      const downloadButton = viewLargeLink => {
+        const downloadLinkContainer = document.createElement('ul');
+        downloadLinkContainer.innerHTML = '<li><span class="line S_line1"><a class="S_txt1" href="javascript:;" target="_blank"><i class="W_ficon ficon_search S_ficon">|</i></a></span></li>';
+        downloadLinkContainer.querySelector('i').after(i18n.downloadImageText);
+        const downloadLink = downloadLinkContainer.querySelector('a');
+        downloadLink.addEventListener('click', () => {
+          const { images } = getImagesInfo(viewLargeLink);
+          downloadImages(images, downloadLink);
+        });
+        return downloadLinkContainer.firstChild;
+      };
+
+      // 检查展开的图片，添加查看原图和下载的链接
       const addImageHandlerLink = function addImageHandlerLink() {
         const viewLargeLinks = Array.from(document.querySelectorAll([
           // 微博配图
@@ -108,29 +180,19 @@
         ].join(',')));
         viewLargeLinks.forEach(viewLargeLink => {
           viewLargeLink.setAttribute('yawf-view-ori', '');
-          const viewOriginalLinkContainer = document.createElement('ul');
-          viewOriginalLinkContainer.innerHTML = '<li><span class="line S_line1"><a class="S_txt1" href="javascript:;" target="_blank"><i class="W_ficon ficon_search S_ficon">l</i></a></span></li>';
-          viewOriginalLinkContainer.querySelector('i').after(i18n.viewOriginalText);
-          const viewOriginalLink = viewOriginalLinkContainer.querySelector('a');
-          viewLargeLink.closest('li').after(viewOriginalLinkContainer.firstChild);
-          let images, current;
-          const update = function () {
-            ({ images, current } = getImagesInfo(viewLargeLink));
-            viewOriginalLink.href = images[current];
-          };
-          viewOriginalLink.addEventListener('click', event => {
-            if (open === 'page') {
-              showOriginalPage({ images, current });
-              event.preventDefault();
-            }
-          });
-          (new MutationObserver(update)).observe(viewLargeLink, { attributes: true });
-          update();
+          const li = viewLargeLink.closest('li');
+          if (downloadEnabled) {
+            li.after(downloadButton(viewLargeLink));
+          }
+          if (viewEnabled) {
+            li.after(viewOriginalButton(viewLargeLink));
+          }
         });
       };
       observer.dom.add(addImageHandlerLink);
 
-      if (direct) {
+      // 处理点击时直接查看原图/下载的情况
+      if (directView || directDownload) {
         document.addEventListener('click', function (event) {
           const target = event.target;
           if (event.button !== 0) return; // 只响应左键操作
@@ -139,11 +201,60 @@
           if (!pic) return;
           event.stopPropagation();
           const { images, current } = getImagesInfo(pic);
-          showOriginalPage({ images, current });
+          if (directView) showOriginalPage({ images, current });
+          else downloadImages(images, target);
         }, true);
       }
     },
   });
+
+  Object.assign(i18n, {
+    downloadImage: {
+      cn: '查看图片添加“批量下载”链接|使用{{name}}文件名保存||{{direct}}点击缩略图时直接开始下载',
+      tw: '查看圖片添加「批次下載」連結|使用{{name}}檔名儲存||{{direct}}點擊縮圖時直接開始下載',
+      en: 'Add "Batch Download" link for images {{name}}|Use {{name}} filenames || {{direct}} Trigger download by clicking on thumbnail',
+    },
+    downloadImageNameOriginal: {
+      cn: '原始',
+      en: 'original',
+    },
+    downloadImageNameIndex: {
+      cn: '序号',
+      tw: '序號',
+      en: 'index',
+    },
+    downloadImageText: {
+      cn: '批量下载',
+      tw: '批次下載',
+      en: 'Batch Download',
+    },
+  });
+
+  media.downloadImage = rule.Rule({
+    id: 'feed_download_image',
+    version: 1,
+    parent: media.media,
+    template: () => i18n.downloadImage,
+    ref: {
+      name: {
+        type: 'select',
+        select: [
+          { value: 'index', text: () => i18n.downloadImageNameIndex },
+          { value: 'original', text: () => i18n.downloadImageNameOriginal },
+        ],
+      },
+      direct: {
+        type: 'boolean',
+      },
+    },
+    init() {
+      this.ref.direct.addConfigListener(newValue => {
+        if (newValue) media.viewOriginal.ref.direct.setConfig(false);
+      });
+      // 实现在查看原图功能那里
+    },
+  });
+
 
   Object.assign(i18n, {
     pauseAnimatedImage: { cn: '动画图像(GIF)在缩略图显示时保持静止{{i}}', hk: '動畫圖像(GIF)在所圖顯示時保持靜止{{i}}', tw: '動畫圖像(GIF)在所圖顯示時保持靜止{{i}}', en: 'Pause animated thumbnail (GIF) {{i}}' },
@@ -236,7 +347,7 @@
           newVideo.addEventListener('play', updatePlayState);
           newVideo.addEventListener('pause', updatePlayState);
           if (smallImage) {
-            newContainer.addEventListener('click', event => {
+            newContainer.addEventListener('click', () => {
               if (!newContainer.hasAttribute('yawf-video-play')) newVideo.play();
             });
             const tip = document.createElement('i');

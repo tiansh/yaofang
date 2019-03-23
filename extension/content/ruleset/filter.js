@@ -117,7 +117,7 @@
           await this.invokeCallbacks(this.finally, item, result);
           await new Promise(resolve => setTimeout(resolve, 0));
         })());
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
       await Promise.all(promises);
       await this.invokeCallbacks(this.done);
@@ -218,8 +218,8 @@
 
   css.append(`
 [action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
-[yawf-feed]:not([yawf-feed-display]) { visibility: hidden; opacity: 0; }
-[yawf-feed-display="hide"] { display: none; }
+[yawf-feed]:not([yawf-feed-display]), [yawf-comment]:not([yawf-comment-display]) { visibility: hidden; opacity: 0; }
+[yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }
 [yawf-feed-display="fold"] { position: relative; }
 [yawf-feed-display="fold"] > * { display: none; }
 [yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; }

@@ -85,7 +85,7 @@
       ],
     };
     Object.keys(checklist).forEach(key => {
-      checklist[key] = checklist[key].filter(([cssName, name]) => checkFont(cssName));
+      checklist[key] = checklist[key].filter(([cssName]) => checkFont(cssName));
     });
     return checklist;
   });

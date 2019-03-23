@@ -2,7 +2,6 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const rule = yawf.rule;
   const backend = yawf.backend;
   const observer = yawf.observer;
 
@@ -25,7 +24,6 @@
   clean.CleanGroup('nav', () => i18n.cleanNavGroupTitle);
   clean.CleanRule('logo_img', () => i18n.cleanNavLogoImg, 1, {
     ainit: function () {
-      const rule = this;
       observer.dom.add(function replaceLogo() {
         const box = document.querySelector('.WB_global_nav .gn_logo .box');
         if (!box) { setTimeout(replaceLogo, 100); return; }
@@ -44,7 +42,6 @@
   clean.CleanRule('game', () => i18n.cleanNavGame, 1, '.gn_nav_list>li:nth-child(4) { display: none !important; }');
   clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
     init: function () {
-      const rule = this;
       backend.onRequest('hotSearch', details => {
         if (this.isEnabled()) return { cancel: true };
         return {};

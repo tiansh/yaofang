@@ -231,8 +231,8 @@
     }).join('\r\n') + '\r\n'; // CRLF 换行符支持效果最好，而且也更合乎规范
     const blob = new Blob([content], { type: 'text/csv' });
     const date = new Date(timestamp).toISOString().replace(/[-]|T.*/g, '');
-    const filename = 'following-' + init.page.$CONFIG.uid + '-' + date + '.csv';
-    download.file({ blob, filename });
+    const filename = download.filename('following-' + init.page.$CONFIG.uid + '-' + date + '.csv');
+    download.blob({ blob, filename });
   };
 
   const formatLastTime = function (timestamp) {
@@ -353,7 +353,7 @@
           this.config = fetchData.preparConfig();
           return fetchData;
         },
-        render(...args) {
+        render() {
           const fetchData = this.getConfig();
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
@@ -389,7 +389,7 @@
           this.config = lastList.preparConfig();
           return lastList;
         },
-        render(...args) {
+        render() {
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
           buttonArea.innerHTML = '<span class="yawf-following-last-text"></span><span class="yawf-following-last-time"></span><a href="javascript:;" class="W_btn_b yawf-following-export" style="margin-left:1em;"><span class="W_f14"></span></a><a href="javascript:;" class="W_btn_b yawf-following-clear" style="margin-left:1em;"><span class="W_f14"></span></a>';

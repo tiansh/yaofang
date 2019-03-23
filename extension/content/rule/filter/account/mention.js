@@ -5,9 +5,6 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const feedParser = yawf.feed;
-  const request = yawf.request;
-
-  const mention = yawf.rules.mention;
 
   const i18n = util.i18n;
 

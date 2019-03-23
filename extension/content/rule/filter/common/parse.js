@@ -3,6 +3,7 @@
   const yawf = window.yawf;
 
   const feedParser = yawf.feed = {};
+  const commentParser = yawf.comment = {};
 
   // 文本
   // 文本分为完整模式（用于正则匹配）和简易模式（用于关键词）
@@ -67,6 +68,18 @@
   };
 
   /**
+   * 检查某个元素是否是一条评论
+   * @param {Element} element
+   * @returns {boolean}
+   */
+  const isCommentElement = function (element) {
+    if (!(element instanceof Element)) return false;
+    if (!element.hasAttribute('comment_id')) return false;
+    return true;
+  };
+
+
+  /**
    * 检查某个元素是否是一条转发的微博
    * @param {Element} element
    * @returns {boolean}
@@ -93,7 +106,6 @@
       const date = feed.querySelector('.WB_detail > .WB_from a[date]');
       post = [author, ...post, source, date];
     }
-    let ori;
     if (feed.hasAttribute('omid')) {
       const reason = feed.querySelector('[node-type="feed_list_reason"]');
       const reasonFull = feed.querySelector('[node-type="feed_list_reason_full"]');
@@ -110,6 +122,17 @@
   };
 
   /**
+   * 获取一条微博中所有内容相关的节点
+   * @param {Element} comment
+   * @returns {Element[]}
+   */
+  const commentContentElements = function (comment) {
+    if (!isCommentElement(comment)) return null;
+    const text = comment.querySelector('.WB_text');
+    return [text];
+  };
+
+  /**
    * 获取节点所在的微博
    * @param {Node} node
    * @returns {Element}
@@ -122,7 +145,20 @@
     return node.closest('.WB_feed_type');
   };
 
-  const textParser = function (detail) {
+  /**
+   * 获取节点所在的评论
+   * @param {Node} node
+   * @returns {Element}
+   */
+  const commentContainer = function (node) {
+    if (!node) return null;
+    if ((node instanceof Node) && !(node instanceof Element)) {
+      return commentContainer(node.parentNode);
+    }
+    return node.closest('[comment_id]');
+  };
+
+  const textParser = function (detail, containerType) {
     const parsers = [];
     /**
      * 普通文本（文本✓，正则✓）
@@ -326,9 +362,12 @@
       const rangeElements = ranges.map(range => {
         return commonParent(range.startContainer, range.endContainer);
       });
-      const feed = feedContainer(commonParent(...rangeElements));
+      const container = containerType === 'feed' ? feedContainer : commentContainer;
+      const contentElements = containerType === 'feed' ? feedContentElements : commentContentElements;
+      const feed = container(commonParent(...rangeElements));
       if (!feed) return null;
-      const elements = feedContentElements(feed, { detail, short: true, long: true });
+      const elements = contentElements(feed, { detail, short: true, long: true });
+      if (!elements) return null;
       if (rangeElements.some(re => !contains(elements, re))) return null;
       return ranges.map((range, rangeIndex) => {
         const [start, end] = [range.startContainer, range.endContainer];
@@ -387,8 +426,9 @@
     return parser;
   };
 
-  const fullTextParser = textParser(true);
-  const simpleTextParser = textParser(false);
+  const fullTextParser = textParser(true, 'feed');
+  const simpleTextParser = textParser(false, 'feed');
+  const commentTextParser = textParser(false, 'comment');
 
   const nodeTextParser = (target, detail) => {
     const parser = detail ? fullTextParser : simpleTextParser;
@@ -520,6 +560,29 @@
   // 其他基础通用
   feedParser.isFeed = feed => isFeedElement(feed);
   feedParser.isForward = feed => isForwardFeedElement(feed);
+
+  // 评论内容
+  commentParser.text = target => {
+    const elements = commentContentElements(target);
+    if (elements) {
+      const texts = elements.map(element => commentTextParser(element) || '');
+      return texts.join('\n');
+    } else {
+      return commentTextParser(target);
+    }
+  };
+
+  // 评论用户
+  const commentUser = commentParser.user = {};
+  commentUser.dom = comment => {
+    return Array.from(comment.querySelectorAll('a[usercard]'));
+  };
+  commentUser.name = comment => {
+    const domList = commentUser.dom(comment);
+    return domList
+      .map(dom => dom.textContent.trim().replace(/^@?/, ''))
+      .filter(user => user);
+  };
 
 }());
 

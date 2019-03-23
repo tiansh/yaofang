@@ -2,7 +2,6 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const init = yawf.init;
 
   const stk = yawf.stk = {};
   const strings = util.strings;

@@ -6,8 +6,6 @@
   const observer = yawf.observer;
   const feedParser = yawf.feed;
 
-  const content = yawf.rules.content;
-
   const i18n = util.i18n;
   i18n.contentRegexGroupTitle = {
     cn: '按内容正则式过滤',
@@ -79,7 +77,7 @@
       },
     },
     fast: {
-      types: [['multitext'], ['text']],
+      types: [['multitext'], ['text', 'comment', 'multitextcomment']],
       radioGroup: 'text',
       render: feedParser.fast.render.regex,
     },

@@ -15,11 +15,7 @@
     "storage", "unlimitedStorage",
     "menus",
     "downloads",
-    "*://*.miaopai.com/*",
-    "*://*.sina.cn/*",
-    "*://*.sinaimg.cn/*",
-    "*://*.t.cn/*",
-    "*://*.weibo.com/*"
+    "<all_urls>"
   ],
 
   "background": {
@@ -112,6 +108,11 @@
       "content/rule/filter/more/myself.js",
       "content/rule/filter/more/commercial.js",
       "content/rule/filter/more/content.js",
+      "content/rule/filter/comment/comment.js",
+      "content/rule/filter/comment/layout.js",
+      "content/rule/filter/comment/content.js",
+      "content/rule/filter/comment/user.js",
+      "content/rule/filter/comment/more.js",
 
       "content/rule/clean/clean.js",
       "content/rule/clean/icons.js",
@@ -127,6 +128,7 @@
       "content/rule/layout/layout.js",
       "content/rule/layout/navbar.js",
       "content/rule/layout/sidebar.js",
+      "content/rule/layout/scroll.js",
       "content/rule/layout/other.js",
       "content/rule/layout/theme.js",
       

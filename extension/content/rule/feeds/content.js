@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
+  const commentParser = yawf.comment;
 
   const feeds = yawf.rules.feeds;
 
@@ -83,6 +84,45 @@
     // 这个设置项的相关逻辑实现在 content/rule/feed/feed/long.js
   });
 
+  i18n.feedContentLineBreak = {
+    cn: '将微博中的换行显示为|{{text}}',
+    tw: '將微博中的換行顯示為|{{text}}',
+    en: 'Show line breaks as character |  {{text}}',
+  };
+
+  content.feedContentLineBreak = rule.Rule({
+    id: 'feed_content_line_break',
+    version: 1,
+    parent: content.content,
+    template: () => i18n.feedContentLineBreak,
+    ref: {
+      text: {
+        type: 'select',
+        initial: '⏎',
+        select: [
+          { value: ' ', text: ' ' },
+          { value: '⤶', text: '⤶' },
+          { value: '↵', text: '↵' },
+          { value: '⏎', text: '⏎' },
+          { value: '↲', text: '↲' },
+          { value: '↩', text: '↩' },
+        ],
+      },
+    },
+    ainit() {
+      observer.dom.add(function feedContentLineBreak() {
+        const brList = Array.from(document.querySelectorAll('.WB_text br'));
+        brList.forEach(br => {
+          const placeholder = document.createElement('span');
+          placeholder.className = 'yawf-linebreak';
+          br.replaceWith(placeholder);
+        });
+      });
+      const text = this.ref.text.getConfig();
+      util.css.add('.yawf-linebreak::before { content: "' + text + '" }');
+    },
+  });
+
   i18n.showLinkUrl = {
     cn: '将微博中的网页链接替换为短网址',
     tw: '將微博中的网页链接替換為短網址',
@@ -138,9 +178,10 @@
         emoji.forEach(img => {
           const code = img.getAttribute('src').match(/(e.....)\.png/)[1];
           const text = emojiCodeToUtf8(code);
-          const textNode = document.createTextNode(text);
-          img.replaceWith(textNode);
-          textNode.parentNode.normalize();
+          const emojiContainer = document.createElement('span');
+          emojiContainer.className = 'yawf-emoji';
+          emojiContainer.textContent = text;
+          img.replaceWith(emojiContainer);
         });
       };
       observer.dom.add(useTextEmoji);

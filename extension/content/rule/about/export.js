@@ -134,8 +134,8 @@
         const blob = new Blob([text], { type: 'application/json' });
         const username = init.page.$CONFIG.nick;
         const date = new Date().toISOString().replace(/-|T.*/g, '');
-        const filename = `${username}-${i18n.configFilename}-${date}.json`;
-        download.file({ blob, filename });
+        const filename = download.filename(`${username}-${i18n.configFilename}-${date}.json`);
+        download.blob({ blob, filename });
       });
       resetButton.addEventListener('click', async event => {
         const confirmAnswer = await ui.confirm({

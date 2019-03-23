@@ -3,7 +3,6 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const rule = yawf.rule;
 
   const clean = yawf.rules.clean;
 

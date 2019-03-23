@@ -5,7 +5,6 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
   // 这一次我们不再缓存长微博的原文了，因为现在微博神他妈可以编辑了

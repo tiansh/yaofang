@@ -84,7 +84,6 @@
   const yawf = window.yawf;
 
   const util = yawf.util;
-  const storage = yawf.storage;
   const config = yawf.config;
   const init = yawf.init;
   const request = yawf.request;
@@ -132,7 +131,6 @@
 
   /** @param {boolean} fullDom */
   const parseTemplate = function (fullDom) {
-    const item = this;
     /**
      * @typedef {{ type: string, value: string }} TemplateToken
      */
@@ -283,7 +281,7 @@
       lastIndex += Math.floor(Math.random() * 100);
       const rand = Math.random().toString(36).slice(2);
       const index = lastIndex.toString(36);
-      return `yawf-${rand}-${lastIndex}`;
+      return `yawf-${rand}-${index}`;
     };
   }());
 
@@ -845,7 +843,6 @@
       const list = container.querySelector('.yawf-config-collection-list');
       const listitems = container.querySelectorAll('.yawf-config-collection-item');
       const listitemMap = new Map();
-      let reference = null;
       [...listitems].forEach(listitem => {
         listitemMap.set(listitem.dataset.yawfTrack, listitem);
       });
@@ -1101,7 +1098,7 @@
       const username = document.createElement('div');
       username.classList.add('yawf-config-user-name');
       useritem.appendChild(username);
-      request.userInfo({ id }).then(({ id, name, avatar }) => {
+      request.userInfo({ id }).then(({ name, avatar }) => {
         const img = new Image();
         img.src = avatar;
         useravatar.appendChild(img);
@@ -1260,7 +1257,7 @@
       return span;
     }
   }
-  const tabBuilder = rule.Tab = function (item) {
+  rule.Tab = function (item) {
     return new Tab(item);
   };
   rule.class.Tab = Tab;
@@ -1285,7 +1282,7 @@
     }
   }
   rule.class.Group = Group;
-  const groupBuilder = rule.Group = function (item) {
+  rule.Group = function (item) {
     return new Group(item);
   };
 
@@ -1332,7 +1329,7 @@
     }
   }
   rule.class.Rule = Rule;
-  const ruleBuilder = rule.Rule = function (item) {
+  rule.Rule = function (item) {
     const result = new Rule(item);
     if (rule.inited) result.execute();
     return result;
@@ -1353,7 +1350,7 @@
       return node;
     }
   }
-  const textBuilder = rule.Text = function (item) {
+  rule.Text = function (item) {
     return new Text(item);
   };
   rule.class.Text = Text;
@@ -1363,7 +1360,7 @@
    * 之后可用于展示对话框等操作
    * @param {{ base: Tab[], filter: (rule: Rule) => boolean, includeDisabled: boolean }} base 描述搜索范围
    */
-  const query = rule.query = function ({
+  rule.query = function ({
     base = tabs,
     includeDisabled = false,
     filter = null,

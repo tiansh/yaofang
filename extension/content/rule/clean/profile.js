@@ -2,7 +2,6 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const rule = yawf.rule;
   const observer = yawf.observer;
 
   const i18n = util.i18n;

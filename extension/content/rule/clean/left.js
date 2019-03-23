@@ -2,7 +2,6 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const rule = yawf.rule;
   const observer = yawf.observer;
   const init = yawf.init;
 
@@ -30,7 +29,6 @@
   });
 
   const leftHide = (function () {
-    let firstRun = true;
     const ids = [];
     // 移除一个左栏链接或相关元素
     const removeNode = function removeNode(node) {

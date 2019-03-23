@@ -6,7 +6,7 @@
   const storage = yawf.storage = {};
 
   class StorageWatcher {
-    constructor(area) {
+    constructor() {
       /** @type {Object<string, Map<string, Set<Function>>>} */
       this.watcher = { local: new Map(), sync: new Map() };
       browser.storage.onChanged.addListener((changes, area) => {
@@ -84,7 +84,7 @@
     }
   }
 
-  const storageBuilder = storage.Storage = function (key, isLocal = false) {
+  storage.Storage = function (key, isLocal = false) {
     return new StorageItem(key, isLocal);
   };
 
@@ -229,7 +229,7 @@
     }
   }
 
-  const configBuilder = storage.Config = function (storage) {
+  storage.Config = function (storage) {
     return new ConfigCollection(storage);
   };
 

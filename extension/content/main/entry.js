@@ -7,7 +7,6 @@
   const init = yawf.init;
 
   const i18n = util.i18n;
-  const ui = util.ui;
 
   const rule = yawf.rule;
 

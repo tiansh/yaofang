@@ -2,9 +2,7 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const rule = yawf.rule;
   const observer = yawf.observer;
-  const feedParser = yawf.feed;
 
   const request = yawf.request;
 
