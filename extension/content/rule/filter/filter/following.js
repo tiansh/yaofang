@@ -1,5 +1,3 @@
-/**
- */
 ; (async function () {
 
   const yawf = window.yawf;
@@ -243,8 +241,8 @@
   };
 
   i18n.followingGroupTitle = {
-    cn: '关注',
-    tw: '關注',
+    cn: '关注管理',
+    tw: '關注管理',
     en: 'Following',
   };
 
@@ -492,7 +490,7 @@
     template: () => i18n.showArticalWithoutFollow,
     ainit() {
       css.append(`
-.WB_editor_iframe { height: auto !important; }
+.WB_editor_iframe, .WB_editor_iframe_new { height: auto !important; }
 .artical_add_box [node-type="maskContent"] { display: none; }
 `);
     },

@@ -301,7 +301,7 @@
     const source = node => {
       if (!node.matches('.WB_from a:not([date])')) return null;
       if (!detail) return '';
-      return (node.title || node.textContent).trim;
+      return (node.title || node.textContent).trim();
     };
     parsers.push(source);
     /**
@@ -454,17 +454,11 @@
   };
   author.id = feed => {
     const domList = author.dom(feed);
-    return domList.map(dom => {
-      const id = new URLSearchParams(dom.getAttribute('usercard')).get('id');
-      return id;
-    });
+    return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
   };
   author.name = feed => {
     const domList = author.dom(feed);
-    return domList.map(dom => {
-      const name = dom.title;
-      return name;
-    });
+    return domList.map(dom => dom.textContent);
   };
 
   // 原作者（一条被转发的微博最早来自谁）
@@ -476,30 +470,24 @@
   };
   original.id = feed => {
     const domList = original.dom(feed);
-    return domList.map(dom => {
-      const id = new URLSearchParams(dom.getAttribute('usercard')).get('id');
-      return id;
-    });
+    return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
   };
   original.name = feed => {
     const domList = original.dom(feed);
-    return domList.map(dom => {
-      const name = dom.title;
-      return name;
-    });
+    return domList.map(dom => dom.textContent);
   };
 
   // 提到（微博中提到的人，转发路径中的人同属于提到）
   const mention = feedParser.mention = {};
   mention.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
-    const domList = [].concat(...contents.map(content => content.querySelectorAll(
-      'a[href*="loc=at"][namecard*="name"]',
-    )));
+    const domList = contents.map(content => content ? Array.from(content.querySelectorAll(
+      'a[href*="loc=at"][usercard*="name"]',
+    )) : []).reduce((x, y) => x.concat(y));
     return domList;
   };
   mention.name = (feed, { short = false, long = true } = {}) => {
-    const domList = original.dom(feed, { short, long });
+    const domList = mention.dom(feed, { short, long });
     return domList.map(dom => {
       const name = new URLSearchParams(dom.getAttribute('usercard')).get('name');
       return name;

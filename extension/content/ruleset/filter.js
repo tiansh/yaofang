@@ -160,7 +160,7 @@
   observer.feed.apply = function (feed, { result, filter = null, reason = null }) {
     feed.setAttribute('yawf-feed-display', result || 'unset');
     if (result && result !== 'unset') {
-      const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]').title;
+      const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]').textContent;
       feed.setAttribute('yawf-feed-author', author);
       if (reason) feed.setAttribute('yawf-feed-reason', reason);
       util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
@@ -217,6 +217,7 @@
   };
 
   css.append(`
+.WB_feed_type:not([yawf-feed]), [comment_id]:not([yawf-comment]) { visibility: hidden; opacity: 0; }
 [action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
 [yawf-feed]:not([yawf-feed-display]), [yawf-comment]:not([yawf-comment-display]) { visibility: hidden; opacity: 0; }
 [yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }

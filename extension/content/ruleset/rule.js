@@ -880,7 +880,9 @@
       const oldPosition = Array(3).fill(NaN);
       const updatePosition = () => {
         if (!suggestionItemsShown) return;
-        const { left, width, bottom } = input.getClientRects()[0];
+        const rects = input.getClientRects();
+        if (!rects || !rects[0]) return;
+        const { left, width, bottom } = rects[0];
         const [oldLeft, oldWidth, oldBottom] = oldPosition;
         if (left !== oldLeft) suggestionContainer.style.left = Math.round(left) + 'px';
         if (width !== oldWidth) suggestionContainer.style.minWidth = (Math.round(width) - 4) + 'px';
@@ -1045,7 +1047,7 @@
       const index = values.findIndex((item, index) => this.track(item, index) === track);
       if (index !== -1) {
         values.splice(index, 1);
-        if (!this.configCacheDirty) {
+        if (!this.configCacheDirty && Array.isArray(this.configCache)) {
           this.configCache.splice(index, 1);
         }
       }

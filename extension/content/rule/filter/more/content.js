@@ -258,6 +258,7 @@
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('div[action-data*="objectid=2017896001:"]')) return 'hide';
         if (feed.querySelector('a[suda-uatrack*="2017896001-product"]')) return 'hide';
+        if (feed.querySelector('[exp-data*="2243615001-product"]')) return 'hide';
         if (feed.querySelector('a[href*="//dr.wenwo.com/"]')) return 'hide';
         return null;
       });

@@ -233,7 +233,7 @@
         const { oid, onick } = init.page.$CONFIG;
         if (!oid || !onick) return null;
         const id = feedParser.author.id(feed);
-        if (id !== oid) return 'hide';
+        if (String(id) !== String(oid)) return 'hide';
         return null;
       });
     },

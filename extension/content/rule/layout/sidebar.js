@@ -147,7 +147,7 @@
     },
     ainit: function mergeLeftRight() {
       // 发现页面的逻辑不一样，做处理很麻烦，所以不做处理
-      if (init.page.type === 'discover') return;
+      if (init.page.type() === 'discover') return;
 
       const main = document.body;
       const side = this.ref.side.getConfig() === 'right' ? 'right' : 'left';

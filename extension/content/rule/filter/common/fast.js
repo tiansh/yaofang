@@ -92,7 +92,7 @@
       if (params.has('name')) user.name = params.get('name');
       if (userlink.matches('.WB_detail > .WB_info > .W_fb[usercard]')) user.type = 'author';
       if (userlink.matches('.WB_expand > .WB_info > .W_fb[usercard]')) user.type = 'original';
-      if (userlink.matches('.WB_feed_type a[href*="loc=at"][namecard*="name"]')) user.type = 'mention';
+      if (userlink.matches('.WB_feed_type a[href*="loc=at"][usercard*="name"]')) user.type = 'mention';
       if (userlink.matches('[comment_id] [usercard]')) user.type = 'commentuser';
     }(find('[usercard*="name="], [usercard*="id="]')));
     // 个人主页的头像

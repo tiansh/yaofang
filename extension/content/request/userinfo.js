@@ -40,14 +40,14 @@
       const resp = await fetch(requestUrl, { credentials: 'include' }).then(resp => resp.text());
       // 我仍然无法理解一个使用 JSON 包裹 HTML 的 API
       const html = network.parseJson(resp).data;
-      const namecard = new DOMParser().parseFromString(html, 'text/html');
+      const usercard = new DOMParser().parseFromString(html, 'text/html');
       return (function parseUserInfoResponse() {
-        const avatar = namecard.querySelector('.pic_box img').src;
-        const name = namecard.querySelector('.name a[uid]').getAttribute('title');
+        const avatar = usercard.querySelector('.pic_box img').src;
+        const name = usercard.querySelector('.name a[uid]').getAttribute('title');
         // 虽然一般来说是由数码组成的，但是 $CONFIG.uid 是字符串类型，所以我们遵守微博的类型约定使用字符串类型
-        const id = namecard.querySelector('.name a[uid]').getAttribute('uid');
-        const followee = util.strings.parseint(namecard.querySelector('.c_follow em').textContent);
-        const follower = util.strings.parseint(namecard.querySelector('.c_fans em').textContent);
+        const id = usercard.querySelector('.name a[uid]').getAttribute('uid');
+        const followee = util.strings.parseint(usercard.querySelector('.c_follow em').textContent);
+        const follower = util.strings.parseint(usercard.querySelector('.c_fans em').textContent);
         const data = { avatar, id, name, followee, follower };
         userInfoCacheById.set(id, data);
         userInfoCacheByName.set(name, data);

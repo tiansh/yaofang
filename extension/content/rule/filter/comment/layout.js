@@ -32,7 +32,7 @@
     version: 1,
     parent: layout.layout,
     template: () => i18n.commentByTime,
-    init() {
+    ainit() {
       observer.dom.add(function switchToAllComment() {
         const allButtons = Array.from(document.querySelectorAll([
           'a[action-type="feed_list_commentSearch"][action-data*="filter=all"]:not([yawf-all-comment])',
@@ -57,7 +57,7 @@
     version: 1,
     parent: layout.layout,
     template: () => i18n.hideSubComment,
-    init() {
+    ainit() {
       observer.dom.add(function hideSubComment() {
         const rootCommentList = Array.from(document.querySelectorAll('.list_li[node-type="root_comment"]:not([yawf-folded-root-comment])'));
         rootCommentList.forEach(rootComment => {

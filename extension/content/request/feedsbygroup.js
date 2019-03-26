@@ -94,7 +94,7 @@
         const date = Number(dateitem.getAttribute('date')); if (!date) return null;
         const mid = item.getAttribute('mid'); if (!mid) return null;
         return { type: 'feed', date, mid, dom: item.cloneNode(true) };
-      });
+      }).filter(feed => feed);
       this.feedsByPage.push(feeds);
       this.pendingFeeds.push(...feeds);
       this.pendingFeeds.sort((a, b) => b.date - a.date);

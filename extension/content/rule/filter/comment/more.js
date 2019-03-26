@@ -71,7 +71,7 @@
       observer.comment.filter(function commentFaceCount(comment) {
         if (!rule.isEnabled()) return null;
         const face = comment.querySelectorAll('img[type="face"][alt]');
-        if (face > this.ref.count.getConfig()) return 'hide';
+        if (face > rule.ref.count.getConfig()) return 'hide';
         return null;
       });
     },
@@ -102,7 +102,7 @@
         if (!rule.isEnabled()) return null;
         const face = comment.querySelectorAll('img[type="face"][alt]');
         const types = new Set(Array.from(face).map(face => face.alt)).size;
-        if (types > this.ref.count.getConfig()) return 'hide';
+        if (types > rule.ref.count.getConfig()) return 'hide';
         return null;
       });
     },
@@ -121,11 +121,11 @@
     template: () => i18n.commentWithoutContent,
     init() {
       const rule = this;
-      observer.comment.filter(function commentFaceTypes(comment) {
+      observer.comment.filter(function commentWithoutContent(comment) {
         if (!rule.isEnabled()) return null;
         if (comment.querySelector('.media_box .WB_pic')) return null; // 有图片的不算没内容
         const texts = Array.from(comment.querySelector('.WB_text').childNodes)
-          .filter(n => !n.matches('a[usercard]')) // 提到人不算内容
+          .filter(n => !((n instanceof Element) && n.matches('a[usercard]'))) // 提到人不算内容
           .map(n => n.textContent).join('')
           .replace(/回[复復覆]|Reply|[:/\s：]/ig, ''); // 空格、“回复”和冒号不算内容
         if (!texts) return 'hide';
@@ -147,10 +147,10 @@
     template: () => i18n.commentWithForward,
     init() {
       const rule = this;
-      observer.comment.filter(function commentFaceTypes(comment) {
+      observer.comment.filter(function commentWithForward(comment) {
         if (!rule.isEnabled()) return null;
         const users = commentParser.user.dom(comment);
-        const forwards = users.filter(u => u.previousSibling.textContent.match(/\/\/$/));
+        const forwards = users.find(u => u.previousSibling.textContent.match(/\/\/$/));
         if (forwards) return 'hide';
         return null;
       });

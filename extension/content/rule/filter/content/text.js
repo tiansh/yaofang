@@ -43,9 +43,9 @@
     init() {
       const rule = this;
       observer.feed.filter(function textFeedFilter(/** @type {Element} */feed) {
-        const text = feedParser.text.simple(feed);
+        const text = feedParser.text.simple(feed).toLowerCase();
         const keywords = rule.ref.items.getConfig();
-        const contain = keywords.find(keyword => text.includes(keyword));
+        const contain = keywords.find(keyword => text.includes(keyword.toLowerCase()));
         if (!contain) return null;
         const reasonText = contain.length > 8 ? contain.slice(0, 6) + '…' : contain;
         const reason = i18n.textContentReason.replace('{1}', () => reasonText);

@@ -18,7 +18,7 @@
     requestUrl.searchParams.set('key', key);
     requestUrl.searchParams.set('uid', yawf.init.page.$CONFIG.uid);
     const resp = await fetch(requestUrl, { credentials: 'include' }).then(r => r.text());
-    const users = Array.from(network.parseJson(resp).data.user);
+    const users = Array.from((network.parseJson(resp).data || {}).user);
     const result = users.map(user => ({
       id: user.u_id + '',
       name: user.u_name,

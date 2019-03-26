@@ -59,7 +59,7 @@
   };
 
   const renderSearch = (layer, input) => {
-    const searchTexts = input.match(/\S+/g).filter(x => !x.includes(':'));
+    const searchTexts = (input.match(/\S+/g) || []).filter(x => !x.includes(':'));
     const [_verMatch, verOp, verNum] = input.match(/\bver(?:sion)?:([><]?=?)(\d+)\b/) || [];
     const versionTest = {
       '>': v => v > verNum,

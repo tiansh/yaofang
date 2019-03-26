@@ -55,7 +55,7 @@
       // 如果合并了边栏，那么会因为禁用右栏浮动而同时禁用在右栏里面的左栏
       // 这时候左栏如果还要浮动，那么就要重新让他动起来
       // 这里的程序是为了让左栏再动起来的
-      if (!scroll.merge.getConfig()) return;
+      if (!layout.sidebar.merge.getConfig()) return;
       css.append(`
 .WB_main_r .WB_main_l { will-change: scroll-position; }
 .WB_main_r[yawf-fixed] .WB_main_l { position: fixed; top: 60px !important; overflow: hidden; height: auto !important; width: 150px; }
@@ -87,7 +87,7 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
       };
 
       // 每当滚动滚动条或调整窗口大小时，更新左栏状态
-      let scroll = false;
+      let hasScroll = false;
       const updateLeftPosition = function updateLeftPosition() {
         const left = document.querySelector('.yawf-WB_left_nav');
         const reference = document.querySelector('.WB_main_r');
@@ -96,18 +96,18 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
         const refc = reference.getClientRects();
         if (!refc || !refc[0]) return;
         const pos = refc[0];
-        if (!scroll) {
+        if (!hasScroll) {
           if (pos.bottom < -60) {
-            scroll = true;
+            hasScroll = true;
             reference.setAttribute('yawf-fixed', '');
           }
         } else {
           if (pos.bottom + left.clientHeight > 60) {
-            scroll = false;
+            hasScroll = false;
             reference.removeAttribute('yawf-fixed');
           }
         }
-        if (scroll) {
+        if (hasScroll) {
           const cip = container.getClientRects()[0];
           const fip = left.getClientRects()[0];
           const no_space = false; // filter.items.style.sweibo.no_weibo_space.conf;
@@ -132,7 +132,7 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
     init() {
       this.addConfigListener(scrollAfterMerge('right'));
 
-      const merge = scroll.merge.getConfig();
+      const merge = layout.sidebar.merge.getConfig();
       const fleft = scroll.scrollLeft.getConfig();
       const fright = scroll.scrollRight.getConfig();
       const fother = scroll.scrollOthers.getConfig();

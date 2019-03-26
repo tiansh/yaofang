@@ -108,7 +108,7 @@
     tab: 'comment',
     key: 'regex',
     version: 1,
-    type: 'strings',
+    type: 'regexen',
     title: () => i18n.contentRegexCommentGroupTitle,
     details: {
       hide: {
