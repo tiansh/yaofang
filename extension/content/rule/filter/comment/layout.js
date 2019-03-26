@@ -49,7 +49,7 @@
   i18n.hideSubComment = {
     cn: '折叠二级评论',
     tw: '折疊二級評論',
-    en: 'Hide sub comments by default'
+    en: 'Hide sub comments by default',
   };
 
   layout.hideSubComment = rule.Rule({
