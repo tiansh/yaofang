@@ -87,10 +87,14 @@
     version: 1,
     parent: layout.layout,
     template: () => i18n.nowrapAfterAuthor,
-    acss: `
+    ainit() {
+      css.append(`
 .WB_info, .WB_text { display: inline; word-wrap: break-word; }
 .WB_info::after { content: "："; }
 .WB_text::before { content: " "; display: block; float: right; width: 14px; height: 1px; }
+.WB_expand .WB_text::before { width: 0; }
+[yawf-hide-box] .WB_text::before { width: 37px; }
+[yawf-hide-box] .WB_expand .WB_text::before { width: 14px; }
 
 .WB_info + .WB_from { display: none; }
 body .WB_feed_v3 .WB_face .opt.opt { margin: 10px 0 0 0; position: static; right: auto; top: auto; }
@@ -100,7 +104,8 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_detail { min-height: 50px; }
 
 [id^="Pl_Core_WendaList__"] .WB_text::before { width: 68px; }
-`,
+`);
+    },
   });
 
   i18n.smallImage = {

@@ -39,10 +39,12 @@
 .PCD_header.PCD_header .pf_wrap { height: 130px; overflow: hidden; }
 .PCD_header.PCD_header .cover_wrap { display: none; }
 .PCD_header.PCD_header .shadow { width: 440px; height: 108px; margin: 11px auto; position: relative; padding: 0 20px 0 140px; }
+.PCD_header.PCD_header .S_shadow { background: none; }
 .PCD_header.PCD_header .pf_photo { position: absolute; left: 20px; top: 0; margin: 0; }
 .PCD_header.PCD_header .upcover { display: none; }
 .PCD_header.PCD_header .pf_username,
-.PCD_header.PCD_header .pf_intro { text-align: left; }
+.PCD_header.PCD_header .pf_intro { text-align: left; text-shadow: 0 0 1px black, 0 0 2px black; }
+.PCD_header.PCD_header .pf_opt { align: left; }
     `);
     observer.dom.add(function fullProfileIntroduction() {
       const intro = document.querySelector('.PCD_header .pf_intro:not([yawf-full-intro])');

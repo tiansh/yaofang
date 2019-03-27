@@ -124,6 +124,7 @@
       "content/rule/clean/right.js",
       "content/rule/clean/feed.js",
       "content/rule/clean/profile.js",
+      "content/rule/clean/message.js",
       "content/rule/clean/other.js",
 
       "content/rule/layout/layout.js",

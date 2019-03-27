@@ -508,10 +508,10 @@
             const [_full, match, tail] = text.match(/^(.*?)\s*(来自|來自|come from|)$/);
             const time = parseTextTime(match);
             if (!time) return;
-            util.debug('parse time %o(%s) to %o(%s)', textNode, text, new Date(time), new Date(time));
+            util.debug('parse time %o(%s) to %o(%s)', textNode, text, time, time);
             textNode.textContent = tail ? ` ${tail} ` : '';
             const timeElement = document.createElement('span');
-            timeElement.setAttribute('yawf-date', time);
+            timeElement.setAttribute('yawf-date', +time);
             updateDate(timeElement);
           });
         };

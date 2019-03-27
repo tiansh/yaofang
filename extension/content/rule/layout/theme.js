@@ -209,11 +209,11 @@ body .W_input, body .send_weibo .input { background-color: ${color3}; }
 .WB_tab_a .tab_box_a_r2 .tab .li_first, .WB_tab_a .tab_box_a_r2 .tab .li_last { display: none; }
 .WB_tab_a .tab_box_a .tab { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: space-around; align-items: stretch; }
 
-.WB_tab_a .tab .t { height: 38px; }
-.WB_tab_a .tab .b { display: none; }
-.WB_tab_a .tab_box_a .tab.clearfix::after { display: none; }
-.WB_tab_a .tab_box_a .tab li { margin: 0; flex-grow: 1; }
-.WB_tab_a .tab_box_a_r6 .t { width: calc(100% - 14px); }
+.WB_tab_a.WB_tab_a .tab .t { height: 38px; width: calc(100% - 16px); }
+.WB_tab_a.WB_tab_a .tab .b { display: none; }
+.WB_tab_a.WB_tab_a .tab_box_a .tab.clearfix::after { display: none; }
+.WB_tab_a.WB_tab_a .tab_box_a .tab li { margin: 0; flex-grow: 1; }
+.WB_tab_a.WB_tab_a .tab_box_a_r6 .t { width: calc(100% - 14px); }
 
 .search_directarea, .WB_editor_iframe { background: none; }
 .private_list_box .private_head { padding-bottom: 8px; }

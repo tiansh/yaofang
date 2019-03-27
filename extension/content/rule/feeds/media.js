@@ -6,6 +6,7 @@
   const observer = yawf.observer;
   const message = yawf.message;
   const download = yawf.download;
+  const contextmenu = yawf.contextmenu;
 
   const feeds = yawf.rules.feeds;
 
@@ -28,10 +29,9 @@
 
   Object.assign(i18n, {
     viewOriginal: {
-      cn: '查看图片添加“查看原图”链接|打开{{open}}||{{direct}}点击缩略图时直接查看原图',
-      hk: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖',
-      tw: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖',
-      en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View original pictures by clicking on thumbnail',
+      cn: '查看图片添加“查看原图”链接|打开{{open}}||{{direct}}点击缩略图时直接查看原图||{{contextmenu}}添加到右键菜单',
+      tw: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖||{{contextmenu}}添加到操作功能表',
+      en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View original pictures by clicking on thumbnail || {{contexmenu}} Add to context menu',
     },
     viewOriginalPage: { cn: '包含原图的网页', tw: '包含原圖的網頁', en: 'page with original picture' },
     viewOriginalImage: { cn: '原图', tw: '原圖', en: 'original picture' },
@@ -61,11 +61,11 @@
       // fallthrough
     } else if (ref.getAttribute('imagecard')) {
       const pid = new URLSearchParams(ref.getAttribute('imagecard')).get('pid');
-      return { images: ['https://wx1.sinaimg.cn/large/' + pid + '.jpg'], current: 0 };
+      return { images: ['https://wx1.sinaimg.cn/large/' + pid + '.jpg'], current: 1 };
     } else if (ref.href && ref.href.indexOf('javascript:') === -1) {
-      return { images: [ref.href], current: 0 };
+      return { images: [ref.href], current: 1 };
     } else if (ref.src) {
-      return { images: [ref.href], current: 0 };
+      return { images: [ref.href], current: 1 };
     } else return null;
     const images = imgs.map(function (img) {
       const src = img.getAttribute('yawf-ori-src') || img.getAttribute('ori-src') || img.src;
@@ -74,7 +74,7 @@
     });
     const pid = img && img.src.match(/[^/.]*(?=(?:\.[^/.]*)?$)/)[0];
     const current = images.findIndex(image => image.includes(pid));
-    return { images: images, current: current % images.length };
+    return { images: images, current: current + 1 };
   };
 
   media.viewOriginal = rule.Rule({
@@ -92,6 +92,7 @@
         ],
       },
       direct: { type: 'boolean' },
+      contextmenu: { type: 'boolean', initial: true },
     },
     init() {
       this.ref.direct.addConfigListener(newValue => {
@@ -101,11 +102,13 @@
       const viewEnabled = this.isEnabled();
       const viewType = this.ref.open.getConfig();
       const directView = viewEnabled && this.ref.direct.getConfig();
+      const contextMenuView = viewEnabled && this.ref.contextmenu.getConfig();
 
       const downloadImage = media.downloadImage;
       const downloadEnabled = downloadImage.isEnabled();
       const downloadName = downloadImage.ref.name.getConfig();
       const directDownload = downloadEnabled && downloadImage.ref.direct.getConfig();
+      const contextMenuDownload = downloadEnabled && downloadImage.ref.contextmenu.getConfig();
 
       if (!viewEnabled && !downloadEnabled) return;
 
@@ -205,14 +208,44 @@
           else downloadImages(images, target);
         }, true);
       }
+
+      if (contextMenuView || contextMenuDownload) {
+        contextmenu.addListener(function (event) {
+          const target = event.target;
+          const pic = (function () {
+            const pic = target.closest('.WB_media_wrap .WB_pic') || target.closest('a[imagecard]');
+            if (pic) return pic;
+            const feed = target.closest('.WB_feed_type');
+            if (!feed) return null;
+            const feedPic = feed.querySelector('.WB_media_wrap .WB_pic');
+            return feedPic;
+          }());
+          if (!pic) return [];
+          const { images, current } = getImagesInfo(pic);
+          const result = [];
+          if (contextMenuView) {
+            result.push({
+              title: i18n.viewOriginalText,
+              onclick: () => { showOriginalPage({ images, current }); },
+            });
+          }
+          if (contextMenuDownload) {
+            result.push({
+              title: i18n.downloadImageText,
+              onclick: () => { downloadImages({ images, current }); },
+            });
+          }
+          return result;
+        });
+      }
     },
   });
 
   Object.assign(i18n, {
     downloadImage: {
-      cn: '查看图片添加“批量下载”链接|使用{{name}}文件名保存||{{direct}}点击缩略图时直接开始下载',
-      tw: '查看圖片添加「批次下載」連結|使用{{name}}檔名儲存||{{direct}}點擊縮圖時直接開始下載',
-      en: 'Add "Batch Download" link for images {{name}}|Use {{name}} filenames || {{direct}} Trigger download by clicking on thumbnail',
+      cn: '查看图片添加“批量下载”链接|使用{{name}}文件名保存||{{direct}}点击缩略图时直接开始下载||{{contextmenu}}添加到右键菜单',
+      tw: '查看圖片添加「批次下載」連結|使用{{name}}檔名儲存||{{direct}}點擊縮圖時直接開始下載||{{contextmenu}}添加到操作功能表',
+      en: 'Add "Batch Download" link for images {{name}}|Use {{name}} filenames || {{direct}} Trigger download by clicking on thumbnail||{{contextmenu}} Add to context menu',
     },
     downloadImageNameOriginal: {
       cn: '原始',
@@ -243,9 +276,8 @@
           { value: 'original', text: () => i18n.downloadImageNameOriginal },
         ],
       },
-      direct: {
-        type: 'boolean',
-      },
+      direct: { type: 'boolean' },
+      contextmenu: { type: 'boolean', initial: true },
     },
     init() {
       this.ref.direct.addConfigListener(newValue => {
@@ -367,7 +399,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
 .yawf-WB_video video { width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto; }
 .WB_media_a .WB_video.yawf-WB_video { cursor: unset; }
 .yawf-WB_video .W_icon_tag_v2 { z-index: 1; }
-.WB_video[yawf-video-play] .W_icon_tag_v2 { display: none; }
+.WB_video[yawf-video-play] .W_icon_tag_v2 { display: none !important; }
 `);
       util.inject(function () {
         const FakeVideoPlayer = function e() { };

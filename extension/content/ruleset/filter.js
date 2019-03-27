@@ -217,7 +217,11 @@
   };
 
   css.append(`
-.WB_feed_type:not([yawf-feed]), [comment_id]:not([yawf-comment]) { visibility: hidden; opacity: 0; }
+[action-type="feed_list_item"]:not([yawf-feed]),
+[node-type="feed_list"] .WB_feed_type:not([yawf-feed]),
+.list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment]),
+.list_ul[node-type="comment_list"] .list_li:not([yawf-comment])
+{ visibility: hidden; opacity: 0; }
 [action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
 [yawf-feed]:not([yawf-feed-display]), [yawf-comment]:not([yawf-comment-display]) { visibility: hidden; opacity: 0; }
 [yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }

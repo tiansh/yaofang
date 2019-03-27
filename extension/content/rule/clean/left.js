@@ -106,19 +106,19 @@
   clean.tagElements('Left', [
     '#v6_pl_leftnav_group .lev:not([yawf-id])',
   ].join(','), {
+    'a[href*="krcom.cn"]': 'leftnav_tv',
     'a[href*="/home?"]': 'leftnav_home',
     'a[href^="/at/"]': 'leftnav_message',
     'a[href^="/fav"]': 'leftnav_fav',
     'a[href^="/like"]': 'leftnav_like',
     'a[href^="/friends"]': 'leftnav_friends',
     'a[href^="/groupsfeed"]': 'leftnav_groupsfeed',
-    'a[href^="/mygroups"]': 'leftnav_mygroups',
     'a[href*="//d.weibo.com"]': 'leftnav_hot',
     'a[href*="//weibo.com/tv"]': 'leftnav_tv',
-    'a[href*="krcom.cn"]': 'leftnav_tv',
     'a[href^="/mygroups"][href*="isspecialgroup=1"]': 'leftnav_special',
     'a[href^="/mygroups"][href*="whisper=1"]': 'leftnav_whisper',
     'a[href^="/mygroups"][href*="vplus=1"]': 'leftnav_vplus',
+    'a[href^="/mygroups"]': 'leftnav_mygroups',
   });
 
 }());

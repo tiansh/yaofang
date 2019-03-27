@@ -22,8 +22,11 @@
   });
 
   const lastContexMenu = [];
+  let contextMenuIndex = 0;
   message.export(async function contextMenuShow() {
+    const index = ++contextMenuIndex;
     const items = [].concat(...await lastCheck);
+    if (contextMenuIndex !== index) return [];
     return items.map(item => {
       if (!item.onclick) return null;
       if (!item.title) return null;

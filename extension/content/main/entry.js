@@ -57,13 +57,7 @@
       const reference = document.querySelector('.WB_global_nav .gn_set_list');
       if (!reference) { setTimeout(icon, 100); return; }
       const template = document.createElement('template');
-      template.innerHTML = `
-<div class="gn_set_list yawf-gn_set_list">
-  <a node-type="filter" href="javascript:void(0);" class="gn_filter">
-    <em class="W_ficon ficon_mail S_ficon">Y</em>
-  </a>
-</div>
-`;
+      template.innerHTML = `<div class="gn_set_list yawf-gn_set_list"><a node-type="filter" href="javascript:void(0);" class="gn_filter"><em class="W_ficon ficon_mail S_ficon">Y</em></a></div>`;
       const container = document.importNode(template.content.firstElementChild, true);
       const button = container.querySelector('.gn_filter');
       reference.before(container);
@@ -95,6 +89,7 @@
       item.addEventListener('click', onClick);
       item.textContent = i18n.filterMenuItem;
     };
+    if (init.page.type() === 'search') return;
     icon(); menuitem();
   });
 

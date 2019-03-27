@@ -267,19 +267,16 @@
 
   i18n.yizhiboFeedFilter = {
     cn: '含有“一直播”视频直播的微博|{{type}}',
-    hk: '含有「一直播」直播影片的微博|{{type}}',
     tw: '含有「一直播」直播影片的微博|{{type}}',
     en: 'Weibo with live video on yizhibo | {{type}}',
   };
   i18n.yizhiboFeedFilterAll = {
     cn: '隐藏正在直播或已结束回放',
-    hk: '隱藏正在直播或已結束回放',
     tw: '隱藏正在直播或已結束回放',
     en: 'hide live and replay',
   };
   i18n.yizhiboFeedFilterReplay = {
     cn: '仅隐藏已结束回放',
-    hk: '僅隱藏已結束回放',
     tw: '僅隱藏已結束回放',
     en: 'hide replay only',
   };
@@ -303,14 +300,11 @@
       observer.feed.filter(function yizhiboFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         const type = rule.ref.type.getConfig();
-        const live = feed.querySelector('.WB_video[suda-uatrack*="2227747001-live"]');
+        const live = feed.querySelector('.WB_video[action-data*="type=feedlive"]');
         if (!live) return null;
         if (type === 'all') return 'hide';
-        else {
-          const type = live.querySelector('.W_icon_tag').textContent;
-          if (type === '回放') return 'hide';
-          return null;
-        }
+        if (live.matches('[action-data*="is_replay=1"]')) return 'hide';
+        return null;
       });
     },
   });

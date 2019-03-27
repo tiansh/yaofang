@@ -41,7 +41,6 @@
     if (!(selection instanceof Selection)) return [];
     if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
-    const template = i18n.contentTextContextTitle;
     let simple, full, type;
     simple = feedParser.text.simple(selection) || '';
     full = feedParser.text.detail(selection) || '';
@@ -53,6 +52,7 @@
     if (!simple && !full) {
       return [];
     }
+    const template = i18n.contentTextContextTitle;
     const title = template.replace('{1}', () => simple);
     return [{ title, type, value: { simple, full } }];
   };
@@ -78,6 +78,24 @@
     return [{ title, type: 'multitext', value: { full: texts } }];
   };
   rule.addFastListener(recognize.textComplex);
+
+  // 因为我们移除了对链接的识别，这里 将链接识别为文本
+  recognize.textLink = function (target) {
+    if (!(target instanceof Element)) return [];
+    const container = document.createElement('body');
+    container.appendChild(target.cloneNode(true));
+    const link = container.querySelector([
+      'a[action-type="feed_list_url"][title]',
+      'a[action-type="fl_url_addparams"][title]',
+    ].join(','));
+    if (!link) return [];
+    const text = link.title;
+    if (text.match(/^https?:/) || text === '网页链接') return [];
+    const template = i18n.contentTextContextTitle;
+    const title = template.replace('{1}', () => text);
+    return [{ title, type: 'text', value: { simple: text, full: [text] } }];
+  };
+  rule.addFastListener(recognize.textLink);
 
   // 识别用户的头像、链接等
   recognize.account = async function (target) {

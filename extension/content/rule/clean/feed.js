@@ -27,7 +27,7 @@
     cleanFeedSonTitle: { cn: '同源转发合并提示', tw: '同源转发合并提示', en: 'Merged forwards' },
     cleanFeedCard: { cn: '微博卡片 {{i}}', tw: '微博卡片 {{i}}', en: 'Feed Cards {{i}}' },
     cleanFeedCardDetail: {
-      cn: '微博内对分享内容的摘要描述，如话题卡片、长微博卡片、分享内容卡片等。隐藏后您可以开启工具选项卡中的“[[tool.weibotool.card_button]]”功能，点击链接在当前页面直接显示长微博或被分享的视频等。',
+      cn: '微博内对分享内容的摘要描述，如话题卡片、长微博卡片、分享内容卡片等。',
     },
     cleanFeedArticalPay: { cn: '微博打赏', tw: '微博打赏', en: 'Feed Actical Pay' },
     cleanFeedTag: { cn: '微博标签', tw: '微博標籤', en: 'Tags for Feed' },

@@ -54,6 +54,7 @@
     const items = await message.invoke().contextMenuShow().catch(() => []);
     if (contextMenuIndex !== lastContextMenuIndex) return;
     if (!Array.isArray(items) || !items.length) return;
+    browser.menus.removeAll();
     const rootMenu = browser.menus.create({
       title: menuTitleWithAccessKey(browser.i18n.getMessage('extensionName'), 'Y'),
     });

@@ -92,6 +92,7 @@
   const ui = util.ui;
   const i18n = util.i18n;
   const priority = util.priority;
+  const keyboard = util.keyboard;
 
   const rule = yawf.rule = {};
   const rules = yawf.rules = {};
@@ -190,10 +191,14 @@
     };
     /** @type {TemplateTokenRender} */
     tokenRender.rule = function (token, reference, ref, mode) {
+      const refRule = rules.all.get(token.value);
+      if (!refRule) {
+        util.debug('Referenced rule %s does not found.', token.value);
+      }
       if (mode === 'text') {
-        reference.appendChild(rules.all.get(token.value).text(false));
+        reference.appendChild(refRule.text(false));
       } else {
-        reference.appendChild(rules.all.get(token.value).render(false));
+        reference.appendChild(refRule.render(false));
       }
       return reference;
     };
@@ -937,30 +942,30 @@
         if (item === current) item.classList.add('cur');
         else item.classList.remove('cur');
       });
-      const keypressEventHandler = event => {
+      const keydownEventHandler = event => {
         const handler = {
-          [util.keyboard.code.ENTER]: () => {
+          [keyboard.code.ENTER]: () => {
             const current = getFocus();
             if (!current) return;
             choseSuggestionListItem(current);
           },
-          [util.keyboard.code.UP]: () => {
+          [keyboard.code.UP]: () => {
             const old = getFocus();
             const current = old && old.previousSibling || suggestionItems[suggestionItems.length - 1];
             if (current) setFocus(current);
           },
-          [util.keyboard.code.DOWN]: () => {
+          [keyboard.code.DOWN]: () => {
             const old = getFocus();
             const current = old && old.nextSibling || suggestionItems[0];
             if (current) setFocus(current);
           },
-        }[util.keyboard.event(event)];
+        }[keyboard.event(event)];
         if (!handler) return;
         handler();
         event.preventDefault();
         event.stopPropagation();
       };
-      input.addEventListener('keypress', keypressEventHandler);
+      input.addEventListener('keydown', keydownEventHandler);
       suggestionList.addEventListener('mousedown', event => {
         const listitem = event.target.closest('li.yawf-list-suggestion-item');
         choseSuggestionListItem(listitem);
