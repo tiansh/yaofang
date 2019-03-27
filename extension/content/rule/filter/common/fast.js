@@ -42,11 +42,11 @@
     if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
     let simple, full, type;
-    simple = feedParser.text.simple(selection) || '';
-    full = feedParser.text.detail(selection) || '';
+    simple = (feedParser.text.simple(selection) || '').trim();
+    full = (feedParser.text.detail(selection) || '').trim();
     type = 'text';
     if (!simple && !full) {
-      simple = full = commentParser.text(selection) || '';
+      simple = full = (commentParser.text(selection) || '').trim();
       type = 'comment';
     }
     if (!simple && !full) {
@@ -62,7 +62,7 @@
   recognize.textComplex = function (selection) {
     if (!(selection instanceof Selection)) return [];
     if (selection.rangeCount <= 1) return [];
-    let texts = feedParser.text.detail(selection).filter(text => text);
+    let texts = feedParser.text.detail(selection).filter(text => text.trim());
     let type = 'multitext';
     if (!texts.length) {
       texts = commentParser.text(selection).filter(text => text);
@@ -72,10 +72,11 @@
       return [];
     }
     const template = i18n.contentTextContextTitle;
+    texts = texts.map(text => text.trim());
     const joined = texts.join('…');
     const placeholder = joined.length > 10 ? joined.slice(0, 9) + '…' : joined;
     const title = template.replace('{1}', () => placeholder);
-    return [{ title, type: 'multitext', value: { full: texts } }];
+    return [{ title, type, value: { full: texts } }];
   };
   rule.addFastListener(recognize.textComplex);
 
@@ -89,7 +90,7 @@
       'a[action-type="fl_url_addparams"][title]',
     ].join(','));
     if (!link) return [];
-    const text = link.title;
+    const text = link.title.trim();
     if (text.match(/^https?:/) || text === '网页链接') return [];
     const template = i18n.contentTextContextTitle;
     const title = template.replace('{1}', () => text);

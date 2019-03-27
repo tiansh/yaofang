@@ -24,7 +24,6 @@
 
   i18n.deletedForwardFilter = {
     cn: '已删除微博的转发{{i}}',
-    hk: '已刪除微博的轉發{{i}}',
     tw: '已刪除微博的轉發{{i}}',
     en: 'Forward of deleted Weibo{{i}}',
   };
@@ -55,7 +54,6 @@
 
   i18n.commentAndForwardFilter = {
     cn: '回复并转发的微博{{i}}',
-    hk: '回覆並轉發的微博{{i}}',
     tw: '回覆並轉發的微博{{i}}',
     en: 'Weibo forwarded as reply{{i}}',
   };
@@ -87,7 +85,6 @@
 
   i18n.voteFeedFilter = {
     cn: '投票微博{{i}}',
-    hk: '投票微博{{i}}',
     tw: '投票微博{{i}}',
     en: 'Voting weibo{{i}}',
   };
@@ -119,9 +116,8 @@
 
   i18n.redPackFeedFilter = {
     cn: '抢红包微博{{i}}',
-    hk: '搶紅包微博',
-    tw: '搶紅包微博',
-    en: 'Weibo with Red Envelopes Rush',
+    tw: '搶紅包微博{{i}}',
+    en: 'Weibo with Red Envelopes Rush {{i}}',
   };
   i18n.redPackFeedFilterDetail = {
     cn: '抢红包活动自动发布的微博',
@@ -150,7 +146,6 @@
 
   i18n.koiForwardFeedFilter = {
     cn: '转发图标是锦鲤的微博（转发抽奖的微博？）',
-    hk: '轉發圖示是錦鯉的微博（轉發抽獎的微博？）',
     tw: '轉發圖示是錦鯉的微博（轉發抽獎的微博？）',
     en: 'Forward icon as a koi (forward this weibo for draw?)',
   };
@@ -178,7 +173,6 @@
 
   i18n.appItemFeedFilter = {
     cn: '介绍微博应用的微博{{i}}',
-    hk: '介紹微博應用的微博{{i}}',
     tw: '介紹微博應用的微博{{i}}',
     en: 'Weibo with app item {{i}}',
   };
@@ -206,7 +200,6 @@
 
   i18n.wendaFeedFilter = {
     cn: '微博问答相关的提问、回答或围观{{i}}',
-    hk: '微博問答相關的提問、回答或圍觀{{i}}',
     tw: '微博問答相關的提問、回答或圍觀{{i}}',
     en: 'Weibo asking, answering, or viewing Weibo Q and A {{i}}',
   };
@@ -236,7 +229,6 @@
 
   i18n.wenwoDrFeedFilter = {
     cn: '含有爱问医生健康科普文章的微博{{i}}',
-    hk: '含有愛問醫生健康科普文章的微博{{i}}',
     tw: '含有愛問醫生健康科普文章的微博{{i}}',
     en: 'Weibo with 爱问医生 (iask medical) artical {{i}}',
   };
@@ -311,7 +303,6 @@
 
   i18n.stockFeedFilter = {
     cn: '含有股票链接的微博{{i}}',
-    hk: '含有股票連結的微博{{i}}',
     tw: '含有股票連結的微博{{i}}',
     en: 'Weibo with stock link {{i}}',
   };
@@ -339,7 +330,6 @@
 
   i18n.paidFeedFilter = {
     cn: '需要付费查看的微博{{i}}',
-    hk: '需要付費查看的微博{{i}}',
     tw: '需要付費查看的微博{{i}}',
     en: 'FeedFilter require paid to view {{i}}',
   };

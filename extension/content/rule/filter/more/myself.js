@@ -12,7 +12,6 @@
   const i18n = util.i18n;
   i18n.otherWhitelistTitle = {
     cn: '显示以下内容（不计入白名单）',
-    hk: '顯示以下內容（不計入白名單）',
     tw: '顯示以下內容（不計入白名單）',
     en: 'Show following content (not regard as whitelist)',
   };
@@ -25,7 +24,6 @@
 
   i18n.showMyFeedDetail = {
     cn: '自己的微博',
-    hk: '自己的微博',
     tw: '自己的微博',
     en: 'Feeds by myself',
   };
@@ -50,7 +48,6 @@
 
   i18n.showMyOriginalDetail = {
     cn: '自己微博的转发',
-    hk: '自己微博的轉發',
     tw: '自己微博的轉發',
     en: 'Forward of my Feeds',
   };
@@ -74,7 +71,6 @@
 
   i18n.showMentionMeDetail = {
     cn: '提到自己的微博',
-    hk: '提到自己的微博',
     tw: '提到自己的微博',
     en: 'Feeds mentioned myself',
   };
