@@ -4,9 +4,9 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
-  const message = yawf.message;
   const download = yawf.download;
   const contextmenu = yawf.contextmenu;
+  const imageViewer = yawf.imageViewer;
 
   const feeds = yawf.rules.feeds;
 
@@ -115,7 +115,7 @@
       // 查看原图
       const showOriginalPage = function ({ images, current }) {
         if (viewType !== 'image') {
-          message.invoke.showImageViewer({ images, current });
+          imageViewer.open({ images, current });
         } else {
           browser.tabs.create({ url: images[current] });
         }

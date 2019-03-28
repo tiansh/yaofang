@@ -49,6 +49,7 @@
         if (forwardContent) return null;
         return 'hide';
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -80,6 +81,7 @@
         if (!content.childNodes[1] || !content.childNodes[1].getAttribute('usercard')) return null;
         return 'hide';
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -111,6 +113,7 @@
         if (feedParser.source.text(feed).includes('投票')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -141,6 +144,7 @@
         if (feed.querySelector('.media-redpacket')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -168,6 +172,7 @@
         if (feed.querySelector('a[action-type="fl_forward"] .icon_jinli')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -195,6 +200,7 @@
         if (feed.querySelector('.WB_feed_spec[exp-data*="key=tblog_weibocard"][exp-data*="1042005-appItem"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -224,6 +230,7 @@
         if (feed.querySelector('[suda-uatrack*="1022-wenda"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -254,6 +261,7 @@
         if (feed.querySelector('a[href*="//dr.wenwo.com/"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -298,6 +306,7 @@
         if (live.matches('[action-data*="is_replay=1"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -325,6 +334,7 @@
         if (feed.querySelector('a[suda-uatrack*="1022-stock"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -355,6 +365,7 @@
         if (feed.querySelector('.icon_vplus')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -385,6 +396,7 @@
         if (topics.length >= limit) return 'hide';
         return null;
       }, { priority: 1e6 });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 

@@ -29,6 +29,7 @@
       cn: '隐藏后您还可以在私信页面收发私信：鼠标指向右上角消息图标在下拉菜单中选择“私信”即可打开私信页面。',
     },
     cleanOtherIMNews: { cn: '热点提醒（右下）', tw: '熱點提醒（右下）', en: 'News, bottom right' },
+    cleanOtherBackTop: { cn: '返回顶部', tw: '返回頂部', en: 'Back to Top' },
     cleanOtherTip: { cn: '功能提示框 {{i}}', tw: '功能提示框 {{i}}', en: 'Function Tips {{i}}' },
     cleanOtherTipDetail: {
       cn: '偶尔会出现的新功能推荐的弹框，如果隐藏了对应功能的界面可能弹框会显示到奇怪的地方。',
@@ -125,6 +126,7 @@
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherIMDetail } },
   });
   clean.CleanRule('im_news', () => i18n.cleanOtherIMNews, 1, '.webim_news { display: none !important; }');
+  clean.CleanRule('back_top', () => i18n.cleanOtherBackTop, 1, '.W_gotop { display: none !important; }');
   clean.CleanRule('tip', () => i18n.cleanOtherTip, 1, {
     acss: '.W_layer_tips { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherTipDetail } },

@@ -20,16 +20,39 @@
     template: () => i18n.aboutScriptGroupTitle,
   });
 
-  i18n.aboutText = {
-    cn: '{{logo}}当前扩展正在开发之中，如欲贡献代码请联系 {{scriptWeibo}}。扩展使用 MPL-2.0 协议开源，您可以在 {{github}} 查看扩展的源代码。',
-    tw: '{{logo}}當前擴充套件正在開發，如慾參與編碼或翻譯工作請聯絡 {{scriptWeibo}}。擴充套件使用 MPL-2.0 協議開源，您可以在 {{github}} 查閱擴充套件的原始碼。',
-    en: '{{logo}} This extension is under construction. Please contact {{scriptWeibo}} if you want contribute coding or translations. This extension is published under the MPL-2.0 License. You may get the source code from {{github}}.',
-  };
+  Object.assign(i18n, {
+    aboutText: {
+      cn: '{{logo}}药方 (Yet Another Weibo Filter) {{version}}{{br}}您可以关注 {{scriptWeibo}} 了解扩展的最新变化。{{br}}如果您在使用过程中遇到任何扩展的错误，或对脚本有任何建议，欢迎到 {{issuePage}} 反馈，或私信 {{scriptWeibo}}。{{br}}扩展使用 MPL-2.0 协议开放源代码，您可以在 {{github}} 上查阅。欢迎贡献代码。',
+      tw: '{{logo}}藥方 (Yet Another Weibo Filter) {{version}}{{br}}您可以關注 {{scriptWeibo}} 了解擴充套件的最新變化。{{br}}如果您在使用過程中遇到任何擴充套件的錯誤，或對其有任何建議，歡迎到 {{issuePage}} 回饋，或聯繫 {{scriptWeibo}}。{{br}}擴充套件以 MPL-2.0 協定開放原始碼，您可以在 {{github}} 上查阅。欢迎贡献代码。',
+      en: '{{logo}}Yet Another Weibo Filter (YAWF) {{version}}{{br}}You may follow {{scriptWeibo}} for last updates info.{{br}}You may report errors and give suggestions on {{issuePage}}, or send private message to {{scriptWeibo}}.{{br}}This extension is released under MPL-2.0 license. You may get its source from {{github}}. Contributions are welcomed.',
+    },
+    aboutIssueTracker: {
+      cn: '问题跟踪器',
+      tw: '問題追踪器',
+      en: 'issue tracker',
+    },
+    aboutGithubRepo: {
+      cn: 'GitHub 仓库',
+      tw: 'GitHub 存放庫',
+      en: 'GitHub repository',
+    },
+  });
 
   script.text = rule.Text({
     parent: script.script,
     template: () => i18n.aboutText,
     ref: {
+      br: {
+        render() {
+          return document.createElement('br');
+        },
+      },
+      version: {
+        render() {
+          const version = browser.runtime.getManifest().version;
+          return document.createTextNode(version);
+        },
+      },
       scriptWeibo: {
         render() {
           const link = document.createElement('a');
@@ -50,12 +73,22 @@
           return container;
         },
       },
+      issuePage: {
+        render() {
+          const url = 'https://github.com/tiansh/yaofang/issues';
+          const link = document.createElement('a');
+          link.href = url;
+          link.textContent = i18n.aboutIssueTracker;
+          link.target = '_blank';
+          return link;
+        },
+      },
       github: {
         render() {
           const url = 'https://github.com/tiansh/yaofang';
           const link = document.createElement('a');
           link.href = url;
-          link.textContent = url;
+          link.textContent = i18n.aboutGithubRepo;
           link.target = '_blank';
           return link;
         },

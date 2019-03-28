@@ -43,10 +43,11 @@
     ref: {
       last: { type: 'number', initial: 0 },
     },
-    async ainit() {
+    async init() {
       const whatsNew = this;
       const currentVersion = Number(browser.runtime.getManifest().version.match(/\d+$/g));
       const lastVersion = this.ref.last.getConfig();
+      const updateDone = () => { this.ref.last.setConfig(currentVersion); };
       if (!lastVersion) {
         // 初次运行
         ui.alert({
@@ -59,9 +60,12 @@
         return;
       } else if (currentVersion < lastVersion) {
         // 当前版本比历史版本更旧，可能是回退了版本，直接更新版本号
-        this.ref.last.setConfig(currentVersion);
+        updateDone();
         return;
       } else if (currentVersion === lastVersion) {
+        return;
+      } else if (!whatsNew.isEnabled()) {
+        updateDone();
         return;
       }
       const ruleItems = rule.query({
@@ -69,7 +73,10 @@
           return item.version && item.version > lastVersion && item.version <= currentVersion;
         },
       });
-      if (!ruleItems.length) return;
+      if (!ruleItems.length) {
+        updateDone();
+        return;
+      }
       const whatsNewDialog = ui.dialog({
         id: 'yawf-whatsnew',
         title: i18n.updateSuccessTitle,

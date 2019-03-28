@@ -51,6 +51,7 @@
         const reason = i18n.textContentReason.replace('{1}', () => reasonText);
         return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
+      this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }
 

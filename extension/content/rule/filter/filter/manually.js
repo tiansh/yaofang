@@ -88,7 +88,7 @@
         };
       };
       observer.feed.onFinally(function (feed) {
-        const authorId = feedParser.author.id(feed);
+        const [authorId] = feedParser.author.id(feed);
         if (!authorId || authorId === init.page.$CONFIG.uid) return; // 自己的微博，不显示按钮
         if (feed.matches('#v6_pl_content_atmeweibo *')) return; // 不在提到页面显示，避免与“屏蔽at”发生歧义
         if (feed.hasAttribute('yawf-hide-box')) return; // 已经有了按钮，不显示按钮

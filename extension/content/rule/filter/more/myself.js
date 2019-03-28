@@ -39,10 +39,11 @@
       observer.feed.filter(function showMyFeed(feed) {
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.uid;
-        const author = feedParser.author.id(feed);
-        if (me === author) return 'showme';
+        const [author] = feedParser.author.id(feed);
+        if (String(me) === String(author)) return 'showme';
         return null;
       }, { priority: 1e4 });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -62,10 +63,11 @@
       observer.feed.filter(function showMyOriginal(feed) {
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.uid;
-        const original = feedParser.original.id(feed);
-        if (me === original) return 'showme';
+        const [original] = feedParser.original.id(feed);
+        if (String(me) === String(original)) return 'showme';
         return null;
       }, { priority: 1e4 });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -89,6 +91,7 @@
         if (mentions.includes(me)) return 'showme';
         return null;
       }, { priority: 1e4 });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 

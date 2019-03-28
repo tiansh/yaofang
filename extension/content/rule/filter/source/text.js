@@ -50,6 +50,7 @@
         const reason = i18n.sourceReason.replace('{1}', () => contain);
         return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
+      this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }
 

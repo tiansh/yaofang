@@ -40,6 +40,7 @@
         if (!contain) return null;
         return { result: rule.feedAction };
       }, { priority: this.filterPriority });
+      this.ref.items.addConfigListener(() => { observer.comment.rerun(); });
     }
   }
 

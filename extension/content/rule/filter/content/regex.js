@@ -55,6 +55,7 @@
         const reason = ((matchReg + '').match(/\(\?=\|(([^)]|\\\))*)\)/) || [])[1] || i18n.regexContextReason;
         return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
+      this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }
 

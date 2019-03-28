@@ -218,7 +218,7 @@
 [yawf-merge-left] .WB_frame .WB_main_l,
 [yawf-merge-left] .WB_frame .yawf-WB_left_nav,
 [yawf-merge-left] .WB_frame .WB_left_nav { width: 229px; padding: 0; float: none; }
-[yawf-merge-left] .WB_frame { width: calc(var(--yawf-feed-width) + 240px); padding: 10px; background-position: -300px center; }
+[yawf-merge-left] .WB_frame { background-position: -300px center; padding-left: 10px; }
 [yawf-merge-left] .WB_frame .yawf-WB_left_nav .lev_line fieldset,
 [yawf-merge-left] .WB_frame .WB_left_nav .lev_line fieldset { padding-left: 190px; }
 [yawf-merge-left] .WB_left_nav .lev a:hover, .WB_left_nav .lev_curr,
@@ -227,18 +227,16 @@
 [yawf-merge-left] .WB_left_nav .lev_Box,
 [yawf-merge-left] .WB_left_nav fieldset { border-color: rgba(128, 128, 128, 0.5) !important; }
 [yawf-merge-left] .WB_frame .WB_main_l #v6_pl_leftnav_msgbox.yawf-cardwrap h3 { padding: 0 16px; }
-[yawf-merge-left] a.W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 240px) / 2); }
 [yawf-merge-left] .WB_webim_page #weibochat { position: static !important; }
 [yawf-merge-left] .WB_webim_page .webim_contacts_mod { position: static !important; max-height: calc(100vh - 410px); }
 [yawf-merge-left] .WB_webim_page .webim_contacts_bd { max-height: calc(100vh - 470px); }
 [yawf-merge-left] .webim_chat_window .WB_webim_page .webim_contacts_mod,
 [yawf-merge-left] .webim_chat_window .WB_webim_page .webim_contacts_bd { max-height: none; }
+[yawf-merge-left] body .W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 260px) / 2); }
 [yawf-merge-left="left"] .WB_frame .WB_main_r { float: left; }
 [yawf-merge-left="left"] .WB_frame .WB_main_c { float: right; }
 
 @media screen and (max-width: 1006px) {
-  body[yawf-merge-left] .W_main { width: var(--yawf-feed-width); }
-  body[yawf-merge-left] .WB_frame { width: var(--yawf-feed-width); }
   body[yawf-merge-left] a.W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 20px) / 2); }
   body[yawf-merge-left="left"] .WB_main .WB_main_c { float: none; }
   body[yawf-merge-left="left"] .W_fold { right: auto; left: 0; -webkit-transform: scaleX(-1); transform: scaleX(-1); }

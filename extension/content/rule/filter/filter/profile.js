@@ -15,7 +15,7 @@
     en: 'Profile',
   };
 
-  const profile = filter.homepage = {};
+  const profile = filter.profile = {};
   profile.profile = rule.Group({
     parent: filter.filter,
     template: () => i18n.feedsProfileGroupTitle,

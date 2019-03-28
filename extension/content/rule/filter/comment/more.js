@@ -44,6 +44,7 @@
         if (author === username) return 'shomme';
         return null;
       });
+      this.addConfigListener(() => { observer.comment.rerun(); });
     },
   });
 
@@ -74,6 +75,7 @@
         if (face > rule.ref.count.getConfig()) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.comment.rerun(); });
     },
   });
 
@@ -105,6 +107,7 @@
         if (types > rule.ref.count.getConfig()) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.comment.rerun(); });
     },
   });
 
@@ -131,6 +134,7 @@
         if (!texts) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.comment.rerun(); });
     },
   });
 
@@ -154,6 +158,7 @@
         if (forwards) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.comment.rerun(); });
     },
   });
 

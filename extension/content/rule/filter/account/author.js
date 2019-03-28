@@ -54,6 +54,7 @@
         if (contain) return { result: rule.feedAction, reason };
         return null;
       }, { priority: this.filterPriority });
+      this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }
 

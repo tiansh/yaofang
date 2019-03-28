@@ -60,6 +60,7 @@
         }()) return 'hide';
         return null;
       }, { priority: 1e6 });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -87,6 +88,7 @@
         if (feed.querySelector('[adcard="fanstop"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -118,6 +120,7 @@
         if (feed.querySelector('.media_box .buy_list')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -176,6 +179,7 @@
         if (feed.querySelector('a[href^="https://shoptb.sc.weibo.com/"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -204,6 +208,7 @@
         if (feed.querySelector('a[suda-uatrack*="1042025-webpage"]')) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -232,10 +237,11 @@
         if (init.page.type() !== 'profile') return null;
         const { oid, onick } = init.page.$CONFIG;
         if (!oid || !onick) return null;
-        const id = feedParser.author.id(feed);
+        const [id] = feedParser.author.id(feed);
         if (String(id) !== String(oid)) return 'hide';
         return null;
       });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 
@@ -267,6 +273,7 @@
         if (rule.isEnabled()) return 'hide';
         return 'unset';
       }, { priority: 1e6 });
+      this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 

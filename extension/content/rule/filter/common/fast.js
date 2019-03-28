@@ -42,11 +42,11 @@
     if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
     let simple, full, type;
-    simple = (feedParser.text.simple(selection) || '').trim();
-    full = (feedParser.text.detail(selection) || '').trim();
+    simple = (feedParser.text.simple(selection) || []).map(t => t.trim());
+    full = (feedParser.text.detail(selection) || []).map(t => t.trim());
     type = 'text';
     if (!simple && !full) {
-      simple = full = (commentParser.text(selection) || '').trim();
+      simple = full = (commentParser.text(selection) || []).map(t => t.trim());
       type = 'comment';
     }
     if (!simple && !full) {
@@ -65,7 +65,7 @@
     let texts = feedParser.text.detail(selection).filter(text => text.trim());
     let type = 'multitext';
     if (!texts.length) {
-      texts = commentParser.text(selection).filter(text => text);
+      texts = commentParser.text(selection).filter(text => text.trim());
       type = 'multitextcomment';
     }
     if (!texts.length) {

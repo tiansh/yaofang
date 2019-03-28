@@ -71,6 +71,7 @@
         const reason = i18n.accountOriginalReason.replace('{1}', () => feedParser.original.name(feed));
         return { result: rule.feedAction, reason };
       }, { priority: this.filterPriority });
+      this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }
 

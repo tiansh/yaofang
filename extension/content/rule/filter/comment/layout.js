@@ -63,7 +63,7 @@
         rootCommentList.forEach(rootComment => {
           rootComment.setAttribute('yawf-folded-root-comment', 'yawf-folded-root-comment');
 
-          const feed = rootComment.closest('.WB_feed_type[mid]');
+          const feed = rootComment.closest('[mid]');
           const reply = rootComment.querySelector('a[action-type="reply"]');
           const childCommentList = Array.from(rootComment.querySelectorAll('.list_ul[node-type="child_comment"]'));
 

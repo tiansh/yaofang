@@ -63,7 +63,6 @@
   const isFeedElement = function (element) {
     if (!(element instanceof Element)) return false;
     if (!element.hasAttribute('mid')) return false;
-    if (!element.matches('.WB_feed_type')) return false;
     return true;
   };
 
@@ -142,7 +141,7 @@
     if ((node instanceof Node) && !(node instanceof Element)) {
       return feedContainer(node.parentNode);
     }
-    return node.closest('.WB_feed_type');
+    return node.closest('[mid]');
   };
 
   /**
@@ -450,7 +449,7 @@
   author.dom = feed => {
     if (!(feed instanceof Node)) return [];
     const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]');
-    return [author];
+    return author ? [author] : [];
   };
   author.id = feed => {
     const domList = author.dom(feed);
