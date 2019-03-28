@@ -93,9 +93,13 @@
         })
       )));
     }
-    async active(items) {
-      if (this.busy) {
+    async active(items, isAppend = true) {
+      if (isAppend) {
         this.pending.push(...items);
+      } else {
+        this.pending.unshift(...items);
+      }
+      if (this.busy) {
         if (!this.clean) {
           this.clean = new Promise(resolve => {
             this.resolve = resolve;
@@ -106,7 +110,8 @@
       }
       this.busy = true;
       const promises = [];
-      for (const item of items) {
+      while (this.pending.length) {
+        const item = this.pending.shift();
         promises.push((async () => {
           await this.invokeCallbacks(this.before, item);
           const result = await this.filters.filter(item);
@@ -118,6 +123,7 @@
           await new Promise(resolve => setTimeout(resolve, 0));
         })());
         await new Promise(resolve => setTimeout(resolve, 0));
+        if (!this.busy) break;
       }
       await Promise.all(promises);
       await this.invokeCallbacks(this.done);
@@ -132,6 +138,12 @@
         this.resolve = null;
       }
     }
+    async rerun() {
+      const lastRerun = this.lastRerun = (this.lastRerun || 0) + 1;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (this.lastRerun !== lastRerun) return;
+      this.reapply();
+    }
     onBefore(callback) { this.before.push(callback); }
     onAfter(callback) { this.after.push(callback); }
     onFinally(callback) { this.finally.push(callback); }
@@ -140,16 +152,17 @@
 
   const removeHiddenItem = function (item, { result }) {
     if (result !== 'hide') return;
-    item.parentNode.removeChild(item);
+    item.remove();
   };
 
+  const unfoldEventHandler = function (event) {
+    const feed = event.target.closest('[mid]');
+    feed.setAttribute('yawf-feed-display', 'unfold');
+    feed.removeEventListener('click', unfoldEventHandler);
+  };
   const foldFeedUnfold = function (feed, { result }) {
     if (result !== 'fold') return;
-    const unfold = function () {
-      feed.setAttribute('yawf-feed-display', 'unfold');
-      feed.removeEventListener('click', unfold);
-    };
-    feed.addEventListener('click', unfold);
+    feed.addEventListener('click', unfoldEventHandler);
   };
 
   /**
@@ -168,6 +181,13 @@
     if (result === 'hide') return false;
     return true;
   };
+  observer.feed.reapply = function () {
+    const parsed = Array.from(document.querySelectorAll('[yawf-feed-display]'));
+    parsed.forEach(feed => {
+      feed.removeEventListener('click', unfoldEventHandler);
+    });
+    return this.active(parsed, false);
+  };
   observer.feed.onFinally(removeHiddenItem);
   observer.feed.onFinally(foldFeedUnfold);
 
@@ -183,6 +203,10 @@
     }
     if (result === 'hide') return false;
     return true;
+  };
+  observer.comment.reapply = function () {
+    const parsed = Array.from(document.querySelectorAll('[yawf-comment-display]'));
+    return this.active(parsed, false);
   };
   observer.comment.onFinally(removeHiddenItem);
 
@@ -230,6 +254,7 @@
 [yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; }
 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: block; max-height: 0; transition: max-height, padding 0.1s; overflow: hidden; padding: 0 20px; }
 .WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { max-height: 1000px; padding: 0 20px 27px; }
+.WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
 `);
   init.onLoad(function () {
     css.append(`[yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);
@@ -245,9 +270,9 @@
   }, { priority: 1e6 });
   // 无论因为何种原因，同一页面上同一条微博不应出现两次
   observer.feed.filter(function hideDuplicate(feed) {
-    if (feed.hasAttribute('yawf-not-duplicate')) return null;
-    const mid = feed.getAttribute('mid'); if (!mid) return null;
-    const all = Array.from(document.querySelectorAll('.WB_feed_type:not([yawf-not-duplicate])'));
+    const mid = feed.getAttribute('mid');
+    if (!mid) return null;
+    const all = Array.from(document.querySelectorAll('[mid]'));
     if (all.find(that => that !== feed && that.getAttribute('mid') === mid)) return 'hide';
     return null;
   }, { priority: 1e6 });
