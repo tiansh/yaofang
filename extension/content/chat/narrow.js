@@ -43,5 +43,5 @@
   const style = document.createElement('style');
   style.textContent = css;
   (document.head || document.body || document.documentElement).appendChild(style);
- 
+
 }());

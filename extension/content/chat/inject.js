@@ -58,7 +58,7 @@
           const vue = getVueInstance(vue => vue.getpernewuser)(root);
           const $store = vue.$store;
           const chatlist = $store.state.chatlist;
-          const chatlistIndex = chatlist.findIndex(item => Number(item.id) == uid);
+          const chatlistIndex = chatlist.findIndex(item => Number(item.id) === uid);
           if (chatlistIndex !== -1) {
             chatlist.unshift(...chatlist.splice(chatlistIndex, 1));
             $store.commit('selectSession', uid);

@@ -662,7 +662,7 @@
       /*
        * 这一段是让“聊天”/“私信”按钮可以激活聊天框并切换到对应的人
        */
-       
+
       const chatToUid = function (uid) {
         frameContent.then(contentWindow => {
           chatframe.chatToUid(uid);
@@ -673,7 +673,7 @@
         if (!showChatWindow) return;
         const target = event.target;
         if (!(target instanceof Element)) return;
-        const chatTo = target.closest('[action-type="webim.conversation"]')
+        const chatTo = target.closest('[action-type="webim.conversation"]');
         if (!chatTo) return;
         const data = chatTo.getAttribute('action-data');
         const uid = Number(new URLSearchParams(data).get('uid'));
