@@ -6,8 +6,7 @@
   let language = util.language = null;
   const i18n = new Proxy(Object.create(null), {
     get: (self, key) => {
-      if (!language) return null;
-      return (self[key] || {})[language] || null;
+      return (self[key] || {})[language || 'cn'] || null;
     },
     set: (self, key, value) => {
       const entry = self[key] = {};

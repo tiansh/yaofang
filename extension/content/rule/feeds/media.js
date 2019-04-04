@@ -337,7 +337,7 @@
   });
 
   Object.assign(i18n, {
-    useBuiltInVideoPlayer: { cn: '使用浏览器原生视频播放器{{i}}', hk: '使用瀏覽器內建影片播放器{{i}}', tw: '使用瀏覽器內建影片播放器{{i}}', en: 'Use browser built-in video player {{i}}' },
+    useBuiltInVideoPlayer: { cn: '使用浏览器原生视频播放器{{i}}||音量{{volume}}%|{{memorize}}记忆上一次设置的音量', hk: '使用瀏覽器內建影片播放器{{i}}||音量{{volume}}%|{{memorize}}記住上一次設置的音量', en: 'Use browser built-in video player {{i}}||Volume {{volume}} | {{memorize}} memorize last volume' },
     useBuiltInVideoPlayerDetail: { cn: '一次性解决自动播放和交互逻辑的各种问题，开启时其他视频相关的改造功能不再生效。不支持直播视频。播放可能不会被微博正确计入播放数。' },
     mediaVideoType: { cn: '视频', hk: '影片', tw: '影片', en: 'Video' },
   });
@@ -348,9 +348,12 @@
     parent: media.media,
     template: () => i18n.useBuiltInVideoPlayer,
     ref: {
+      volume: { type: 'range', min: 0, max: 100, initial: 100 },
+      memorize: { type: 'boolean' },
       i: { type: 'bubble', icon: 'warn', template: () => i18n.useBuiltInVideoPlayerDetail },
     },
     ainit() {
+      const rule = this;
       const replaceWeiboVideoPlayer = function replaceWeiboVideoPlayer() {
         const containers = document.querySelectorAll('li.WB_video[node-type="fl_h5_video"][video-sources]');
         containers.forEach(function (container) {
@@ -386,6 +389,15 @@
             tip.className = 'W_icon_tag_v2';
             tip.textContent = i18n.mediaVideoType;
             newContainer.appendChild(tip);
+          }
+          newVideo.volume = rule.ref.volume.getConfig() / 100;
+          if (rule.ref.memorize.getConfig()) {
+            newVideo.addEventListener('volumechange', () => {
+              rule.ref.volume.setConfig(Math.round(newVideo.volume * 100));
+            });
+            newVideo.addEventListener('play', () => {
+              newVideo.volume = rule.ref.volume.getConfig() / 100;
+            });
           }
           newContainer.appendChild(newVideo);
           container.parentNode.replaceChild(newContainer, container);

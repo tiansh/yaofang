@@ -6,6 +6,7 @@
   const observer = yawf.observer;
   const init = yawf.init;
   const message = yawf.message;
+  const chatframe = yawf.chatframe;
 
   const layout = yawf.rules.layout;
 
@@ -520,5 +521,170 @@
       },
     });
   }
+
+  i18n.chatInPage = {
+    cn: '在微博页面内整合聊天窗口',
+    tw: '在微博頁面內整合聊天窗口',
+    en: 'Use chat in pages of feeds',
+  };
+
+  details.chatFrame = rule.Rule({
+    id: 'layout_chat_in_page',
+    version: 1,
+    parent: details.details,
+    template: () => i18n.chatInPage,
+    ref: {
+      width: { initial: 640, min: 640 },
+      height: { initial: 480, min: 480 },
+    },
+    ainit() {
+      const rule = this;
+      css.append(`
+#WB_webchat { bottom: -100px !important; display: block !important; }
+#yawf-webchat { position: fixed; bottom: 0px; right: 0px; z-index: 1024; display: block !important; background: #d3d6df; }
+#yawf-webchat .webim_fold { top: -40px; right: 0px; visibility: visible; }
+#yawf-webchat .fold_cont em { background: -moz-element(#WB_webim_num) no-repeat; width: 200px; display: inline-block; height: 40px; }
+.yawf-webim-main { position: fixed; bottom: 0; right: 0; z-index: 10000; box-shadow: 0 0 10px black; border-radius: 3px 0 0 0; overflow: hidden; }
+.yawf-webim-main iframe { width: 100%; height: 100%; border: 0 none; }
+.yawf-webim-resizer { position: absolute; width: 12px; height: 12px; left: 0; top: 0; margin: 0; cursor: nwse-resize; opacity: 0.8; }
+.yawf-webim-resizer i, .yawf-webim-resizer::after { content: " "; position: absolute; width: 12px; height: 12px; }
+.yawf-webim-resizer i { transform: rotate(180deg); overflow: hidden; resize: both; }
+.yawf-webim-resize .yawf-webim-resizer { width: 100%; height: 100%; }
+`);
+
+      let showChatWindow = null;
+      let frameContentResolve;
+      /** @type {Promise<Window>} */
+      let frameContent = new Promise(resolve => { frameContentResolve = resolve; });
+      const initChatArea = function () {
+        const container = document.createElement('div');
+        container.innerHTML = '<div class="WB_webim" id="yawf-webchat" style=""><div class="webim_fold webim_fold_v2 clearfix"><div class="fold_bg"></div><p class="fold_cont clearfix"><span class="fold_icon W_fl" data-target="minichat"></span><em></em></p></div><div class="yawf-webim-main" style="width: 640px; height: 480px;"><iframe src="https://chat.221edc3f-9e16-4973-a522-4ca21e7c8540.invalid/"></iframe><div class="yawf-webim-resizer"><i></i></div></div></div>';
+        const webim = container.firstElementChild;
+        const fold = webim.querySelector('.webim_fold');
+        const main = webim.querySelector('.yawf-webim-main');
+        const frame = webim.querySelector('iframe');
+        const resizer = webim.querySelector('.yawf-webim-resizer');
+        const mainContainer = main.parentNode;
+        mainContainer.removeChild(main);
+        let folded = true;
+        showChatWindow = function () {
+          if (main.parentNode !== mainContainer) {
+            mainContainer.appendChild(main);
+          }
+          main.style.display = 'block';
+          fold.style.display = 'none';
+          folded = false;
+        };
+        fold.addEventListener('click', () => {
+          showChatWindow();
+        });
+        document.addEventListener('click', event => {
+          if (folded) return;
+          if (webim.contains(event.target)) return;
+          main.style.display = 'none';
+          fold.style.display = 'block';
+          folded = true;
+        });
+        frame.addEventListener('load', () => {
+          const contentWindow = frame.contentWindow;
+          frameContentResolve(contentWindow);
+        });
+
+        /*
+         * 接下来允许聊天框缩放
+         */
+        let dragStartPos = [], dragStartSize = [];
+        const setSize = function (width, height) {
+          let targetW = null, targetH = null;
+          if (width != null) {
+            targetW = Math.max(640, Math.min(window.innerWidth, width));
+            main.style.width = targetW + 'px';
+          }
+          if (height != null) {
+            targetH = Math.max(480, Math.min(window.innerHeight - 48, height));
+            main.style.height = targetH + 'px';
+          }
+          return [targetW, targetH];
+        };
+        const calcSize = function (clientX, clientY) {
+          const [startX, startY] = dragStartPos;
+          const [startW, startH] = dragStartSize;
+          const width = startX - clientX + startW;
+          const height = startY - clientY + startH;
+          return setSize(width, height);
+        };
+        const dragMove = function (event) {
+          calcSize(event.clientX, event.clientY);
+        };
+        const dragCancel = function (event) {
+          calcSize(event.clientX, event.clientY);
+        };
+        const dragEnd = function (event) {
+          const [width, height] = calcSize(event.clientX, event.clientY);
+          rule.ref.width.setConfig(width);
+          rule.ref.height.setConfig(height);
+          document.body.classList.remove('yawf-webim-resize');
+          document.removeEventListener('mousemove', dragMove);
+          document.removeEventListener('mouseleave', dragCancel);
+          document.removeEventListener('mouseup', dragEnd);
+        };
+        const dragStart = function (event) {
+          console.log('start', event.clientX, event.clientY);
+          dragStartPos = [event.clientX, event.clientY];
+          dragStartSize = [main.clientWidth, main.clientHeight];
+          document.body.classList.add('yawf-webim-resize');
+          document.addEventListener('mousemove', dragMove);
+          document.addEventListener('mouseleave', dragCancel);
+          document.addEventListener('mouseup', dragEnd);
+        };
+        rule.ref.width.addConfigListener(newWidth => {
+          setSize(newWidth, null);
+        });
+        rule.ref.height.addConfigListener(newHeight => {
+          setSize(null, newHeight);
+        });
+        resizer.addEventListener('mousedown', dragStart);
+        setSize(rule.ref.width.getConfig(), rule.ref.height.getConfig());
+        window.addEventListener('resize', () => {
+          setSize(main.clientWidth, main.clientHeight);
+        });
+
+        document.body.appendChild(webim);
+      };
+
+      observer.dom.add(function checkImArea() {
+        const webim = document.querySelector('#WB_webchat:not([yawf-web-chat])');
+        if (!webim) return;
+        webim.setAttribute('yawf-web-chat', '');
+        initChatArea();
+      });
+
+      /*
+       * 这一段是让“聊天”/“私信”按钮可以激活聊天框并切换到对应的人
+       */
+       
+      const chatToUid = function (uid) {
+        frameContent.then(contentWindow => {
+          chatframe.chatToUid(uid);
+        });
+      };
+
+      document.addEventListener('click', event => {
+        if (!showChatWindow) return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const chatTo = target.closest('[action-type="webim.conversation"]')
+        if (!chatTo) return;
+        const data = chatTo.getAttribute('action-data');
+        const uid = Number(new URLSearchParams(data).get('uid'));
+        if (!uid) return;
+        showChatWindow();
+        chatToUid(uid);
+        event.stopPropagation();
+      }, true);
+
+    },
+  });
+
 
 }());

@@ -9,7 +9,7 @@
 
   const contextMenuListener = [];
 
-  let lastCheck = null;
+  let lastCheck = Promise.resolve([]);
   document.addEventListener('contextmenu', event => {
     lastCheck = Promise.all(contextMenuListener.map(listener => {
       try {

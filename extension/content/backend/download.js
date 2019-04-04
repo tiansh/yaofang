@@ -1,3 +1,8 @@
+/**
+ * 用于下载文件
+ * 浏览器一般会阻止批量的文件下载，这里用扩展接口下载文件权限实现
+ * 用于下载图片、下载导出的设置等
+ */
 ; (async function () {
 
   const yawf = window.yawf = window.yawf || {};

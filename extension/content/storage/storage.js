@@ -5,6 +5,10 @@
 
   const storage = yawf.storage = {};
 
+  /**
+   * 当设置项变化时给出针对某个设置的回调
+   * 浏览器提供的接口会针对所有设置项给回调，但是我们显然只需要特定的设置项，所以包装一层
+   */
   class StorageWatcher {
     constructor() {
       /** @type {Object<string, Map<string, Set<Function>>>} */
@@ -45,6 +49,10 @@
 
   const watcher = new StorageWatcher();
 
+  /**
+   * 描述对应浏览器的一个设置项
+   * 设置项的值总是一个对象，对象的不同键对应其他的含义
+   */
   class StorageItem {
     /**
      * @param {string} key
@@ -54,12 +62,70 @@
       this.area = isLocal ? 'local' : 'sync';
       this.key = key;
       this.last = Promise.resolve();
+      this.processing = false;
+      this.dirty = false;
+      /** @type Array<Function> */
+      this.watcher = [];
+      watcher.addListener(this, newValue => {
+        /*
+         * 如果当前正有任何操作，那么这个 onChange 可能是我们自己触发的，
+         * 而且有可能这个 onChange 还不是最新的（比如我们连续调用了几次 set，只有最后一次是有意义的）
+         * 那么我们推迟 onChange 事件的发生，等到我们的数据写入完成之后，再读取最新的数据检查 onChange
+         * 如果当前没有操作，那么说明 onChange 可能来自于其他页面
+         * 这时候我们就可以放心大胆地触发 onChange 了
+         */
+        if (this.processing) {
+          this.dirty = true;
+          return;
+        }
+        this.onChange(newValue);
+      });
     }
     async run(callback) {
-      this.last = this.last.then(callback).then(value => value, error => {
+      /*
+       * 当执行异步操作时，我们首先标记 processing 以阻止 onChange
+       * 接下来正常执行操作
+       */
+      this.processing = true;
+      const last = this.last = this.last.then(callback).then(value => value, error => {
         util.debug('Error while handling storage: %o', error);
       });
+      last.then(async () => {
+        if (last !== this.last) return;
+        /*
+         * 回调有时候有延迟，所以我们过 5 秒再检查，可以过滤掉无效的回调
+         * 并不是什么很好的解决办法，但是反正我也没找到更好的解决办法
+         */
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        /*
+         * 如果标记位不是我们设置的，那么说明在此之后又调用了 run
+         * 那么这个时候 processing 不应重置
+         */
+        if (last !== this.last) return;
+        /*
+         * 如果在写入过程中，有 onChange 回报回来，那么 dirty 被置位
+         * 此时我们主动拉去一遍值来触发 onChange
+         * 注意，此时 onChange 可能被无意义地触发了一次，所以需要在上一层过滤这种实际没变化的 onChange
+         */
+        this.processing = false;
+        if (!this.dirty) return;
+        const { [this.key]: value } = await browser.storage[this.area].get(this.key);
+        /*
+         * onChange 在 last 的流程内，会在结束前阻止任何后续操作
+         */
+        await this.onChange(value);
+      });
       return this.last;
+    }
+    async onChange(value) {
+      this.dirty = false;
+      this.watcher.forEach(watcher => {
+        try {
+          watcher(value);
+        } catch (e) {
+          util.debug('Error while invoke stroage watcher: %o', e);
+        }
+      });
     }
     async get() {
       const results = await this.run(() => (
@@ -69,9 +135,12 @@
     }
     /** @param {*} value */
     async set(value) {
-      await this.run(() => (
-        browser.storage[this.area].set({ [this.key]: value })
-      ));
+      const token = this.lastSetToken = {};
+      await this.run(() => {
+        if (token !== this.lastSetToken) return null;
+        this.lastSetToken = null;
+        return browser.storage[this.area].set({ [this.key]: value });
+      });
     }
     async remove() {
       await this.run(() => (
@@ -80,7 +149,7 @@
     }
     /** @param {Function} callback */
     addListener(callback) {
-      return watcher.addListener(this, callback);
+      this.watcher.push(callback);
     }
   }
 
@@ -96,24 +165,7 @@
       this.storage = storage;
       /** @type {Map<string, Set<Function>>} */
       this.watcher = new Map();
-      /** @type {Map<string, Set<Promise>>} */
-      this.processing = new Map();
       this.initialized = false;
-    }
-    ignoreOnChange(key, promise, newValue) {
-      if (!this.processing.get(key)) this.processing.set(key, new Set());
-      this.processing.get(key).add(promise);
-      promise.then(() => {
-        const set = this.processing.get(key);
-        if (!set) return;
-        set.delete(promise);
-        if (!set.size) {
-          this.processing.delete(key);
-          if (newValue !== this.value[key]) {
-            this.triggerOnChanged(key, this.value[key], newValue);
-          }
-        }
-      });
     }
     triggerOnChanged(key, newValue, oldValue) {
       const callbacks = this.watcher.get(key);
@@ -145,9 +197,7 @@
           const strOldValue = oldValue === void 0 ? void 0 : JSON.stringify(oldValue);
           if (strNewValue === strOldValue) return;
           values[key] = strNewValue === void 0 ? void 0 : JSON.parse(strNewValue);
-          const processing = this.processing.get(key);
-          if (processing && processing.size) return;
-          this.triggerOnChanged(key, newValues[key], oldValue);
+          this.triggerOnChanged(key, JSON.parse(strNewValue), oldValue);
         });
       });
     }
@@ -169,9 +219,13 @@
       if (strNewValue !== strOldValue) {
         if (strNewValue) values[key] = JSON.parse(strNewValue);
         else delete values[key];
-        const set = this.storage.set(values);
+        this.storage.set(values);
+        /*
+         * 我们不必等值真的写入了，就可以触发 onChange
+         * 这样会优化前端的渲染效果
+         * 反正就算真的写挂了，我也没辙（摊手）
+         */
         this.triggerOnChanged(key, value, oldValue);
-        this.ignoreOnChange(key, set, value);
       }
       return strNewValue && JSON.parse(strNewValue);
     }
@@ -234,3 +288,4 @@
   };
 
 }());
+

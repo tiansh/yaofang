@@ -8,7 +8,7 @@
 
   const showImageViewer = function showImageViewer({ images, current, background = false }) {
     const sender = this;
-    const url = new URL(browser.runtime.getURL('/external/image/viewer/index.html'));
+    const url = new URL(browser.runtime.getURL('/external/imageviewer/index.html'));
     images.forEach(image => url.searchParams.append('i', image));
     url.hash = current;
     browser.tabs.create({

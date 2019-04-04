@@ -85,7 +85,9 @@
         search.set('min_id', lastPage[0].mid);
         search.set('end_id', lastPage[lastPage.length - 1].mid);
       }
-      const result = await fetch('https://weibo.com/aj/mblog/fsearch?' + search, { credentials: 'include' }).then(r => r.json());
+      const url = 'https://weibo.com/aj/mblog/fsearch?' + search;
+      util.debug('fetch %s', url);
+      const result = await fetch(url, { credentials: 'include' }).then(r => r.json());
       const container = document.createElement('div');
       dom.content(container, result.data);
       const feedElements = Array.from(container.querySelectorAll('.WB_feed_type[mid]'));

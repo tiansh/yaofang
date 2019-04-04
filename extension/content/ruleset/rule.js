@@ -585,11 +585,18 @@
       if (+this.max === this.max && this.max !== Infinity) input.max = this.max;
       if (+this.step === this.step && Number.isFinite(this.step)) input.step = this.step;
       input.addEventListener('input', event => {
-        if (!event.isTrusted) input.value = this.getConfig();
-        else this.setConfig(+input.value);
+        if (!event.isTrusted) {
+          this.renderValue(container);
+        } else {
+          const token = this.setConfigToken = {};
+          setTimeout(() => {
+            if (this.setConfigToken !== token) return;
+            this.setConfig(+input.value);
+          }, 100);
+        }
       });
       input.addEventListener('blur', event => {
-        input.value = this.getConfig();
+        this.renderValue(container);
       });
       input.setAttribute('yawf-config-input', this.configId);
       container.appendChild(input);
@@ -600,7 +607,8 @@
       const selector = `input[type="number"][yawf-config-input="${this.configId}"]`;
       const number = container.querySelector(selector);
       const config = this.getConfig();
-      if (number && +number.value !== config) {
+      const hasFocus = number === document.activeElement;
+      if (number && !hasFocus && +number.value !== config) {
         number.value = config;
       }
       return container;
@@ -634,8 +642,15 @@
       range.max = this.max;
       range.step = this.step;
       range.addEventListener('input', event => {
-        if (!event.isTrusted) range.value = this.getConfig();
-        else this.setConfig(+range.value);
+        if (!event.isTrusted) {
+          this.renderValue(container);
+        } else {
+          const token = this.setConfigToken = {};
+          setTimeout(() => {
+            if (this.setConfigToken !== token) return;
+            this.setConfig(+range.value);
+          }, 100);
+        }
       });
       range.addEventListener('blur', event => {
         this.renderValue(container);
@@ -649,7 +664,8 @@
       const selector = `input[type="range"][yawf-config-input="${this.configId}"]`;
       const range = container.querySelector(selector);
       const config = this.getConfig();
-      if (range && +range.value !== config) {
+      const hasFocus = range === document.activeElement;
+      if (range && !hasFocus && +range.value !== config) {
         range.value = config;
       }
       return container;
@@ -683,7 +699,7 @@
         else this.setConfig(input.value);
       });
       input.addEventListener('blur', event => {
-        input.value = this.getConfig();
+        this.renderValue(container);
       });
       input.setAttribute('yawf-config-input', this.configId);
       container.appendChild(input);

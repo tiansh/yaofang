@@ -89,7 +89,7 @@
       item.addEventListener('click', onClick);
       item.textContent = i18n.filterMenuItem;
     };
-    if (init.page.type() === 'search') return;
+    if (['search', 'ttarticle'].includes(init.page.type())) return;
     icon(); menuitem();
   });
 

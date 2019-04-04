@@ -224,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function () {
     dragOver();
   };
   const dragStart = event => {
-    console.log(event);
     if (event.target !== resizeBar) return;
     dragStartY = event.clientY;
     previewHeightBefore = previewHeight;
@@ -234,7 +233,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('mouseup', dragEnd);
   };
   const dragEnd = event => {
-    console.log(event);
     previewHeight = previewHeightBefore + dragStartY - event.clientY;
     updateResizeBar();
     dragOver();

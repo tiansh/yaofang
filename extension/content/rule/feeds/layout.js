@@ -229,22 +229,25 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
       const width = this.isEnabled() ? this.ref.width.getConfig() : 600;
       css.append(`
 :root { --yawf-feed-width: ${width}px; }
-.B_index, .B_discover { --yawf-left-width: 150px; --yawf-right-width: 250px; }
+.B_index, .B_discover, .B_message { --yawf-left-width: 150px; --yawf-right-width: 250px; }
 .B_page { --yawf-left-width: 0px; --yawf-right-width: 320px; }
-.B_index[yawf-merge-left] { --yawf-left-width: 0px; }
+.B_index[yawf-merge-left], .B_message[yawf-merge-left] { --yawf-left-width: 0px; }
 
 html .B_index .WB_frame,
+html .B_message .WB_frame,
 html .B_discover .WB_frame,
 html .B_page .WB_frame,
 html .B_page .WB_frame_a {
   width: calc(var(--yawf-feed-width) + calc(var(--yawf-left-width) + var(--yawf-right-width))) !important;
 }
 html .B_index .WB_frame #plc_main,
+html .B_message .WB_frame #plc_main,
 html .B_discover .WB_frame #plc_main,
 html .B_page .WB_frame #plc_main {
   width: calc(var(--yawf-feed-width) + var(--yawf-right-width)) !important;
 }
 html .B_index .WB_main_c,
+html .B_message .WB_main_c,
 html .B_page .WB_frame_c,
 html .B_discover .WB_frame_c {
   width: var(--yawf-feed-width) !important;
@@ -254,8 +257,11 @@ html .B_page .WB_frame_c {
 }
 
 body .WB_tab_a .tab_box { display: flex; }
-body .WB_tab_a .tab_box::after { content: none; }
+body .WB_tab_a .tab_box > * { flex: 0 0 auto; }
+body .WB_tab_a .tab_box > .W_fr { order: 2; }
+body .WB_tab_a .tab_box::after { order: 1; flex: 1 0 0; height: auto; }
 body .WB_tab_a .tab_box_a .fr_box { flex: 1 0 0; }
+body .WB_tab_a .tab_box_a::after { content: none; }
 body .WB_feed_v3 .WB_face .opt { right: calc(132px - var(--yawf-feed-width)); }
 body .W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
 `);

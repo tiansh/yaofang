@@ -122,7 +122,7 @@
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherFooterDetail } },
   });
   clean.CleanRule('im', () => i18n.cleanOtherIM, 1, {
-    acss: '#WB_webim, .WB_webim { display: none !important; }',
+    acss: '.WB_webim { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherIMDetail } },
   });
   clean.CleanRule('im_news', () => i18n.cleanOtherIMNews, 1, '.webim_news { display: none !important; }');
