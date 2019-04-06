@@ -240,7 +240,7 @@
     en: '"A feed posted by @" attr(yawf-feed-author)',
   };
 
-  css.append(`
+  const hideFeedCss = css.append(`
 [action-type="feed_list_item"]:not([yawf-feed]),
 [node-type="feed_list"] .WB_feed_type:not([yawf-feed]),
 .list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment]),
@@ -258,6 +258,9 @@
 `);
   init.onLoad(function () {
     css.append(`[yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);
+  });
+  init.onDeinit(() => {
+    hideFeedCss.remove();
   });
 
   // 单条微博页面永远不应当隐藏微博

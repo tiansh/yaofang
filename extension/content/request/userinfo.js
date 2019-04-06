@@ -8,7 +8,7 @@
   const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
-  /** @typedef {{id:number,name:string,avatar:string}} UserInfo */
+  /** @typedef {{id:number,name:string,avatar:string,followee:number,follower:number}} UserInfo */
   /** @type {Map<number,UserInfo>} */
   const userInfoCacheById = new Map();
   /** @type {Map<string,UserInfo>} */

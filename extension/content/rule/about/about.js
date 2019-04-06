@@ -7,9 +7,8 @@
   const i18n = util.i18n;
 
   i18n.aboutTabTitle = {
-    cn: '关于',
-    hk: '關於',
-    tw: '關於',
+    cn: '关于药方',
+    tw: '關於藥方',
     en: 'About',
   };
 

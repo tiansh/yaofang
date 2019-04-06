@@ -256,6 +256,11 @@ html .B_page .WB_frame_c {
   margin-right: 0;
 }
 
+html .WB_frame_c ~ .WB_frame_b {
+  margin-left: 20px;
+  margin-right: 0;
+}
+
 body .WB_tab_a .tab_box { display: flex; }
 body .WB_tab_a .tab_box > * { flex: 0 0 auto; }
 body .WB_tab_a .tab_box > .W_fr { order: 2; }
@@ -264,6 +269,9 @@ body .WB_tab_a .tab_box_a .fr_box { flex: 1 0 0; }
 body .WB_tab_a .tab_box_a::after { content: none; }
 body .WB_feed_v3 .WB_face .opt { right: calc(132px - var(--yawf-feed-width)); }
 body .W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
+
+html .WB_artical .WB_feed_repeat .WB_feed_publish, html .WB_artical .WB_feed_repeat .repeat_list { padding: 0 20px; }
+html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_minitab { margin: 0 16px 10px; }
 `);
     },
   });

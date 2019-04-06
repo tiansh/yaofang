@@ -182,7 +182,7 @@
       transparency3: { type: 'range', min: 0, max: 100, initial: 30 },
     },
     ainit() {
-      const colorStr = (color, transparency) => color + (256 | 255 * transparency / 100).toString(16).slice(-2);
+      const colorStr = (color, transparency) => color + (256 | 255 * (1 - transparency / 100)).toString(16).slice(-2);
       const color1 = colorStr(this.ref.color1.getConfig(), this.ref.transparency1.getConfig());
       const color2 = colorStr(this.ref.color2.getConfig(), this.ref.transparency2.getConfig());
       const color3 = colorStr(this.ref.color3.getConfig(), this.ref.transparency3.getConfig());

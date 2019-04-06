@@ -6,6 +6,7 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const feedParser = yawf.feed;
+  const request = yawf.request;
 
   const rules = yawf.rules;
   const original = rules.original;
@@ -43,10 +44,18 @@
       tw: '轉發自 @{1}',
       en: 'forwarded from @{1}',
     },
+    accountOriginalFollower: {
+      cn: '隐藏转发自|粉丝数量超过{{count}}万的博主的微博{{i}}||例外帐号{{account}}',
+      tw: '隱藏轉發自|粉絲數量超過{{count}}萬的博主的微博{{i}}||例外帐号{{account}}',
+      en: 'Hide feeds forwarded from authors with | more than {{count}}0,000 fans{{i}}||Exception {{account}}',
+    },
+    accountOriginalFollowerDetail: {
+      cn: '发现页面作者不计入。',
+    },
   });
 
-  const discoverRule = function () {
-    original.id.discover = new rule.class.Rule({
+  const additionalRules = function () {
+    original.id.discover = rule.Rule({
       id: 'filter_original_discover',
       version: 1,
       parent: original.id.id,
@@ -94,12 +103,40 @@
       },
     },
     before: {
-      show: discoverRule,
+      show: additionalRules,
     },
     fast: {
       types: [['original', 'account'], ['author', 'mention', 'commentuser']],
       radioGroup: 'original',
       render: feedParser.fast.render.original,
+    },
+  });
+
+  original.id.follower = rule.Rule({
+    id: 'filter_original_follower',
+    version: 1,
+    parent: original.id.id,
+    template: () => i18n.accountOriginalFollower,
+    ref: {
+      count: { type: 'range', min: 1, max: 100, initial: 10 },
+      account: { type: 'users' },
+    },
+    init() {
+      const rule = this;
+      observer.feed.filter(async function originalFollowerFeedFilter(/** @type {Element} */feed) {
+        const original = feedParser.original.id(feed);
+        const accounts = rule.ref.account.getConfig();
+        const filtered = original.filter(id => !accounts.find(user => user.id === id));
+        const followers = await Promise.all(filtered
+          .map(id => request.userInfo({ id }).then(user => user.follower))
+        );
+        const limit = rule.ref.count.getConfig() * 1e4;
+        const match = followers.some(i => i >= limit);
+        if (!match) return null;
+        return { result: 'hide' };
+      }, { priority: this.filterPriority });
+      this.ref.account.addConfigListener(() => { observer.feed.rerun(); });
+      this.ref.count.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
 

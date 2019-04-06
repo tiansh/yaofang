@@ -117,7 +117,7 @@
         if (viewType !== 'image') {
           imageViewer.open({ images, current });
         } else {
-          browser.tabs.create({ url: images[current] });
+          window.open(images[current - 1]);
         }
       };
 

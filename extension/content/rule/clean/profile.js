@@ -24,7 +24,8 @@
     cleanProfileRelation: { cn: '微关系', tw: '微關係', en: 'Weibo relations' },
     cleanProfileAlbum: { cn: '相册', tw: '相冊', en: 'Album' },
     cleanProfileHotTopic: { cn: '话题', tw: '話題', en: 'Topic' },
-    cleanProfileHotWeibo: { cn: '热门微博', tw: '熱門微博', en: 'Hot Weibo' },
+    cleanProfileHotWeibo: { cn: '热门微博', tw: '熱門微博', en: 'Hot Feeds' },
+    cleanProfileRecommandFeed: { cn: '相关推荐', tw: '相關推薦', en: 'Recommand Feeds' },
     cleanProfileUserList: { cn: '与他/她相似的人', tw: '與他/她相似的人', en: 'Similar People' },
     cleanProfileHongbao: { cn: '微博红包', tw: '微博紅包', en: 'Red pack' },
     cleanProfileWenwoDr: { cn: '爱问医生', tw: '愛問醫生', en: 'Iask medical' },
@@ -35,12 +36,12 @@
   clean.CleanRule('move_things', () => i18n.cleanProfileMoveThings, 1, '.profile_move_things { display: none !important; }');
   clean.CleanRule('cover', () => i18n.cleanProfileCover, 1, function () {
     css.append(`
-.PCD_header.PCD_header, .PCD_header .pf_wrap, .PCD_header .shadow { height: 130px; }
+.PCD_header.PCD_header, .PCD_header.PCD_header .pf_wrap, .PCD_header.PCD_header .shadow { height: 130px; }
 .PCD_header.PCD_header .pf_photo { margin: 10px 20px 10px calc(50% - 280px); float: left; }
-.PCD_header.PCD_header .pf_username, .PCD_header .pf_intro { text-shadow: 0 0 4px #000; }
-.PCD_header.PCD_header .pf_username, .PCD_header .pf_intro, .PCD_header .pf_opt { text-align: left; margin-left: 140px; }
-.PCD_header.PCD_header .pf_wrap .pf_use_num, .PCD_header .pf_wrap .pf_copy_icon, .PCD_header .upcover { display: none; }
-.PCD_header.PCD_header .S_shadow, .PCD_header .cover_wrap, .PCD_header .pf_wrap { background: none !important; }
+.PCD_header.PCD_header .pf_username, .PCD_header.PCD_header .pf_intro { text-shadow: 0 0 4px #000; }
+.PCD_header.PCD_header .pf_username, .PCD_header.PCD_header .pf_intro, .PCD_header.PCD_header .pf_opt { text-align: left; margin-left: 140px; }
+.PCD_header.PCD_header .pf_wrap .pf_use_num, .PCD_header.PCD_header .pf_wrap .pf_copy_icon, .PCD_header.PCD_header .upcover { display: none; }
+.PCD_header.PCD_header .S_shadow, .PCD_header.PCD_header .cover_wrap, .PCD_header.PCD_header .pf_wrap { background: none !important; }
 .PCD_header.PCD_header .shadow { margin: 0 calc(50% - 300px); width: 600px; }
 .PCD_header.PCD_header .pf_intro { height: 36px; line-height: 18px; text-align: left; text-shadow: 0 0 4px #000; }
 .PCD_header.PCD_header .pf_opt { margin-top: 8px; text-align: left; }
@@ -63,6 +64,7 @@
   clean.CleanRule('album', () => i18n.cleanProfileAlbum, 1, '[id^="Pl_Core_RightPicMulti__"], .WB_frame_b [id^="Pl_Core_RightPicMulti__"], [yawf-obj-name="相冊"], [yawf-obj-name="相册"], [yawf-id="yawf-core-right-pic-multi"] { display: none !important; }');
   clean.CleanRule('hot_topic', () => i18n.cleanProfileHotTopic, 1, '[id^="Pl_Core_RightTextSingle__"], .WB_frame_b [id^="Pl_Core_RightTextSingle__"] { display: none !important; }');
   clean.CleanRule('hot_weibo', () => i18n.cleanProfileHotWeibo, 1, '[id^="Pl_Core_RightPicText__"], .WB_frame_b [id^="Pl_Core_RightPicText__"] { display: none !important; }');
+  clean.CleanRule('recommand_feed', () => i18n.cleanProfileRecommandFeed, 1, '.WB_frame_b [id^="id="Pl_Core_RecommendFeed__"] { display: none !important; }');
   clean.CleanRule('user_list', () => i18n.cleanProfileUserList, 1, '[id^="Pl_Core_Ut1UserList__"], .WB_frame_b [id^="Pl_Core_RightPicText__"] { display: none !important; }');
   clean.CleanRule('hongbao', () => i18n.cleanProfileHongbao, 1, '[yawf-id="yawf-pr-hongbao"], .WB_red2017 { display: none !important; }');
   clean.CleanRule('wenwo_dr', () => i18n.cleanProfileWenwoDr, 1, '[yawf-obj-name="爱问医生"] { display: none !important; }'); // 对应模块没有繁体或英文翻译

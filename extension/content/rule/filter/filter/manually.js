@@ -84,6 +84,7 @@
           setTimeout(() => { feed.parentNode.removeChild(feed); }, 100);
           const list = hideList.getConfig();
           list.unshift(mid);
+          list.splice(1e4);
           hideList.setConfig(list);
         };
       };

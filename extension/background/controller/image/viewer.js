@@ -15,6 +15,7 @@
       index: sender.tab.index + 1,
       url: url.href,
       active: !background,
+      openerTabId: sender.tab.id,
     });
   };
 
