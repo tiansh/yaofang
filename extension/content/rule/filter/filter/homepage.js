@@ -351,14 +351,13 @@
         feedlist.removeChild(showmore);
       };
 
-      const showUnreadFeeds = async function (groups, query, getter, unreadChecker) {
-        const newfeedtip = document.getElementById('home_new_feed_tip');
-        const feedlist = newfeedtip.parentNode;
+      const showUnreadFeeds = async function (groups, query, getter, unreadChecker, { newfeedtip, feedlist }) {
         const status = Number(newfeedtip.dataset.status);
         unreadChecker.pause();
         if (status > count) {
           // 未读消息太多了，我们直接刷新算了
           feedlist.innerHTML = '';
+          newfeedtip.remove();
           fillFeedList(feedlist, query);
         } else {
           const link = newfeedtip.querySelector('a');
@@ -366,8 +365,7 @@
           const loading = document.createElement('i');
           loading.className = 'W_loading';
           link.insertBefore(loading, link.firstChild);
-          const ref = document.createElement('div');
-          feedlist.insertBefore(ref, newfeedtip);
+          feedlist.insertBefore(newfeedtip, feedlist.firstChild);
           const fragement = document.createDocumentFragment();
           const newGetter = request.feedsByGroups(groups, query);
           while (true) {
@@ -377,8 +375,7 @@
             fragement.appendChild(feed.dom);
             getter.addShown(feed);
           }
-          feedlist.insertBefore(fragement, ref);
-          ref.remove();
+          feedlist.insertBefore(fragement, feedlist.firstChild);
           newfeedtip.remove();
           unreadChecker.run();
         }
@@ -394,10 +391,10 @@
           if (!document.getElementById('home_new_feed_tip')) {
             const container = document.createElement('div');
             container.innerHTML = '<div class="WB_cardwrap WB_notes" id="home_new_feed_tip"><a href="javascript:void(0);"></a></div>';
-            const notes = container.firstChild;
-            feedlist.insertBefore(notes, feedlist.firstChild);
-            notes.addEventListener('click', async event => {
-              showUnreadFeeds(groups, query, getter, unreadChecker);
+            const newfeedtip = container.firstChild;
+            feedlist.parentNode.insertBefore(newfeedtip, feedlist);
+            newfeedtip.addEventListener('click', async event => {
+              showUnreadFeeds(groups, query, getter, unreadChecker, { newfeedtip, feedlist });
             });
           }
           const newfeedtip = document.getElementById('home_new_feed_tip');
