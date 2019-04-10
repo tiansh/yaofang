@@ -2,6 +2,7 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
+  const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
   const dom = util.dom;
@@ -157,6 +158,12 @@
     async hasNext() {
       return this.loaders.length > 0;
     }
+    isShown(feed) {
+      return this.known.has(feed.mid);
+    }
+    addShown(feed) {
+      return this.known.add(feed.mid);
+    }
   }
 
   const feedsByGroups = function (groups, params) {
@@ -165,8 +172,78 @@
       next: () => loader.next(),
       hasNext: () => loader.hasNext(),
       peek: () => loader.peek(),
+      isShown: feed => loader.isShown(feed),
+      addShown: feed => loader.addShown(feed),
     };
   };
   request.feedsByGroups = feedsByGroups;
+
+  class FeedsByGroupsUnreadCount {
+    constructor(groups, stkInfo) {
+      this.groups = Array.from(groups)
+        .filter(group => group.id.startsWith('g'))
+        .map(group => group.id.slice(1));
+      this.stkInfo = stkInfo;
+      this.callbacks = new Set();
+      this.working = false;
+      this.paused = false;
+    }
+    watch(callback) {
+      this.callbacks.add(callback);
+      if (!this.working) this.schedule();
+    }
+    unwatch(callback) {
+      this.callbacks.delete(callback);
+    }
+    async schedule() {
+      if (this.callbacks.size === 0) this.working = false;
+      this.working = true;
+      if (!this.paused) {
+        const status = await this.check();
+        setTimeout(() => { this.schedule(); }, 30e3);
+        if (this.paused) return;
+        this.callbacks.forEach(callback => {
+          try {
+            callback(status);
+          } catch (e) {
+            util.debug('Error while check unread feeds: %o', e);
+          }
+        });
+      } else {
+        setTimeout(() => { this.schedule(); }, 30e3);
+      }
+    }
+    async check() {
+      const url = new URL('https://rm.api.weibo.com/2/remind/unread_hint.json');
+      url.searchParams.set('source', this.stkInfo.source);
+      url.searchParams.set('with_url', 1);
+      url.searchParams.set('appkeys', '');
+      url.searchParams.set('group_ids', this.groups.join(','));
+      url.searchParams.set('callback', network.fakeCallback());
+      util.debug('Check unread by groups: %o', url);
+      const resp = await fetch(url, { credentials: 'include' }).then(resp => resp.text());
+      const data = network.parseJson(resp).data;
+      const groupStatus = Object.assign(...data.groups);
+      const result = Object.assign(...this.groups.map(group => ({ ['status_' + group]: Number(groupStatus[group]) })));
+      result.status = this.groups.reduce((p, group) => p + groupStatus[group], 0);
+      if (result.status) {
+        util.debug('Check unread by groups got unread: %o', result.status);
+      }
+      return result;
+    }
+    pause() { this.paused = true; }
+    run() { this.paused = false; }
+  }
+
+  const unreadByGroups = function (groups, stkInfo) {
+    const loader = new FeedsByGroupsUnreadCount(groups, stkInfo);
+    return {
+      watch(callback) { loader.watch(callback); },
+      unwatch(callback) { loader.unwatch(callback); },
+      pause() { loader.pause(); },
+      run() { loader.run(); },
+    };
+  };
+  request.unreadByGroups = unreadByGroups;
 
 }());

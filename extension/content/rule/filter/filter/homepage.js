@@ -5,10 +5,12 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const request = yawf.request;
+  const stk = yawf.stk;
 
   const filter = yawf.rules.filter;
 
   const i18n = util.i18n;
+  const strings = util.strings;
 
   Object.assign(i18n, {
     feedsHomepageGroupTitle: {
@@ -17,14 +19,23 @@
       en: 'Homepage',
     },
     feedsHomepageSingleGroup: {
-      cn: '使用单个分组页代替首页（首页微博时间顺序排列）||分组{{group}}',
-      tw: '使用單個分組頁代替首頁（首頁微博時間順序排列）||分組{{group}}',
-      en: 'Use single feed list by group for home page (home page timeline order)||Group{{group}}',
+      cn: '使用单个分组页代替首页（首页微博时间顺序排列）{{i}}||分组{{group}}',
+      tw: '使用單個分組頁代替首頁（首頁微博時間順序排列）{{i}}||分組{{group}}',
+      en: 'Use single feed list by group for home page (home page timeline order) {{i}}||Group{{group}}',
+    },
+    feedsHomepageSingleGroupDetail: {
+      cn: '微博的分组页面按时间顺序正常排列。分组人数有限制，非会员至多 200 人/组。如果您的关注较少，建议使用分组代替首页。注意，分组页面中按作者过滤的规则将不会生效，如果您不希望看到某人的微博，您可以将其移出分组。',
     },
     feedsHomepageMultiGroup: {
-      cn: '使用多个分组页代替首页（首页微博时间顺序排列）||每次展示{{count}}条|点击查看更多时{{more}}||分组{{groups}}',
-      tw: '使用多個分組頁代替首頁（首頁微博時間順序排列）||每次展示{{count}}條|點擊查看更多時{{more}}||分組{{groups}}',
-      en: 'Use multiple feed lists by group for home page (home page timeline order)||show {{count}} feeds per page|{{more}} before show next page||Groups{{groups}}',
+      cn: '使用多个分组页代替首页（首页微博时间顺序排列）{{i}}||每次展示{{count}}条|点击查看更多时{{more}}||{{unread}}自动检查和提示未读微博{{ii}}||分组{{groups}}',
+      tw: '使用多個分組頁代替首頁（首頁微博時間順序排列）{{i}}||每次展示{{count}}條|點擊查看更多時{{more}}||{{unread}}自動檢查和提示未讀微博{{ii}}||分組{{groups}}',
+      en: 'Use multiple feed lists by group for home page (home page timeline order) {{i}}||show {{count}} feeds per page|{{more}} before show next page||{{unread}} Show tips for unread feeds {{ii}}||Groups{{groups}}',
+    },
+    feedsHomepageMultiGroupDetail: {
+      cn: '微博的分组页面按时间顺序排列，如果您的关注较少，建议您将他们放入一个分组后启用使用“单个”分组的选项。如果您关注的人数较多，您可以选择多个分组，分组过多可能造成更长的加载时间，以及加载时的卡顿，建议尽量减少选择的分组数量。',
+    },
+    feedsHomepageMultiGroupDetail2: {
+      cn: '检查未读微博仅对一般的分组有效，对悄悄关注分组无效。',
     },
     feedsHomepageKeepOld: {
       cn: '保留已展示微博',
@@ -47,6 +58,16 @@
     feedsMultiGroupLoadMore: {
       cn: '查看更多微博',
       en: 'Show more feeds',
+    },
+    feedsUnreadTip: {
+      cn: '有 {1} 条新微博，点击查看',
+      tw: '有 {1} 條新微博，點擊查看',
+      en: '{1} new feeds',
+    },
+    feedsUnreadLoading: {
+      cn: '正在加载……',
+      tw: '正在載入……',
+      en: 'Loading ...',
     },
   });
 
@@ -131,6 +152,7 @@
           return container;
         },
       },
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.feedsHomepageSingleGroupDetail },
     },
     init() {
       this.addConfigListener(config => {
@@ -165,9 +187,14 @@
         ],
         initial: 'clear',
       },
+      unread: {
+        type: 'boolean',
+      },
       groups: {
         type: 'groups',
       },
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.feedsHomepageMultiGroupDetail },
+      ii: { type: 'bubble', icon: 'warn', template: () => i18n.feedsHomepageMultiGroupDetail2 },
     },
     init() {
       this.addConfigListener(config => {
@@ -177,6 +204,7 @@
     ainit() {
       const rule = this;
       const count = rule.ref.count.getConfig();
+      const unread = rule.ref.unread.getConfig();
       const groups = rule.ref.groups.getConfig().slice(0);
       const clear = rule.ref.more.getConfig() === 'clear';
 
@@ -218,6 +246,11 @@
         if (!placeholder) return;
         let feedlist = placeholder.parentElement;
         feedlist.removeChild(placeholder);
+        fillFeedList(feedlist, query);
+      };
+
+      // 初始化消息流容器
+      const fillFeedList = function (feedlist, query) {
         feedlist.classList.add('WB_feed_v3', 'WB_feed_v4');
         const loading = getLoadingTip();
         feedlist.appendChild(loading);
@@ -225,7 +258,10 @@
         showmore.style.display = 'none';
         feedlist.appendChild(showmore);
 
-        showFeeds(groups, query, { feedlist, loading, showmore });
+        const getter = showFeeds(groups, query, { feedlist, loading, showmore });
+        if (unread) {
+          initUnread(groups, query, getter, { feedlist });
+        }
       };
 
       // 下掉边栏组内用户的组件
@@ -238,6 +274,7 @@
       const showFeeds = function (groups, query, dom) {
         const getter = request.feedsByGroups(groups, query);
         showMoreFeeds(getter, count, dom);
+        return getter;
       };
 
       // 一条一条往消息流里面塞内容
@@ -254,7 +291,7 @@
         const feed = await getter.next();
         if (feed.type === 'feed') {
           renderFeed(feed.dom, dom);
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 10));
           remain--;
         } else {
           renderDone(feed.group, dom);
@@ -312,6 +349,81 @@
       const everythingDone = function ({ feedlist, loading, showmore }) {
         feedlist.removeChild(loading);
         feedlist.removeChild(showmore);
+      };
+
+      const showUnreadFeeds = async function (groups, query, getter, unreadChecker) {
+        const newfeedtip = document.getElementById('home_new_feed_tip');
+        const feedlist = newfeedtip.parentNode;
+        const status = Number(newfeedtip.dataset.status);
+        unreadChecker.pause();
+        if (status > count) {
+          // 未读消息太多了，我们直接刷新算了
+          feedlist.innerHTML = '';
+          fillFeedList(feedlist, query);
+        } else {
+          const link = newfeedtip.querySelector('a');
+          link.textContent = i18n.feedsUnreadLoading;
+          const loading = document.createElement('i');
+          loading.className = 'W_loading';
+          link.insertBefore(loading, link.firstChild);
+          const ref = document.createElement('div');
+          feedlist.insertBefore(ref, newfeedtip);
+          const fragement = document.createDocumentFragment();
+          const newGetter = request.feedsByGroups(groups, query);
+          while (true) {
+            const feed = await newGetter.next();
+            if (feed.type !== 'feed') continue;
+            if (getter.isShown(feed)) break;
+            fragement.appendChild(feed.dom);
+            getter.addShown(feed);
+          }
+          feedlist.insertBefore(fragement, ref);
+          ref.remove();
+          newfeedtip.remove();
+          unreadChecker.run();
+        }
+      };
+
+      // 显示新消息提示横幅
+      const noticeUnread = function (data, groups, query, getter, { feedlist }, unreadChecker) {
+        const status = data.status;
+        if (!status) {
+          const newfeedtip = document.getElementById('home_new_feed_tip');
+          if (newfeedtip) newfeedtip.remove();
+        } else {
+          if (!document.getElementById('home_new_feed_tip')) {
+            const container = document.createElement('div');
+            container.innerHTML = '<div class="WB_cardwrap WB_notes" id="home_new_feed_tip"><a href="javascript:void(0);"></a></div>';
+            const notes = container.firstChild;
+            feedlist.insertBefore(notes, feedlist.firstChild);
+            notes.addEventListener('click', async event => {
+              showUnreadFeeds(groups, query, getter, unreadChecker);
+            });
+          }
+          const newfeedtip = document.getElementById('home_new_feed_tip');
+          if (Number(newfeedtip.dataset.status) !== status) {
+            newfeedtip.dataset.status = status;
+            newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTip.replace('{1}', status);
+          }
+        }
+      };
+
+      // 初始化未读提示
+      const initUnread = async function (groups, query, getter, { feedlist }) {
+        const searchParams = ['is_ori', 'is_forward', 'is_text', 'is_pic', 'is_video', 'is_music', 'is_article', 'key_word', 'start_time', 'end_time', 'is_search', 'is_searchadv'];
+        // 不支持搜索页面
+        if (searchParams.some(param => query.has(param))) return;
+        const stkInfo = await stk.info;
+        const unreadChecker = request.unreadByGroups(groups, stkInfo);
+        const callback = data => {
+          noticeUnread(data, groups, query, getter, { feedlist }, unreadChecker);
+        };
+        unreadChecker.watch(callback);
+        observer.dom.add(function waitFeedListRemoved() {
+          if (document.contains(feedlist)) return;
+          unreadChecker.unwatch(callback);
+          observer.dom.remove(waitFeedListRemoved);
+        });
       };
 
       checkPage();

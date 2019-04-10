@@ -270,8 +270,7 @@
     autoCheckFollowingClean: { cn: '清除本地数据', tw: '清除本機資料', en: 'Clear Data' },
     autoCheckFollowingNow: { cn: '立即更新数据', tw: '立即更新資料', en: 'Update Now' },
     autoCheckFollowingRunning: { cn: '（正在更新）', en: '(Updating)' },
-    autoCheckFollowingDialogTitle: { cn: '关注列表变化', tw: '關注清單變化', en: 'Following List Changes' },
-    autoCheckFollowingTitle: { cn: '关注列表变化 - 药方 (YAWF)', tw: '關注清單變化 - 藥方 (YAWF)', en: 'Following List Changes - YAWF (Yet Another Weibo Filter)' },
+    autoCheckFollowingDialogTitle: { cn: '关注列表变化 - 药方 (YAWF)', tw: '關注清單變化 - 藥方 (YAWF)', en: 'Following List Changes - YAWF' },
     autoCheckFollowingTip: {
       cn: '您的关注列表自从上次检查并确认至今发生了如下变化，请您复查：',
       hk: '您的關注清單自從上次檢查並確認至今發生了如下變化，請您複查：',
