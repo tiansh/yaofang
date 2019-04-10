@@ -68,7 +68,7 @@
   };
 
   let stkInfoResolve = null;
-  stk.info = new Promise(resolve => { stkInfoResolve = resolve });
+  stk.info = new Promise(resolve => { stkInfoResolve = resolve; });
   const initInfoKey = 'yawf_init_info' + strings.randKey();
   yawf.stk.wrap('pl.top.source.init', function (initInfoKey) {
     const gotInfo = function (info) {
