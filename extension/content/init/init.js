@@ -26,6 +26,7 @@
     if (!$CONFIG) return false;
     if (!$CONFIG.uid) return false;
     if (!$CONFIG.nick) return false;
+    if (!Number($CONFIG.islogin)) return false;
     return true;
   };
 

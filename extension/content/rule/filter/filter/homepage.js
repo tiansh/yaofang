@@ -5,12 +5,16 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const request = yawf.request;
+  const browserInfo = yawf.browserInfo;
   const stk = yawf.stk;
+  const feedParser = yawf.feed;
+  const notifications = yawf.notifications;
 
   const filter = yawf.rules.filter;
 
   const i18n = util.i18n;
-  const strings = util.strings;
+  const keyboard = util.keyboard;
+  const css = util.css;
 
   Object.assign(i18n, {
     feedsHomepageGroupTitle: {
@@ -159,9 +163,12 @@
         if (config) homepage.multiGroup.setConfig(false);
       });
     },
-    ainit: function () {
-      const group = this.ref.group.getConfig();
-      if (group === null) return;
+    async ainit() {
+      let group = this.ref.group.getConfig();
+      if (group == null) {
+        await groupListLazyPromise;
+        group = this.ref.group.getConfig();
+      }
       fixHomeUrlToGroup(group);
     },
   });
@@ -207,6 +214,7 @@
       const unread = rule.ref.unread.getConfig();
       const groups = rule.ref.groups.getConfig().slice(0);
       const clear = rule.ref.more.getConfig() === 'clear';
+      const autoLoad = homepage.autoLoad.isEnabled();
 
       if (groups.length === 0) return;
 
@@ -351,32 +359,38 @@
         feedlist.removeChild(showmore);
       };
 
-      const showUnreadFeeds = async function (groups, query, getter, unreadChecker, { newfeedtip, feedlist }) {
-        const status = Number(newfeedtip.dataset.status);
+      const showUnreadFeeds = async function (groups, query, getter, unreadChecker, { newfeedtip, feedlist }, status) {
         unreadChecker.pause();
-        if (status > count) {
+        if (status > count && !autoLoad) {
           // 未读消息太多了，我们直接刷新算了
           feedlist.innerHTML = '';
           newfeedtip.remove();
           fillFeedList(feedlist, query);
         } else {
-          const link = newfeedtip.querySelector('a');
-          link.textContent = i18n.feedsUnreadLoading;
-          const loading = document.createElement('i');
-          loading.className = 'W_loading';
-          link.insertBefore(loading, link.firstChild);
-          feedlist.insertBefore(newfeedtip, feedlist.firstChild);
+          if (!autoLoad) {
+            const link = newfeedtip.querySelector('a');
+            link.textContent = i18n.feedsUnreadLoading;
+            const loading = document.createElement('i');
+            loading.className = 'W_loading';
+            link.insertBefore(loading, link.firstChild);
+            feedlist.insertBefore(newfeedtip, feedlist.firstChild);
+          }
           const fragement = document.createDocumentFragment();
           const newGetter = request.feedsByGroups(groups, query);
-          while (true) {
+          for (let limit = count; limit; limit--) {
             const feed = await newGetter.next();
             if (feed.type !== 'feed') continue;
             if (getter.isShown(feed)) break;
-            fragement.appendChild(feed.dom);
+            const feedDom = fragement.appendChild(feed.dom);
+            if (autoLoad) {
+              feedDom.setAttribute('yawf-feed-preload', 'unread');
+            }
             getter.addShown(feed);
           }
           feedlist.insertBefore(fragement, feedlist.firstChild);
-          newfeedtip.remove();
+          if (!autoLoad) {
+            newfeedtip.remove();
+          }
           unreadChecker.run();
         }
       };
@@ -385,19 +399,27 @@
       const noticeUnread = function (data, groups, query, getter, { feedlist }, unreadChecker) {
         const status = data.status;
         if (!status) {
-          const newfeedtip = document.getElementById('home_new_feed_tip');
+          const newfeedtip = document.getElementById('yawf-group-new-feed-tip');
           if (newfeedtip) newfeedtip.remove();
+        } else if (autoLoad) {
+          showUnreadFeeds(groups, query, getter, unreadChecker, { newfeedtip: null, feedlist }, status);
         } else {
-          if (!document.getElementById('home_new_feed_tip')) {
+          if (!document.getElementById('yawf-group-new-feed-tip')) {
             const container = document.createElement('div');
-            container.innerHTML = '<div class="WB_cardwrap WB_notes" id="home_new_feed_tip"><a href="javascript:void(0);"></a></div>';
+            container.innerHTML = '<div class="WB_cardwrap WB_notes" id="yawf-group-new-feed-tip"><a href="javascript:void(0);"></a></div>';
             const newfeedtip = container.firstChild;
             feedlist.parentNode.insertBefore(newfeedtip, feedlist);
-            newfeedtip.addEventListener('click', async event => {
-              showUnreadFeeds(groups, query, getter, unreadChecker, { newfeedtip, feedlist });
+            const clickToShowUnreadFeeds = () => {
+              showUnreadFeeds(groups, query, getter, unreadChecker, { newfeedtip, feedlist }, newfeedtip.dataset.status);
+            };
+            newfeedtip.querySelector('a').addEventListener('click', clickToShowUnreadFeeds);
+            document.addEventListener('keyup', function loadContentKey(event) {
+              if (keyboard.event(event) !== keyboard.code.PERIOD) return;
+              document.removeEventListener('keyup', loadContentKey);
+              clickToShowUnreadFeeds();
             });
           }
-          const newfeedtip = document.getElementById('home_new_feed_tip');
+          const newfeedtip = document.getElementById('yawf-group-new-feed-tip');
           if (Number(newfeedtip.dataset.status) !== status) {
             newfeedtip.dataset.status = status;
             newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTip.replace('{1}', status);
@@ -428,5 +450,142 @@
     },
   });
 
+  Object.assign(i18n, {
+    feedsAutoLoad: { cn: '自动载入新微博', tw: '自動載入新微博', en: 'Load new feeds automatically' },
+    feedsAutoLoadDetail: {
+      cn: '启用该选项可以在显示“有新微博”的提示横幅出现前过滤微博，避免点开提示，但是并没有刷出来微博的情况；扩展会自动加载并过滤微博，微博会因为脚本的加载被标记为已读，因此勾选此项会导致在其他设备上收不到有新微博提示。',
+    },
+    feedsAutoShow: {
+      cn: '加载后自动展示|{{background}}页面活动时暂停',
+      tw: '載入後自動展示|{{background}}頁面活躍時暫停',
+      en: 'Show feeds after automatically loaded| {{background}} pause when page active',
+    },
+    feedsDesktopNotify: {
+      cn: '自动载入后显示桌面提示||{{whitelist}}仅对命中总是显示规则的微博生效',
+      tw: '自動載入後显示桌面提示||{{whitelist}}僅對命中總是顯示規則的微博生效',
+      en: 'Show desktop notification after automatically loaded||{{whitelist}} only apply to feeds hit always show rules',
+    },
+  });
+
+  const showUnreadFeeds = function () {
+    let newfeedtip = document.getElementById('yawf-new-feed-tip');
+    if (!newfeedtip) return;
+    newfeedtip.remove();
+    const unreadFeeds = Array.from(document.querySelectorAll('[yawf-feed-preload="unread"]'));
+    unreadFeeds.forEach(feed => {
+      feed.setAttribute('yawf-feed-preload', 'show');
+    });
+  };
+
+  homepage.autoLoad = rule.Rule({
+    id: 'filter_homepage_auto_load',
+    version: 1,
+    parent: homepage.homepage,
+    template: () => i18n.feedsAutoLoad,
+    ref: {
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.feedsAutoLoadDetail },
+    },
+    ainit() {
+
+      // 完成过滤后再提示有未读消息
+      observer.feed.onFinally(function countUnreadFeeds() {
+        const unreadFeeds = Array.from(document.querySelectorAll('[yawf-feed-preload="unread"]'));
+        const status = unreadFeeds.length;
+        let newfeedtip = document.getElementById('yawf-new-feed-tip');
+        if (status === 0 && newfeedtip) {
+          newfeedtip.remove();
+        } else if (status !== 0) {
+          if (!newfeedtip) {
+            const container = document.createElement('div');
+            container.innerHTML = '<div class="WB_cardwrap WB_notes" id="yawf-new-feed-tip"><a href="javascript:void(0);"></a></div>';
+            newfeedtip = container.firstChild;
+            const feedlist = document.querySelector('.WB_feed');
+            feedlist.insertBefore(newfeedtip, feedlist.firstChild);
+            newfeedtip.querySelector('a').addEventListener('click', showUnreadFeeds);
+          }
+          newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTip.replace('{1}', status);
+        }
+      });
+
+      // 响应键盘操作
+      document.addEventListener('keyup', function loadPreloadedContentKey(event) {
+        if (keyboard.event(event) !== keyboard.code.PERIOD) return;
+        showUnreadFeeds();
+      });
+
+      // 隐藏预加载的内容
+      css.append(`
+#v6_pl_content_homefeed [yawf-feed-preload="unread"] { display: none !important; }
+#home_new_feed_tip { display: none !important; }
+.WB_feed [node-type="feed_list_timeTip"] { display: none !important; }
+.WB_feed a.notes[action-type="feed_list_newBar"][node-type="feed_list_newBar"] { display: none !important; }
+.WB_feed div.W_loading[requesttype="newFeed"] { display: none !important; }
+.WB_feed .WB_notes[requesttype="newFeed"] { display: none !important; }
+.WB_feed [node-type="lazyload"]:not(:last-child) { display: none !important; }
+`);
+
+      // 检查有新内容载入，并隐藏它们
+      observer.feed.onBefore(function hideAutoLoadFeeds(feed) {
+        let isUnread = true;
+        if (feed.matches('.WB_feed_type[yawf-feed-preload="show"] ~ *')) isUnread = false;
+        if (document.querySelectorAll('.WB_feed_type[yawf-feed-preload]').length < 5) isUnread = false;
+        feed.setAttribute('yawf-feed-preload', isUnread ? 'unread' : 'show');
+      });
+
+      // 自动载入新内容
+      observer.dom.add(function watchNewFeedTip() {
+        let tip = document.querySelector('#home_new_feed_tip');
+        if (browserInfo.name === 'Firefox') tip = tip && tip.wrappedJSObject;
+        // 微博自己把提示的状态和数量写在了提示横幅那个对象上
+        // status 不是 followHot 而且 count > 0 就说明有新消息
+        if (!tip || tip.status === 'followHot') return;
+        if (!tip.count) return;
+        tip.click();
+        if (tip.parentNode) tip.parentNode.removeChild(tip);
+      });
+
+    },
+  });
+
+  homepage.desktopNotify = rule.Rule({
+    id: 'filter_homepage_desktop_notify',
+    version: 1,
+    parent: homepage.homepage,
+    template: () => i18n.feedsDesktopNotify,
+    ref: { whitelist: { type: 'boolean' } },
+    ainit() {
+      const whitelist = this.ref.whitelist.getConfig();
+
+      // 完成过滤后再提示有未读消息
+      observer.feed.onFinally(function countUnreadFeeds() {
+        const unreadFeeds = Array.from(document.querySelectorAll('[yawf-feed-preload="unread"]:not([yawf-feed-notify])'));
+        unreadFeeds.forEach(async feed => {
+          feed.setAttribute('yawf-feed-notify', '');
+          if (whitelist && feed.getAttribute('yawf-feed-display') !== 'show') return;
+          const text = feedParser.text.simple(feed);
+          const [author] = feedParser.author.name(feed);
+          const avatar = feedParser.author.avatar(feed);
+          if (!text || !author || !avatar) return;
+          const truncked = text.length > 300 ? text.slice(0, 250) + '……' : text;
+          const userResponse = await notifications.show({
+            title: author,
+            content: truncked,
+            icon: avatar,
+            duration: 5000 + 15 * truncked.length,
+          });
+          if (!userResponse) return;
+          showUnreadFeeds();
+          setTimeout(() => {
+            document.documentElement.scrollTop += feed.getClientRects()[0].top - 80;
+            const evt = document.createEvent('KeyboardEvent');
+            evt.initKeyEvent('keydown', true, true, null, false, false, false, false, util.keyboard.code.J, 0);
+            document.documentElement.dispatchEvent(evt);
+          }, 0);
+        });
+      });
+
+
+    },
+  });
 
 }());

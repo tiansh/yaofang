@@ -494,6 +494,7 @@
       if (!Array.isArray(select) && typeof select.then === 'function') {
         Promise.resolve(select).then(items => {
           this.select = items;
+          this.getConfig();
         });
       }
     }

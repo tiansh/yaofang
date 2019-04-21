@@ -427,8 +427,14 @@
 
         const updateDate = function (element) {
           const date = parseInt(element.getAttribute('yawf-date'), 10);
-          element.textContent = formatTime(date);
-          element.title = formatTimeDetail(date);
+          const formatTimeResult = formatTime(date);
+          if (element.textContent !== formatTimeResult) {
+            element.textContent = formatTimeResult;
+          }
+          const formatTimeDetailResult = formatTimeDetail(date);
+          if (element.title !== formatTimeDetailResult) {
+            element.title = formatTimeDetailResult;
+          }
         };
 
         const updateAllDate = function () {
@@ -629,7 +635,6 @@
           document.removeEventListener('mouseup', dragEnd);
         };
         const dragStart = function (event) {
-          console.log('start', event.clientX, event.clientY);
           dragStartPos = [event.clientX, event.clientY];
           dragStartSize = [main.clientWidth, main.clientHeight];
           document.body.classList.add('yawf-webim-resize');

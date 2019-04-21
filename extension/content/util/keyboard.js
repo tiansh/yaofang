@@ -30,29 +30,5 @@
       namelist[n & KEY] || `#${+n}`,
     ].filter(x => x).join('-');
   };
-  // 注册全局监听按键
-  const triggers = [];
-  keyboard.reg = function (type, key, callback, ignoreInInput) {
-    triggers.push({ type, key, callback, ignoreInInput });
-  };
-  // 监听按键
-  const baseEvent = event => {
-    const code = keyboard.event(event);
-    const inInput = /^select|textarea|input$/.test(event.target.nodeName.toLowerCase());
-    const actived = triggers.filter(function (trigger) {
-      if (inInput && trigger.ignoreInInput) return false;
-      return trigger.type === event.type && trigger.key === code;
-    });
-    actived.forEach(function (trigger) {
-      try {
-        trigger.callback(event);
-      } catch (e) {
-        util.debug('failed to call keyboard callback %o(%o): %o', trigger, event, e);
-      }
-    });
-  };
-  ['keydown', 'keypress', 'keyup'].forEach(function (type) {
-    document.documentElement.addEventListener(type, baseEvent);
-  });
 
 }());

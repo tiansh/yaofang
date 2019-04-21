@@ -45,11 +45,11 @@
     simple = (feedParser.text.simple(selection) || []).map(t => t.trim());
     full = (feedParser.text.detail(selection) || []).map(t => t.trim());
     type = 'text';
-    if (!simple && !full) {
+    if (!simple.join('') && !full.join('')) {
       simple = full = (commentParser.text(selection) || []).map(t => t.trim());
       type = 'comment';
     }
-    if (!simple && !full) {
+    if (!simple.join('') && !full.join('')) {
       return [];
     }
     const template = i18n.contentTextContextTitle;

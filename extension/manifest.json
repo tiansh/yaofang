@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "default_locale": "zh_CN",
 
   "icons": {
@@ -17,6 +17,8 @@
     "unlimitedStorage",
     "menus",
     "downloads",
+    "notifications",
+    "alarms",
     "<all_urls>"
   ],
 
@@ -33,6 +35,7 @@
       "background/controller/image/viewer.js",
       "background/controller/download/download.js",
       "background/controller/chatframe/chatframe.js",
+      "background/controller/notifications/notifications.js",
 
       "background/page/interests/interests.js"
     ]
@@ -49,6 +52,7 @@
         "https://api.weibo.com/chat/*"
       ],
       "js": [
+        "common/browser/browser.js",
         "common/util/functools.js",
         "common/util/urls.js",
         "content/util/priority.js",
@@ -85,6 +89,7 @@
         "content/backend/download.js",
         "content/backend/viewimage.js",
         "content/backend/chatframe.js",
+        "content/backend/notifications.js",
 
         "content/ruleset/rule.js",
         "content/ruleset/observer.js",

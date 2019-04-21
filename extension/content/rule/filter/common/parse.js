@@ -459,6 +459,12 @@
     const domList = author.dom(feed);
     return domList.map(dom => dom.textContent);
   };
+  author.avatar = feed => {
+    const domList = author.dom(feed);
+    if (domList.length !== 1) return null;
+    const img = feed.querySelector('.WB_face img');
+    return img.src;
+  };
 
   // 原作者（一条被转发的微博最早来自谁）
   const original = feedParser.original = {};

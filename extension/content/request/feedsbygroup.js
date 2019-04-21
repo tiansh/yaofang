@@ -48,7 +48,7 @@
       this.nextPage = 1;
       /** @type {{ type: "feed", date: number, mid: string, dom: Element }[]} */
       this.pendingFeeds = [];
-      this.bufferSize = 10;
+      this.bufferSize = 20;
       this.orderMismatch = new OrderMismatchCount();
       /** @type {{ mid: string }[][]} */
       this.feedsByPage = [];
@@ -71,7 +71,7 @@
         while (this.pendingFeeds.length < this.bufferSize) {
           const newLoaded = await this.loadNextPage();
           const errors = this.orderMismatch.errors();
-          this.bufferSize = Math.max(this.bufferSize, errors * 5);
+          this.bufferSize = Math.max(this.bufferSize, errors * 3 + 20);
           if (!newLoaded) { this.nextPage = null; break; }
         }
       } catch (e) {

@@ -240,7 +240,7 @@
     en: '"A feed posted by @" attr(yawf-feed-author)',
   };
 
-  const hideFeedCss = css.append(`
+  const hideFeedCss = css.add(`
 [action-type="feed_list_item"]:not([yawf-feed]),
 [node-type="feed_list"] .WB_feed_type:not([yawf-feed]),
 .list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment]),
