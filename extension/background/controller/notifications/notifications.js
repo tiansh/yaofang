@@ -9,10 +9,11 @@
   const pendingNotification = new Map();
 
   const showNotifications = async function showNotifications({ title, content, icon, duration }) {
+    const sender = this;
     const id = await browser.notifications.create(null, { type: 'basic', title, message: content, iconUrl: icon });
     let resolve = null;
     const result = new Promise(r => { resolve = r; });
-    pendingNotification.set(id, { duration, resolve });
+    pendingNotification.set(id, { duration, resolve, windowId: sender.tab.windowId, tabId: sender.tab.id });
     return result;
   };
   message.export(showNotifications);
@@ -47,6 +48,12 @@
   });
 
   browser.notifications.onClicked.addListener(id => {
+    const data = pendingNotification.get(id);
+    if (data) {
+      const { windowId, tabId } = data;
+      browser.windows.update(windowId, { focused: true });
+      browser.tabs.update(tabId, { active: true });
+    }
     resolveNotification(id, true);
   });
 

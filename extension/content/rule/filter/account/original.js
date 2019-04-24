@@ -124,6 +124,7 @@
     init() {
       const rule = this;
       observer.feed.filter(async function originalFollowerFeedFilter(/** @type {Element} */feed) {
+        if (!rule.isEnabled()) return null;
         const original = feedParser.original.id(feed);
         const accounts = rule.ref.account.getConfig();
         const filtered = original.filter(id => !accounts.find(user => user.id === id));
@@ -135,6 +136,7 @@
         if (!match) return null;
         return { result: 'hide' };
       }, { priority: this.filterPriority });
+      this.addConfigListener(() => { observer.feed.rerun(); });
       this.ref.account.addConfigListener(() => { observer.feed.rerun(); });
       this.ref.count.addConfigListener(() => { observer.feed.rerun(); });
     },

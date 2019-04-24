@@ -9,6 +9,7 @@
   const stk = yawf.stk;
   const feedParser = yawf.feed;
   const notifications = yawf.notifications;
+  const init = yawf.init;
 
   const filter = yawf.rules.filter;
 
@@ -500,7 +501,7 @@
             container.innerHTML = '<div class="WB_cardwrap WB_notes" id="yawf-new-feed-tip"><a href="javascript:void(0);"></a></div>';
             newfeedtip = container.firstChild;
             const feedlist = document.querySelector('.WB_feed');
-            feedlist.insertBefore(newfeedtip, feedlist.firstChild);
+            feedlist.parentNode.insertBefore(newfeedtip, feedlist);
             newfeedtip.querySelector('a').addEventListener('click', showUnreadFeeds);
           }
           newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTip.replace('{1}', status);
@@ -526,9 +527,11 @@
 
       // 检查有新内容载入，并隐藏它们
       observer.feed.onBefore(function hideAutoLoadFeeds(feed) {
+        if (feed.hasAttribute('yawf-feed-preload')) return;
         let isUnread = true;
         if (feed.matches('.WB_feed_type[yawf-feed-preload="show"] ~ *')) isUnread = false;
         if (document.querySelectorAll('.WB_feed_type[yawf-feed-preload]').length < 5) isUnread = false;
+        if (init.page.$CONFIG.uid === feedParser.author.id(feed)[0]) isUnread = false;
         feed.setAttribute('yawf-feed-preload', isUnread ? 'unread' : 'show');
       });
 
