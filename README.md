@@ -2,7 +2,7 @@
 
 YAWF（Yet Another Weibo Filter）Firefox 扩展
 
-AMO: [https://addons.mozilla.org/zh-CN/firefox/addon/yawf/][AMO]
+AMO: [https://addons.mozilla.org/zh-TW/firefox/addon/yawf/?src=external-github-readme][AMO]
 
 ### 主要功能
 
