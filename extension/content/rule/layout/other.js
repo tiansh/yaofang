@@ -520,10 +520,11 @@
             const timeElement = document.createElement('span');
             timeElement.setAttribute('yawf-date', +time);
             updateDate(timeElement);
+            textNode.replaceWith(timeElement);
           });
         };
-
         observer.dom.add(handleTextDateElements);
+        css.append('.WB_feed_v3 .WB_from span[yawf-date] { margin-left: 0; }');
       },
     });
   }

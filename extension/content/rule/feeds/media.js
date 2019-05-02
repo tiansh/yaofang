@@ -210,7 +210,8 @@
       }
 
       if (contextMenuView || contextMenuDownload) {
-        contextmenu.addListener(function (event) {
+        contextmenu.addListener(function (/** @type {MouseEvent} */event) {
+          /** @type {Element & EventTarget} */
           const target = event.target;
           const pic = (function () {
             const pic = target.closest('.WB_media_wrap .WB_pic') || target.closest('a[imagecard]');
@@ -220,7 +221,7 @@
             const feedPic = feed.querySelector('.WB_media_wrap .WB_pic');
             return feedPic;
           }());
-          if (!pic) return [];
+          if (!pic || !pic.contains(target)) return [];
           const { images, current } = getImagesInfo(pic);
           const result = [];
           if (contextMenuView) {

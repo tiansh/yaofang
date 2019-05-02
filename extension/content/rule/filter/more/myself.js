@@ -84,7 +84,7 @@
     template: () => i18n.showMentionMeDetail,
     init() {
       const rule = this;
-      observer.feed.filter(function adFeedFilter(feed) {
+      observer.feed.filter(function showMentionMe(feed) {
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.nick;
         const mentions = feedParser.mention.name(feed);

@@ -201,10 +201,10 @@
     template: () => i18n.customizeSource,
     ainit() {
       const customizeSource = function customizeSource() {
-        const sources = Array.from(document.querySelectorAll('.WB_from:not([yawf-csource])'));
+        const sources = Array.from(document.querySelectorAll('.WB_from:not([yawf-custom-source])'));
         const items = [];
         sources.forEach(from => {
-          from.setAttribute('yawf-csource', 'yawf-csource');
+          from.setAttribute('yawf-custom-source', 'yawf-custom-source');
           if (from.matches('.list_li[mid] *')) return;
           if (/未通过审核应用/.test(from.textContent)) return;
           // 自定义微博来源可以不显示来源

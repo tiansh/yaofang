@@ -51,13 +51,6 @@
         if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
         if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
         if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
-        if (function testRid() {
-          const mrid = feed.getAttribute('mrid');
-          if (!mrid) return false;
-          const rid = new URLSearchParams(mrid).get('rid');
-          if (/^\d+_(?!0)[\d_]+/.test(rid)) return true;
-          return false;
-        }()) return 'hide';
         return null;
       }, { priority: 1e6 });
       this.addConfigListener(() => { observer.feed.rerun(); });
