@@ -50,9 +50,9 @@
     configResetButton: { cn: '重置', tw: '重設', en: 'Reset' },
     configResetWarningTitle: { cn: '设置重置', tw: '設定重設', en: 'Setting Reset' },
     configResetWarning: {
-      cn: '这将会清空您当前的所有配置，确实要重置设置吗？',
-      tw: '這將會清空您當前的所有設定，您確定要重置設定嗎？',
-      en: 'You are deleting all your settings. Are you sure you want to reset your settings?',
+      cn: '这将会清空您当前的所有配置，之前检查和备份的关注列表、手动隐藏的微博编号等不会受到影响。确实要重置设置吗？',
+      tw: '這將會清空您當前的所有設定，之前檢查和備份的關注清單、手動隱藏的微博編號等不會受到影響。您確定要重置設定嗎？',
+      en: 'You are deleting all your settings. Following list, feeds hidden manually will be kept as is. Are you sure you want to reset your settings?',
     },
     configFilename: {
       cn: '药方设置',

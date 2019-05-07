@@ -111,8 +111,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const showImage = function (index) {
     const url = images[index];
     if (viewer.src === url) return;
-    viewer.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
-    viewer.src = url;
+    const placeholder = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
+    viewer.src = placeholder;
+    window.requestAnimationFrame(() => { viewer.src = url; });
     container.scrollTop = 0;
     container.scrollLeft = 0;
     const items = Array.from(document.querySelectorAll('.preview-item'));

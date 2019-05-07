@@ -52,9 +52,9 @@
   });
 
   i18n.sourceAtBottom = {
-    cn: '将微博的发布时间和来源移动到微博末尾 {{i}}',
-    tw: '將微博的發布時間和來源移動到微博末尾 {{i}}',
-    en: 'Move timestamp and source of Weibo to bottom {{i}}',
+    cn: '将微博的发布时间和来源移动到微博末尾',
+    tw: '將微博的發布時間和來源移動到微博末尾',
+    en: 'Move timestamp and source of Weibo to bottom',
   };
 
   layout.sourceAtBottom = rule.Rule({
@@ -79,17 +79,25 @@
     },
   });
 
-  i18n.nowrapAfterAuthor = {
-    cn: '微博作者与内容间不拆行',
-    tw: '微博作者與內容間不拆行',
-    en: 'No line breaks between author and content',
-  };
+  Object.assign(i18n, {
+    nowrapAfterAuthor: {
+      cn: '微博作者与内容间不拆行 {{i}}',
+      tw: '微博作者與內容間不拆行 {{i}}',
+      en: 'No line breaks between author and content {{i}}',
+    },
+    nowrapAfterAuthorDetail: {
+      cn: '如果您启用本功能时未选择“[[feed_source_at_bottom]]”，微博的来源将会被隐藏。',
+    },
+  });
 
   layout.nowrapAfterAuthor = rule.Rule({
     id: 'feed_author_content_nowrap',
     version: 1,
     parent: layout.layout,
     template: () => i18n.nowrapAfterAuthor,
+    ref: {
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.nowrapAfterAuthorDetail },
+    },
     ainit() {
       css.append(`
 .WB_info, .WB_text { display: inline; word-wrap: break-word; }
@@ -114,9 +122,9 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
   });
 
   i18n.smallImage = {
-    cn: '缩小缩略图尺寸||{{repost}}缩小转发原文宽度',
-    tw: '縮小縮略圖尺寸||{{repost}}縮小轉發原文寬度',
-    en: 'Decrease the size of images||{{repost}} Decrease the width of original feeds',
+    cn: '缩小缩略图尺寸 {{i}}||{{repost}}缩小转发原文宽度',
+    tw: '縮小縮略圖尺寸 {{i}}||{{repost}}縮小轉發原文寬度',
+    en: 'Decrease the size of image寸 {{i}}||{{repost}} Decrease the width of original feeds',
   };
   i18n.smallImageDetail = {
     cn: '缩小图片尺寸仅影响图片在您的网页上的显示效果，不能降低网络数据流量用量。',
@@ -129,6 +137,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
     template: () => i18n.smallImage,
     ref: {
       repost: { type: 'boolean' },
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.smallImageDetail },
     },
     ainit() {
       css.append(`
@@ -210,11 +219,13 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
     },
   });
 
-  i18n.increaseFeedWidth = {
-    cn: '加宽微博宽度|为{{width}}像素',
-    tw: '加寬微博寬度|為{{width}}像素',
-    en: 'Increase width of feeds | to {{width}}px',
-  };
+  Object.assign(i18n, {
+    increaseFeedWidth: {
+      cn: '加宽微博宽度|为{{width}}像素',
+      tw: '加寬微博寬度|為{{width}}像素',
+      en: 'Increase width of feeds | to {{width}}px',
+    },
+  });
 
   layout.increaseFeedWidth = rule.Rule({
     id: 'feed_increase_width',
@@ -266,6 +277,11 @@ html .WB_frame_c ~ .WB_frame_b {
   margin-right: 0;
 }
 
+@media screen and (max-width:1006px) {
+.B_index, .B_message { --yawf-right-width: 10px; }
+.B_page { --yawf-right-width: 0px; }
+}
+
 body .WB_tab_a .tab_box { display: flex; }
 body .WB_tab_a .tab_box > * { flex: 0 0 auto; }
 body .WB_tab_a .tab_box > .W_fr { order: 2; }
@@ -283,9 +299,12 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
 
   Object.assign(i18n, {
     reorderFeedButton: {
-      cn: '重新排列微博控制按钮||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
-      tw: '重新排列微博控制按鈕||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
-      en: 'Reorder buttons of feeds||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
+      cn: '重新排列微博控制按钮 {{i}}||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
+      tw: '重新排列微博控制按鈕 {{i}}||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
+      en: 'Reorder buttons of feeds {{i}}||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
+    },
+    reorderFeedButtonDetail: {
+      cn: '此外您还可以在版面清理选项卡，或此处，勾选以隐藏“[[clean_feed_pop]]”“[[clean_feed_favorite]]”“[[clean_feed_forward]]”“[[clean_feed_like]]”。',
     },
     reorderFeedButtonPop: { cn: '推广', tw: '推廣', en: ' Promote' },
     reorderFeedButtonFavorite: { cn: '收藏', tw: '收藏', en: 'Favourite' },
@@ -324,7 +343,9 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
       { value: 'forward', text: () => i18n.reorderFeedButtonForward },
       { value: 'comment', text: () => i18n.reorderFeedButtonComment },
       { value: 'like', text: () => i18n.reorderFeedButtonLike },
-    ])),
+    ]), {
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.reorderFeedButtonDetail },
+    }),
     init() {
       [0, 1, 2, 3, 4].forEach(key => {
         keepOrderItemsDiff(this.ref[key]);
@@ -348,6 +369,9 @@ ${[0, 1, 2, 3, 4].map(index => `
       cn: '重新排列评论控制按钮||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
       tw: '重新排列評論微博控制按鈕||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
       en: 'Reorder buttons of comments||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
+    },
+    reorderCommentButtonDetail: {
+      cn: '此外您还可以在版面清理选项卡，或此处，勾选以隐藏“[[clean_feed_like_comment]]”。',
     },
     reorderCommentButtonReport: { cn: '举报', hk: '舉報', tw: '檢舉', en: 'Report' },
     reorderCommentButtonDelete: { cn: '删除', tw: '刪除', en: 'Delete' },

@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "default_locale": "zh_CN",
 
   "icons": {
@@ -182,7 +182,8 @@
   ],
 
   "web_accessible_resources": [
-    "external/*"
+    "external/*",
+    "yawf.svg"
   ],
 
   "applications": {

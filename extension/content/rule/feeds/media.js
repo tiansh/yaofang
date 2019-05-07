@@ -300,7 +300,7 @@
     parent: media.media,
     template: () => i18n.pauseAnimatedImage,
     ref: {
-      i: { type: 'bubble', icon: 'warn', template: () => i18n.pauseAnimatedImage },
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.pauseAnimatedImageDetail },
     },
     ainit() {
       const emptyImage = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';

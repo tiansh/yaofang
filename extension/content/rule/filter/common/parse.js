@@ -171,6 +171,17 @@
     };
     parsers.push(text);
     /**
+     * 展开/收起全文（不计入内容）
+     * @param {Element} node
+     */
+    const fold = node => {
+      if (node.matches('a[action-type="fl_unfold"], a[action-type="fl_fold"]')) {
+        return '';
+      }
+      return null;
+    };
+    parsers.push(fold);
+    /**
      * 换行符 <br> （文本✓，正则✓）
      * @param {Element} node
      */
@@ -344,7 +355,7 @@
      */
     const parseNode = function parseNode(node) {
       const text = allParser(node);
-      if (text) return text;
+      if (text != null) return text;
       if (node.hasChildNodes()) {
         return [...node.childNodes].map(node => parseNode(node)).join('');
       }

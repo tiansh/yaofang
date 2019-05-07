@@ -11,6 +11,7 @@
   const filter = yawf.rules.filter;
 
   const i18n = util.i18n;
+  const ui = util.ui;
   const css = util.css;
 
   i18n.feedsManuallyGroupTitle = {
@@ -25,20 +26,42 @@
     template: () => i18n.feedsManuallyGroupTitle,
   });
 
-  i18n.manuallyHideFeed = {
-    cn: '在微博右上角显示隐藏单条微博的按钮',
-    tw: '在微博右上角顯示隱藏單條微博的按鈕',
-    en: 'Show buttons at right top of each feeds for hidding',
-  };
-  i18n.hideThisFeed = {
-    cn: '隐藏',
-    tw: '隱藏',
-    en: 'Hide',
-  };
+  Object.assign(i18n, {
+    manuallyHideFeed: {
+      cn: '在微博右上角显示隐藏单条微博的按钮|{{reset}}|{{i}}',
+      tw: '在微博右上角顯示隱藏單條微博的按鈕|{{reset}}|{{i}}',
+      en: 'Show buttons at right top of each feeds for hiding|{{reset}}|{{i}}',
+    },
+    manuallyHideFeedReset: {
+      cn: '重置',
+      tw: '重設',
+      en: 'Reset',
+    },
+    manuallyHideFeedDetail: {
+      cn: '扩展会保存最近一万条被隐藏的微博的编号，并在遇到这些微博时将他们隐藏。这些微博的编号将不会包含在导出的设置中，且不会随着导入的设置而失效。重置设置或在此重置可以清空这个列表。',
+    },
+    manuallyHideFeedDialogTitle: {
+      cn: '重置隐藏',
+      tw: '重設隱藏',
+      en: 'Reset Hadding',
+    },
+    manuallyHideFeedDialogText: {
+      cn: '确定清除隐藏微博的历史记录吗，清除后之前隐藏的微博会重新显示。',
+      tw: '確定清除隱藏微博的歷史記錄嗎，清除後之前隱藏的微博會重新顯示。',
+      en: 'Clear history of hiding will make these feeds shown again. Clear hidden history?',
+    },
+    hideThisFeed: {
+      cn: '隐藏',
+      tw: '隱藏',
+      en: 'Hide',
+    },
+  });
 
   const hideListPromise = async function () {
 
-    const manuallyHideConfig = await config.pool('Hide', { uid: init.page.$CONFIG.uid });
+    const manuallyHideConfig = await config.pool('Hide', {
+      uid: init.page.$CONFIG.uid,
+    });
 
     return new rule.class.OffscreenConfigItem({
       id: 'hideList',
@@ -63,6 +86,28 @@
     version: 1,
     parent: manually.manually,
     template: () => i18n.manuallyHideFeed,
+    ref: {
+      reset: {
+        render() {
+          const container = document.createElement('div');
+          container.innerHTML = '<a class="W_btn_b yawf-manually-hide-reset" href="javascript:;"><span class="W_f14"></span></a>';
+          container.querySelector('span').textContent = i18n.manuallyHideFeedReset;
+          const button = container.querySelector('a');
+          button.addEventListener('click', async event => {
+            if (!event.isTrusted) return;
+            const answer = await ui.confirm({
+              id: 'yawf-import-failed',
+              title: i18n.manuallyHideFeedDialogTitle,
+              text: i18n.manuallyHideFeedDialogText,
+            });
+            if (!answer) return;
+            hideList.configPool.reset();
+          });
+          return button;
+        },
+      },
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.manuallyHideFeedDetail },
+    },
     ainit() {
       const createScreen = function () {
         const screen = document.createElement('div');

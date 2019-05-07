@@ -452,9 +452,9 @@
   });
 
   Object.assign(i18n, {
-    feedsAutoLoad: { cn: '自动载入新微博', tw: '自動載入新微博', en: 'Load new feeds automatically' },
+    feedsAutoLoad: { cn: '自动载入新微博{{i}}', tw: '自動載入新微博{{i}}', en: 'Load new feeds automatically {{i}}' },
     feedsAutoLoadDetail: {
-      cn: '启用该选项可以在显示“有新微博”的提示横幅出现前过滤微博，避免点开提示，但是并没有刷出来微博的情况；扩展会自动加载并过滤微博，微博会因为脚本的加载被标记为已读，因此勾选此项会导致在其他设备上收不到有新微博提示。',
+      cn: '启用该选项可以在显示“有新微博”的提示横幅出现前过滤微博，避免点开提示，但是并没有刷出来微博的情况；因为扩展会读取对应微博以便过滤，这些微博会被标记为“已读”，因此勾选此项会导致在其他设备上收不到有新微博提示。',
     },
     feedsAutoShow: {
       cn: '加载后自动展示|{{background}}页面活动时暂停',
