@@ -3,7 +3,7 @@
   if (window.top === window) return;
 
   const css = `
-#app { --yawf-left-width: 240px; }
+#app { --yawf-left-width: 240px; --yawf-text-height: 100px; }
 #app .chat { overflow: hidden; }
 #app .chat .chatbox { width: 100vw; margin: 0; }
 #app .chat .chatbox .msglist { width: var(--yawf-left-width); border-radius: 0; }
@@ -28,14 +28,16 @@
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right { height: 40px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-top { height: 18px; line-height: 18px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-bottom { height: 18px; line-height: 18px; max-width: calc(var(--yawf-left-width) - 75px); }
-.chatlist .chatlist-box .contactslist .sessionlist .list-right .content-bottom .lastmsg { font-size: 12px; }
+#app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-bottom .lastmsg { font-size: 12px; }
+#app .chatbox > .right { left: var(--yawf-left-width); right: 0; width: auto !important; }
+#app .message { bottom: var(--yawf-text-height); }
 #app .message .header { height: 40px; line-height: 40px; }
 #app .message .header .moresets { top: 40px; }
 #app .message .tips { top: 40px; }
-.message .message-wrapper { top: 40px; }
-.message .tips.unfollowtips + .message-wrapper { top: 74px; }
+#app .message .message-wrapper { top: 40px; }
+#app .message .tips.unfollowtips + .message-wrapper { top: 74px; }
 #app .message .message-wrapper .chat-content { width: calc(100vw - calc(1px + var(--yawf-left-width))); }
-#app .text { height: 100px; }
+#app .text { height: var(--yawf-text-height); }
 #app .atwho-wrap .editor { height: 70px; }
 #app .text .sendbox_prompt { display: none; }
 #app .login { display: none; }
