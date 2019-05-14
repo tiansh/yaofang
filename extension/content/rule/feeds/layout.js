@@ -277,8 +277,10 @@ html .WB_frame_c ~ .WB_frame_b {
   margin-right: 0;
 }
 
-@media screen and (max-width:1006px) {
+@media screen and (max-width: 1006px) {
 .B_index, .B_message { --yawf-right-width: 10px; }
+}
+@media screen and (max-width: 939px) {
 .B_page { --yawf-right-width: 0px; }
 }
 
