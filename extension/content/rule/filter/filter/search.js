@@ -22,9 +22,9 @@
   });
 
   i18n.searchInHomepage = {
-    cn: '使用首页代替搜索页面',
-    tw: '使用首頁代替搜索頁面',
-    en: 'Use home page for search',
+    cn: '使用首页代替搜索页面（试验性）',
+    tw: '使用首頁代替搜索頁面（試驗性）',
+    en: 'Use home page for search (Experimental)',
   };
 
   search.searchInHomepage = rule.Rule({
@@ -39,7 +39,8 @@
       if (type === 'user') return;
       const word = new URLSearchParams(location.search).get('q') || pathWord || '';
       const url = new URL('https://weibo.com/home?gid=-3&is_search=1');
-      url.searchParams.set('key_word', word);
+      // 不要问我为什么这有两遍 decodeURIComponent，我也想知道
+      url.searchParams.set('key_word', decodeURIComponent(decodeURIComponent(word)));
       if (type !== 'weibo') url.searchParams.set('is_' + type, 1);
       window.stop();
       location.replace(url);
