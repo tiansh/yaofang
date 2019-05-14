@@ -583,6 +583,9 @@
             const evt = document.createEvent('KeyboardEvent');
             evt.initKeyEvent('keydown', true, true, null, false, false, false, false, util.keyboard.code.J, 0);
             document.documentElement.dispatchEvent(evt);
+            // 聊天窗口（打开将聊天窗口内嵌的功能后）展开的时候很影响微博阅读
+            // 所以这里送一个 click 可以把聊天窗口收起来
+            feed.click();
           }, 0);
         });
       });
