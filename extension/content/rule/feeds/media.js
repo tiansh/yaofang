@@ -38,13 +38,20 @@
     viewOriginalText: { cn: '查看原图', tw: '查看原圖', en: 'Original Picture' },
   });
 
+  const getImageUrl = function (img, large) {
+    const src = img.getAttribute('yawf-ori-src') || img.getAttribute('ori-src') || img.src;
+    if (!large) return src;
+    const url = ['https://', new URL(src).host, '/large', src.match(/\/([^/]*)$/g)].join('');
+    return url;
+  };
+
   const getImagesInfo = function (ref) {
     let container, imgs, img;
     if (ref.matches('.WB_detail .WB_expand_media *')) {
       // 已经展开详情的图片
       container = ref.closest('.WB_detail');
       imgs = Array.from(container.querySelectorAll('.WB_media_wrap .WB_pic img'));
-      img = container.querySelector('.WB_media_view img') ||
+      img = container.querySelector('.media_show_box img') ||
         container.querySelector('.current img');
       // fallthrough
     } else if (ref.matches('.WB_expand_media .tab_feed_a *')) {
@@ -64,17 +71,13 @@
       return { images: ['https://wx1.sinaimg.cn/large/' + pid + '.jpg'], current: 1 };
     } else if (ref.href && ref.href.indexOf('javascript:') === -1) {
       return { images: [ref.href], current: 1 };
-    } else if (ref.src) {
-      return { images: [ref.href], current: 1 };
+    } else if (ref instanceof HTMLImageElement && ref.src) {
+      return { images: [getImageUrl(ref, true)], current: 1 };
     } else return null;
-    const images = imgs.map(function (img) {
-      const src = img.getAttribute('yawf-ori-src') || img.getAttribute('ori-src') || img.src;
-      const url = ['https://', new URL(src).host, '/large', src.match(/\/([^/]*)$/g)].join('');
-      return url;
-    });
-    const pid = img && img.src.match(/[^/.]*(?=(?:\.[^/.]*)?$)/)[0];
-    const current = images.findIndex(image => image.includes(pid));
-    return { images: images, current: current + 1 };
+    const images = imgs.map(img => getImageUrl(img, true));
+    const pid = img && getImageUrl(img).match(/[^/.]*(?=(?:\.[^/.]*)?$)/)[0];
+    const current = images.findIndex(image => image.includes(pid)) + 1;
+    return { images, current };
   };
 
   media.viewOriginal = rule.Rule({
