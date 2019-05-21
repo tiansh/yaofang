@@ -182,6 +182,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
         videos.forEach(video => {
           video.setAttribute('yawf-watch-pause', '');
           const container = video.closest('.WB_video_h5_v2');
+          let videoObserver;
           const setPlayAttribute = function setPlayAttribute() {
             const playing = video.classList.contains('wbv-playing');
             if (playing) {
@@ -190,7 +191,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
             }
           };
           setPlayAttribute();
-          const videoObserver = new MutationObserver(setPlayAttribute);
+          videoObserver = new MutationObserver(setPlayAttribute);
           videoObserver.observe(video, { attributes: true, attributeFilter: ['class'], childList: false, characterData: false });
         });
       });

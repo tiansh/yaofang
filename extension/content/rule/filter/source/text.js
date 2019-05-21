@@ -44,6 +44,7 @@
       const rule = this;
       observer.feed.filter(function sourceFeedFilter(/** @type {Element} */feed) {
         const text = feedParser.source.text(feed);
+        if (rule.feedAction === 'show') console.log('Feed: %o, Source: %o', feed, text);
         const sources = rule.ref.items.getConfig();
         const contain = sources.some(source => text.includes(source));
         if (!contain) return null;

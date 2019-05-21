@@ -43,9 +43,7 @@
       return children.every(child => contains(parent, child));
     }
     if (parent instanceof Node) {
-      for (let e = child; e; e = e.parentElement) {
-        if (e === parent) return true;
-      }
+      return parent.contains(child);
     } else {
       const parents = new Set(Array.from(parent));
       for (let e = child; e; e = e.parentElement) {
@@ -63,6 +61,18 @@
   const isFeedElement = function (element) {
     if (!(element instanceof Element)) return false;
     if (!element.hasAttribute('mid')) return false;
+    return true;
+  };
+
+  /**
+   * 检查某个元素是否是一条搜索页面的微博
+   * @param {Element} element
+   * @returns {boolean}
+   */
+  const isSearchFeedElement = function (element) {
+    if (!isFeedElement(element)) return false;
+    if (!element.matches('.card-wrap')) return false;
+    if (!element.querySelector('.card-feed')) return false;
     return true;
   };
 
@@ -96,23 +106,23 @@
    */
   const feedContentElements = function (feed, { detail = false, short = false, long = true } = {}) {
     if (!isFeedElement(feed)) return null;
-    const content = feed.querySelector('[node-type="feed_list_content"]');
-    const contentFull = feed.querySelector('[node-type="feed_list_content_full"]');
+    const content = feedParser.content.dom(feed, true, false);
+    const contentFull = feedParser.content.dom(feed, true, true);
     let post = contentFull ? !short ? [contentFull] : long ? [content, contentFull] : [content] : [content];
     if (detail) {
       const [author] = feedParser.author.dom(feed);
-      const source = feed.querySelector('.WB_detail > .WB_from a:not([date])');
-      const date = feed.querySelector('.WB_detail > .WB_from a[date]');
+      const source = feedParser.source.dom(feed, true);
+      const date = feedParser.date.dom(feed, true);
       post = [author, ...post, source, date];
     }
     if (feed.hasAttribute('omid')) {
-      const reason = feed.querySelector('[node-type="feed_list_reason"]');
-      const reasonFull = feed.querySelector('[node-type="feed_list_reason_full"]');
+      const reason = feedParser.content.dom(feed, false, false);
+      const reasonFull = feedParser.content.dom(feed, false, true);
       let ori = reasonFull ? !short ? [reasonFull] : long ? [reason, reasonFull] : [reason] : [reason];
       if (detail) {
         const [original] = feedParser.original.dom(feed);
-        const sourceOri = feed.querySelector('.WB_expand .WB_from a:not([date])');
-        const dateOri = feed.querySelector('.WB_detail > .WB_from a[date]');
+        const sourceOri = feedParser.source.dom(feed, false);
+        const dateOri = feedParser.date.dom(feed, false);
         ori = [original, ...ori, sourceOri, dateOri];
       }
       return [...post, null, ...ori];
@@ -353,7 +363,7 @@
      * @param {Node} node
      * @returns {string}
      */
-    const parseNode = function parseNode(node) {
+    const parseNode = function parseNode(node, isSearch = null) {
       const text = allParser(node);
       if (text != null) return text;
       if (node.hasChildNodes()) {
@@ -455,16 +465,57 @@
   text.detail = element => nodeTextParser(element, true);
   text.simple = element => nodeTextParser(element, false);
 
+  // 内容区域
+  const content = feedParser.content = {};
+  content.dom = (feed, isMain, isFull) => {
+    const isSearch = isSearchFeedElement(feed);
+    if (isFull === false) {
+      if (isMain && !isSearch) {
+        return feed.querySelector('[node-type="feed_list_content"]');
+      } else if (!isMain && !isSearch) {
+        return feed.querySelector('[node-type="feed_list_reason"]');
+      } else if (isMain) {
+        return feed.querySelector('.content > [node-type="feed_list_content"]');
+      } else {
+        return feed.querySelector('[node-type="feed_list_forwardContent"] > [node-type="feed_list_content"]');
+      }
+    } else if (isFull === true) {
+      if (isMain && !isSearch) {
+        return feed.querySelector('[node-type="feed_list_content_full"]');
+      } else if (!isMain && !isSearch) {
+        return feed.querySelector('[node-type="feed_list_reason_full"]');
+      } else if (isMain) {
+        return feed.querySelector('.content > [node-type="feed_list_content_full"]');
+      } else {
+        return feed.querySelector('[node-type="feed_list_forwardContent"] > [node-type="feed_list_content_full"]');
+      }
+    } else {
+      return content.dom(feed, true) || content.dom(feed, false);
+    }
+  };
+
   // 作者（这条微博是谁发的）
   const author = feedParser.author = {};
   author.dom = feed => {
     if (!(feed instanceof Node)) return [];
-    const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]');
-    return author ? [author] : [];
+    if (!isSearchFeedElement(feed)) {
+      const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]');
+      return author ? [author] : [];
+    } else {
+      const author = feed.querySelector('.card-feed .info .name');
+      return author ? [author] : [];
+    }
   };
   author.id = feed => {
     const domList = author.dom(feed);
-    return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
+    if (!isSearchFeedElement(feed)) {
+      return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
+    } else {
+      return domList.map(dom => {
+        const [_, uid] = dom.pathname.match(/^\/(?:u\/)?(\d+)/) || [];
+        return String(Number.parseInt(uid, 10));
+      }).filter(uid => +uid);
+    }
   };
   author.name = feed => {
     const domList = author.dom(feed);
@@ -473,20 +524,37 @@
   author.avatar = feed => {
     const domList = author.dom(feed);
     if (domList.length !== 1) return null;
-    const img = feed.querySelector('.WB_face img');
-    return img.src;
+    if (!isSearchFeedElement(feed)) {
+      const img = feed.querySelector('.WB_face img');
+      return img.src;
+    } else {
+      const img = feed.querySelector('.card-feed .avator img');
+      return img.src;
+    }
   };
 
   // 原作者（一条被转发的微博最早来自谁）
   const original = feedParser.original = {};
   original.dom = feed => {
     if (!(feed instanceof Node)) return [];
-    const original = feed.querySelector('.WB_expand > .WB_info > .W_fb[usercard]');
-    return original ? [original] : [];
+    if (!isSearchFeedElement(feed)) {
+      const original = feed.querySelector('.WB_expand > .WB_info > .W_fb[usercard]');
+      return original ? [original] : [];
+    } else {
+      const original = feed.querySelector('.card-comment .name');
+      return original ? [original] : [];
+    }
   };
   original.id = feed => {
     const domList = original.dom(feed);
-    return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
+    if (!isSearchFeedElement(feed)) {
+      return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
+    } else {
+      return domList.map(dom => {
+        const [_, uid] = dom.pathname.match(/^\/(?:u\/)?(\d+)/) || [];
+        return String(Number.parseInt(uid, 10));
+      }).filter(uid => +uid);
+    }
   };
   original.name = feed => {
     const domList = original.dom(feed);
@@ -497,28 +565,60 @@
   const mention = feedParser.mention = {};
   mention.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
-    const domList = contents.map(content => content ? Array.from(content.querySelectorAll(
-      'a[href*="loc=at"][usercard*="name"]',
-    )) : []).reduce((x, y) => x.concat(y));
-    return domList;
+    if (!isSearchFeedElement(feed)) {
+      const domList = contents.map(content => content ? Array.from(content.querySelectorAll(
+        'a[href*="loc=at"][usercard*="name"]',
+      )) : []).reduce((x, y) => x.concat(y));
+      return domList;
+    } else {
+      const linkList = contents.map(content => (
+        content ? Array.from(content.querySelectorAll('a')) : []
+      )).reduce((x, y) => x.concat(y));
+      const domList = linkList.filter(link => {
+        if (!['weibo.com', 'www.weibo.com'].includes(link.hostname)) return false;
+        if (!/\/n\//.test(link.pathname)) return false;
+        if (!/^@/.test(link.textContent.trim())) return false;
+        return true;
+      });
+      return domList;
+    }
   };
   mention.name = (feed, { short = false, long = true } = {}) => {
     const domList = mention.dom(feed, { short, long });
-    return domList.map(dom => {
-      const name = new URLSearchParams(dom.getAttribute('usercard')).get('name');
-      return name;
-    });
+    if (!isSearchFeedElement(feed)) {
+      return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('name'));
+    } else {
+      return domList.map(dom => decodeURIComponent(dom.pathname.split('/')[2]));
+    }
   };
 
   // 话题（包括话题和超话）
   const topic = feedParser.topic = {};
   topic.dom = (feed, { short = false, long = true } = {}) => {
+    const isSearch = isSearchFeedElement(feed);
     const contents = feedContentElements(feed, { short, long });
     const domList = [];
     contents.forEach(content => {
       if (!content) return;
-      const topics = content.querySelectorAll('a[suda-uatrack*="1022-topic"], a.a_topic');
-      domList.push(...topics);
+      if (!isSearch) {
+        const topics = content.querySelectorAll([
+          'a[suda-uatrack*="1022-topic"]',
+          'a.a_topic',
+        ].join(','));
+        domList.push(...topics);
+      } else {
+        const links = Array.from(content.querySelectorAll('a'));
+        links.forEach(link => {
+          let isTopic = false;
+          if (link.hostname === 's.weibo.com') {
+            isTopic = /^#.*#$/.test(link.textContent.trim());
+          }
+          if (link.hostname === 'huati.weibo.com') {
+            isTopic = /^\s*\ue627/.test(link.textContent);
+          }
+          if (isTopic) domList.push(link);
+        });
+      }
     });
     return domList;
   };
@@ -533,14 +633,23 @@
   // 链接（除超话外所有的链接，包括外站链接、视频、文章等）
   const link = feedParser.link = {};
   link.dom = (feed, { short = false, long = true } = {}) => {
+    const isSearch = isSearchFeedElement(feed);
     const contents = feedContentElements(feed, { short, long });
-    const domList = [].concat(...contents.map(content => content.querySelectorAll(
-      'a[action-type="feed_list_url"]:not([suda-uatrack*="1022-topic"])',
-    )));
-    return domList;
+    const domList = [].concat(...contents.map(content => {
+      if (!isSearch) {
+        return content.querySelectorAll('a[action-type="feed_list_url"]');
+      } else {
+        const links = Array.from(content.querySelectorAll('a'));
+        return links.filter(link => (
+          link.querySelector('.wbicon').textContent.trim() === 'O'
+        ));
+      }
+    }));
+    const topics = new Set(feedParser.topic.dom(feed, { short, long }));
+    return domList.filter(link => !topics.has(link));
   };
   link.text = (feed, { short = false, long = true } = {}) => {
-    const domList = source.dom(feed, { short, long });
+    const domList = link.dom(feed, { short, long });
     return domList.map(dom => {
       const text = dom.title || dom.textContent;
       return text;
@@ -549,20 +658,68 @@
 
   // 来源
   const source = feedParser.source = {};
-  source.dom = feed => {
-    const domList = feed.querySelectorAll('.WB_from a:not([date])');
-    return Array.from(domList);
+  source.dom = (feed, isMain) => {
+    const isSearch = isSearchFeedElement(feed);
+    if (isMain === true) {
+      if (!isSearch) {
+        return Array.from(feed.querySelectorAll('.WB_detail > .WB_from a:not([date])'));
+      } else {
+        return Array.from(feed.querySelectorAll('.content > .from a:last-child:not(:first-child)'));
+      }
+    } else if (isMain === false) {
+      if (!isSearch) {
+        return Array.from(feed.querySelectorAll('.WB_expand > .WB_from a:not([date])'));
+      } else {
+        return Array.from(feed.querySelectorAll('.card-comment .from a:last-child:not(:first-child)'));
+      }
+    } else {
+      if (!isSearch) {
+        return Array.from(feed.querySelectorAll('.WB_from a:not([date])'));
+      } else {
+        return Array.from(feed.querySelectorAll('.from a:last-child:not(:first-child)'));
+      }
+    }
   };
-  source.text = feed => {
-    const domList = source.dom(feed);
+  source.text = (feed, isMain) => {
+    const domList = source.dom(feed, isMain);
     return domList.map(dom => {
       const text = (dom.title || dom.textContent).trim();
       return text;
     }).filter(source => source);
   };
 
+  // 日期
+  const date = feedParser.date = {};
+  date.dom = (feed, isMain) => {
+    const isSearch = isSearchFeedElement(feed);
+    if (isMain === true) {
+      if (!isSearch) {
+        return Array.from(feed.querySelectorAll('.WB_detail > .WB_from a[date]'));
+      } else {
+        return Array.from(feed.querySelectorAll('.content > .from a:first-child'));
+      }
+    } else if (isMain === false) {
+      if (!isSearch) {
+        return Array.from(feed.querySelectorAll('.WB_expand > .WB_from a[date]'));
+      } else {
+        return Array.from(feed.querySelectorAll('.card-comment .from a:first-child'));
+      }
+    } else {
+      if (!isSearch) {
+        return Array.from(feed.querySelectorAll('.WB_from a[date]'));
+      } else {
+        return Array.from(feed.querySelectorAll('.from a:first-child'));
+      }
+    }
+  };
+  date.date = (feed, isMain) => {
+    const domList = source.dom(feed, isMain);
+    return domList.map(dom => new Date(dom.getAttribute('date'))).filter(date => +date);
+  };
+
   // 其他基础通用
   feedParser.isFeed = feed => isFeedElement(feed);
+  feedParser.isSearchFeed = feed => isSearchFeedElement(feed);
   feedParser.isForward = feed => isForwardFeedElement(feed);
 
   // 评论内容

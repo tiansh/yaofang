@@ -173,8 +173,10 @@
   observer.feed.apply = function (feed, { result, filter = null, reason = null }) {
     feed.setAttribute('yawf-feed-display', result || 'unset');
     if (result && result !== 'unset') {
-      const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]').textContent;
-      feed.setAttribute('yawf-feed-author', author);
+      const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]') ||
+        feed.querySelector('.card-feed .info .name');
+      const authorName = author && author.textContent;
+      if (authorName) feed.setAttribute('yawf-feed-author', authorName);
       if (reason) feed.setAttribute('yawf-feed-reason', reason);
       util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
     }

@@ -263,7 +263,7 @@
       observer.feed.filter(function fakeWeiboFilter(feed) {
         if (feed.matches('[id^="Pl_Core_WendaList__"] *')) return null;
         if (feed.hasAttribute('mid')) return null;
-        if (rule.isEnabled()) return 'hide';
+        if (rule.isEnabled() && init.page.type() !== 'search') return 'hide';
         return 'unset';
       }, { priority: 1e6 });
       this.addConfigListener(() => { observer.feed.rerun(); });

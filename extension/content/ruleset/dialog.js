@@ -59,7 +59,7 @@
   };
 
   const renderSearch = (layer, input) => {
-    const searchTexts = (input.match(/\S+/g) || []).filter(x => !x.includes(':'));
+    const searchTexts = (input.match(/\S+/g) || []).filter(x => !x.includes(':')).map(t => t.toUpperCase());
     const [_verMatch, verOp, verNum] = input.match(/\bver(?:sion)?:([><]?=?)(\d+)\b/) || [];
     const versionTest = {
       '>': v => v > verNum,
@@ -78,7 +78,7 @@
       filter(item) {
         if (!item.version) return false;
         if (!versionTest(item.version)) return false;
-        const text = item.text();
+        const text = item.text().toUpperCase();
         if (searchTexts.some(t => !text.includes(t))) return false;
         return true;
       },

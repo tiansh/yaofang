@@ -240,6 +240,7 @@
   ; (async function () {
 
     contextmenu.addListener(async function (event) {
+      if (init.page.type() === 'search') return null;
       const selection = window.getSelection();
       const target = event.target;
       let useSelection = true;
