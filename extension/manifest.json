@@ -163,7 +163,7 @@
     },
     {
       "matches": [
-        "https://api.weibo.com/chat/*"
+        "https://api.weibo.com/chat*"
       ],
       "js": [
         "content/util/inject.js",
