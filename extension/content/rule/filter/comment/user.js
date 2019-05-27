@@ -39,7 +39,7 @@
         const contain = accounts.find(account => users.has(account));
         if (!contain) return null;
         return { result: rule.feedAction };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.comment.rerun(); });
     }
   }

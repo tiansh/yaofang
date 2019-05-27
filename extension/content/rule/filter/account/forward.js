@@ -50,7 +50,7 @@
         const reason = i18n.accountAuthorForwardReason.replace('{1}', () => feedParser.author.name(feed));
         if (contain) return { result: rule.feedAction, reason };
         return null;
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }

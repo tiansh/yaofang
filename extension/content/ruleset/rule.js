@@ -731,6 +731,8 @@
     }
     render(...args) {
       const content = super.render(...args);
+      const contentLabel = content.querySelector('label');
+      contentLabel.replaceWith(...Array.from(contentLabel.childNodes));
       const container = document.createElement('span');
       const iconType = this.icon || 'ask';
       const icon = document.createElement('i');

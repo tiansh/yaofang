@@ -44,13 +44,12 @@
       const rule = this;
       observer.feed.filter(function sourceFeedFilter(/** @type {Element} */feed) {
         const text = feedParser.source.text(feed);
-        if (rule.feedAction === 'show') console.log('Feed: %o, Source: %o', feed, text);
         const sources = rule.ref.items.getConfig();
         const contain = sources.some(source => text.includes(source));
         if (!contain) return null;
         const reason = i18n.sourceReason.replace('{1}', () => contain);
         return { result: rule.feedAction, reason };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }

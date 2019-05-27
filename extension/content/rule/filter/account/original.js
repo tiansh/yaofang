@@ -79,7 +79,7 @@
         if (!contain) return null;
         const reason = i18n.accountOriginalReason.replace('{1}', () => feedParser.original.name(feed));
         return { result: rule.feedAction, reason };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }
@@ -135,7 +135,7 @@
         const match = followers.some(i => i >= limit);
         if (!match) return null;
         return { result: 'hide' };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.addConfigListener(() => { observer.feed.rerun(); });
       this.ref.account.addConfigListener(() => { observer.feed.rerun(); });
       this.ref.count.addConfigListener(() => { observer.feed.rerun(); });

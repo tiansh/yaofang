@@ -40,7 +40,7 @@
         const reasonText = contain.length > 8 ? contain.slice(0, 6) + '…' : contain;
         const reason = i18n.textContentReason.replace('{1}', () => reasonText);
         return { result: rule.feedAction, reason };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.comment.rerun(); });
     }
   }
@@ -100,7 +100,7 @@
         const matchReg = regexen.find(regex => regex.test(text));
         if (!matchReg) return null;
         return { result: rule.feedAction };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.comment.rerun(); });
     }
   }

@@ -111,8 +111,8 @@
     let post = contentFull ? !short ? [contentFull] : long ? [content, contentFull] : [content] : [content];
     if (detail) {
       const [author] = feedParser.author.dom(feed);
-      const source = feedParser.source.dom(feed, true);
-      const date = feedParser.date.dom(feed, true);
+      const [source] = feedParser.source.dom(feed, true);
+      const [date] = feedParser.date.dom(feed, true);
       post = [author, ...post, source, date];
     }
     if (feed.hasAttribute('omid')) {
@@ -121,8 +121,8 @@
       let ori = reasonFull ? !short ? [reasonFull] : long ? [reason, reasonFull] : [reason] : [reason];
       if (detail) {
         const [original] = feedParser.original.dom(feed);
-        const sourceOri = feedParser.source.dom(feed, false);
-        const dateOri = feedParser.date.dom(feed, false);
+        const [sourceOri] = feedParser.source.dom(feed, false);
+        const [dateOri] = feedParser.date.dom(feed, false);
         ori = [original, ...ori, sourceOri, dateOri];
       }
       return [...post, null, ...ori];
@@ -203,17 +203,6 @@
     };
     parsers.push(lineBreak);
     /**
-     * @提到（文本✓，正则✓）
-     * @param {Element} node
-     */
-    const mention = node => {
-      if (node.matches('a[usercard]')) {
-        return node.textContent.trim().replace(/^@?/, '@') + ' ';
-      }
-      return null;
-    };
-    parsers.push(mention);
-    /**
      * #话题#（文本✓，正则✓）
      * @param {Element} node
      */
@@ -252,35 +241,6 @@
     };
     parsers.push(stock);
     /**
-     * 链接
-     * URL（文本✗，正则✓）
-     * 标题（文本✓，正则✓）
-     * @param {Element} node
-     */
-    const link = node => {
-      const output = [];
-      if (!node.matches('a[action-type="feed_list_url"]')) return null;
-      if (node.matches('[suda-uatrack*="1022-topic"]')) return null;
-      if (detail) {
-        const url = new URL(node.href.trim());
-        if (url.host + url.pathname === 'feed.mix.sina.com.cn/link_card/redirect') {
-          output.push(url.searchParams.get('url'));
-        } else output.push(url.href);
-        output.push('\ufff9');
-        const icon = node.querySelector('.W_ficon');
-        if (icon) output.push(icon.textContent);
-      }
-      if (node.matches('[title]')) {
-        output.push(node.getAttribute('title').trim());
-      }
-      if (detail) {
-        output.push('\ufffb');
-      }
-      if (output.length) return ' ' + output.join(' ') + ' ';
-      return null;
-    };
-    parsers.push(link);
-    /**
      * [表情]（文本✓，正则✓）
      * @param {Element} node
      */
@@ -315,11 +275,22 @@
     };
     parsers.push(original);
     /**
+     * @提到（文本✓，正则✓）
+     * @param {Element} node
+     */
+    const mention = node => {
+      if (node.matches('a[usercard]')) {
+        return node.textContent.trim().replace(/^@?/, '@') + ' ';
+      }
+      return null;
+    };
+    parsers.push(mention);
+    /**
      * 来源（文本✗，正则✓）
      * @param {Element} node
      */
     const source = node => {
-      if (!node.matches('.WB_from a:not([date])')) return null;
+      if (!node.matches('.WB_from a:not([date]):not([yawf-date])')) return null;
       if (!detail) return '';
       return (node.title || node.textContent).trim();
     };
@@ -329,9 +300,9 @@
      * @param {Element} node
      */
     const timestamp = node => {
-      if (!node.matches('a[date]')) return null;
+      if (!node.matches('a[date], a[yawf-date]')) return null;
       if (!detail) return '';
-      const date = new Date(+node.getAttribute('date'));
+      const date = new Date(+(node.getAttribute('date') || node.getAttribute('yawf-date')));
       // 将时间格式化为东八区的 ISO 8601 串
       date.setHours(date.getHours() + 8);
       if ((date.getUTCFullYear() + '').length !== 4) return '';
@@ -347,6 +318,35 @@
       ].join('');
     };
     parsers.push(timestamp);
+    /**
+     * 链接
+     * URL（文本✗，正则✓）
+     * 标题（文本✓，正则✓）
+     * @param {Element} node
+     */
+    const link = node => {
+      const output = [];
+      if (!node.matches('a[action-type="feed_list_url"]')) return null;
+      if (node.matches('[suda-uatrack*="1022-topic"]')) return null;
+      if (detail) {
+        const url = new URL(node.href.trim());
+        if (url.host + url.pathname === 'feed.mix.sina.com.cn/link_card/redirect') {
+          output.push(url.searchParams.get('url'));
+        } else output.push(url.href);
+        output.push('\ufff9');
+        const icon = node.querySelector('.W_ficon');
+        if (icon) output.push(icon.textContent);
+      }
+      if (node.matches('[title]')) {
+        output.push(node.getAttribute('title').trim());
+      }
+      if (detail) {
+        output.push('\ufffb');
+      }
+      if (output.length) return ' ' + output.join(' ') + ' ';
+      return null;
+    };
+    parsers.push(link);
 
     /**
      * @param {Node} node
@@ -636,6 +636,7 @@
     const isSearch = isSearchFeedElement(feed);
     const contents = feedContentElements(feed, { short, long });
     const domList = [].concat(...contents.map(content => {
+      if (!content) return;
       if (!isSearch) {
         return content.querySelectorAll('a[action-type="feed_list_url"]');
       } else {
@@ -662,19 +663,19 @@
     const isSearch = isSearchFeedElement(feed);
     if (isMain === true) {
       if (!isSearch) {
-        return Array.from(feed.querySelectorAll('.WB_detail > .WB_from a:not([date])'));
+        return Array.from(feed.querySelectorAll('.WB_detail > .WB_from a:not([date]):not([yawf-date])'));
       } else {
         return Array.from(feed.querySelectorAll('.content > .from a:last-child:not(:first-child)'));
       }
     } else if (isMain === false) {
       if (!isSearch) {
-        return Array.from(feed.querySelectorAll('.WB_expand > .WB_from a:not([date])'));
+        return Array.from(feed.querySelectorAll('.WB_expand .WB_from a:not([date]):not([yawf-date])'));
       } else {
         return Array.from(feed.querySelectorAll('.card-comment .from a:last-child:not(:first-child)'));
       }
     } else {
       if (!isSearch) {
-        return Array.from(feed.querySelectorAll('.WB_from a:not([date])'));
+        return Array.from(feed.querySelectorAll('.WB_from a:not([date]):not([yawf-date])'));
       } else {
         return Array.from(feed.querySelectorAll('.from a:last-child:not(:first-child)'));
       }
@@ -694,19 +695,19 @@
     const isSearch = isSearchFeedElement(feed);
     if (isMain === true) {
       if (!isSearch) {
-        return Array.from(feed.querySelectorAll('.WB_detail > .WB_from a[date]'));
+        return Array.from(feed.querySelectorAll('.WB_detail > .WB_from a[date], .WB_detail > .WB_from a[yawf-date]'));
       } else {
         return Array.from(feed.querySelectorAll('.content > .from a:first-child'));
       }
     } else if (isMain === false) {
       if (!isSearch) {
-        return Array.from(feed.querySelectorAll('.WB_expand > .WB_from a[date]'));
+        return Array.from(feed.querySelectorAll('.WB_expand .WB_from a[date], .WB_expand .WB_from a[yawf-date]'));
       } else {
         return Array.from(feed.querySelectorAll('.card-comment .from a:first-child'));
       }
     } else {
       if (!isSearch) {
-        return Array.from(feed.querySelectorAll('.WB_from a[date]'));
+        return Array.from(feed.querySelectorAll('.WB_from a[date], .WB_from a[yawf-date]'));
       } else {
         return Array.from(feed.querySelectorAll('.from a:first-child'));
       }

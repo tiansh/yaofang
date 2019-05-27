@@ -49,12 +49,13 @@
       const rule = this;
       observer.feed.filter(function regexFeedFilter(/** @type {Element} */feed) {
         const text = feedParser.text.detail(feed);
+        if (rule.feedAction === 'show') console.log('Feed %o Regex Text: %o', feed, text);
         const regexen = rule.ref.items.getConfigCompiled();
         const matchReg = regexen.find(regex => regex.test(text));
         if (!matchReg) return null;
         const reason = ((matchReg + '').match(/\(\?=\|(([^)]|\\\))*)\)/) || [])[1] || i18n.regexContextReason;
         return { result: rule.feedAction, reason };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }

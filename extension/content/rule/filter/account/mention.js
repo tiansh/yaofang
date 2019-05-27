@@ -49,7 +49,7 @@
         if (!contain) return null;
         const reason = i18n.accountMentionReason.replace('{1}', () => contain);
         return { result: rule.feedAction, reason };
-      }, { priority: this.filterPriority });
+      }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
   }
