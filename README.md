@@ -2,7 +2,7 @@
 
 YAWF（Yet Another Weibo Filter）Firefox 扩展
 
-AMO: [https://addons.mozilla.org/zh-TW/firefox/addon/yawf/?src=external-github-readme][AMO]
+AMO: [https://addons.mozilla.org/zh-CN/firefox/addon/yawf/][AMO]
 
 ### 主要功能
 
@@ -48,3 +48,4 @@ AMO: [https://addons.mozilla.org/zh-TW/firefox/addon/yawf/?src=external-github-r
 您可以在脚本的 GitHub 仓库获得源代码；此外由于代码未经编译与压缩，AMO 下载的扩展解压缩后亦可直接获得脚本源代码。
 
 [AMO]: https://addons.mozilla.org/zh-CN/firefox/addon/yawf/?src=addon-github-readme
+
