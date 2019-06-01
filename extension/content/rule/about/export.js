@@ -5,6 +5,7 @@
   const rule = yawf.rule;
   const download = yawf.download;
   const init = yawf.init;
+  const importer = yawf.importer;
 
   const ui = util.ui;
   const css = util.css;
@@ -38,6 +39,11 @@
       tw: '匯入的設定會覆蓋您當前已有的設定，您確定要匯入設定嗎？',
       en: 'The imported settings may replace your current settings. Are you sure you want to import this file?',
     },
+    configImportWarningExternal: {
+      cn: '您正在导入来自“{}”的设置，导入工具会尽量将您的设置转换为本扩展支持的功能，但实际效果仍会有所不同。导入后建议您打开扩展的设置复查各项设置。导入的设置会覆盖您当前已有的设置，确实要导入设置吗？',
+      tw: '您正試圖匯入來自於「{}」的設定，匯入工具會盡可能將您的設定轉換為本擴充套件支援的功能，但實際效果仍會有所不同。執行匯入後，建議您打開設定方塊手工複查。匯入的設定會覆蓋您當前已有的設定，您確定要匯入設定嗎？',
+      en: 'You are trying to import settings from "{}". Importing tool will try its best to convert your settings to what this extension supported. And due to the limitation, some features may not work as your expect. Remeber to recheck the settings after importing. The imported settings may replace your current settings. Are you sure you want to import this file?',
+    },
     configImportSuccessTitle: { cn: '设置导入完成', tw: '設定匯入完成', en: 'Import settings completed' },
     configImportSuccess: { cn: '已经成功地导入了设置', tw: '已经成功地匯入了設定', en: 'Successfully imported settings' },
     configImportFailTitle: { cn: '设置导入失败', tw: '設定匯入失败', en: 'Import settings failed' },
@@ -59,13 +65,21 @@
       tw: '藥方設定',
       en: 'yaofang-config',
     },
+    configImportWbpButton: {
+      cn: '从“眼不见心不烦”导入',
+      tw: '從「眼不見心不煩」匯入',
+      en: 'Import from "眼不见心不烦"',
+    },
   });
+
+  let wbpConfig = null;
 
   backup.importExport = rule.Rule({
     id: 'script_import_export',
     version: 1,
     parent: backup.backup,
     render() {
+      const rule = this;
       const container = document.createElement('span');
       container.className = 'yawf-config-item yawf-config-rule';
       container.innerHTML = '<label><input type="file" style=" width: 1px; height: 1px; margin: 0 -1px 0 0; opacity: 0;" /><span class="W_btn_b yawf-import" style="cursor: pointer"><span class="W_f14"></span></span></label><a class="W_btn_b yawf-export" href="javascript:;"><span class="W_f14"></span></a><a class="W_btn_b yawf-reset" href="javascript:;"><span class="W_f14"></span></a>';
@@ -76,25 +90,21 @@
       importButton.querySelector('.W_f14').textContent = i18n.configImportButton;
       exportButton.querySelector('.W_f14').textContent = i18n.configExportButton;
       resetButton.querySelector('.W_f14').textContent = i18n.configResetButton;
-      importInput.addEventListener('change', async event => {
-        const file = importInput.files[0];
-        importInput.value = null;
-        let config = null;
+      const readFile = async function (file) {
         try {
           if (file.size > (1 << 24)) throw new RangeError();
-          const fileContent = await new Promise(resolve => {
+          return await new Promise(resolve => {
             const reader = new FileReader();
             reader.addEventListener('load', () => {
               resolve(reader.result);
             });
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
           });
-          const data = JSON.parse(fileContent);
-          if (!data.version || !data.yaofang || !data.config) throw RangeError();
-          config = data.config;
         } catch (e) {
           // read failed
         }
+      };
+      const importData = async function ({ config, source }) {
         if (!config) {
           ui.alert({
             id: 'yawf-import-failed',
@@ -106,21 +116,33 @@
         const confirmAnswer = await ui.confirm({
           id: 'yawf-import-confirm',
           title: i18n.configImportWarningTitle,
-          text: i18n.configImportWarning,
+          text: source ?
+            i18n.configImportWarningExternal.replace('{}', () => source) :
+            i18n.configImportWarning,
         });
         if (!confirmAnswer) return;
-        this.configPool.import(config);
-        ui.alert({
+        await rule.configPool.import(config);
+        await ui.alert({
           id: 'yawf-import-success',
           title: i18n.configImportSuccessTitle,
           text: i18n.configImportSuccess,
-        }).then(() => {
-          // 显示新功能提示
-          about.update.whatsNew.execute();
         });
+        about.update.whatsNew.execute();
+      };
+      importInput.addEventListener('change', async event => {
+        const file = importInput.files[0];
+        importInput.value = null;
+        let config = null, source = null;
+        try {
+          const fileContent = await readFile(file);
+          ({ config, source } = importer.parse(fileContent));
+        } catch (e) {
+          // 读取文件失败，在下面报错
+        }
+        importData({ config, source });
       });
       exportButton.addEventListener('click', event => {
-        const config = this.configPool.export();
+        const config = rule.configPool.export();
         const { name, version } = browser.runtime.getManifest();
         const [major, minor, micro] = version.split('.');
         // 脚本版用的是 yawf, conf, ver，换一套键值可以区分版本以及避免被不支持的脚本版导入
@@ -144,15 +166,39 @@
           text: i18n.configResetWarning,
         });
         if (!confirmAnswer) return;
-        this.configPool.reset();
+        await rule.configPool.reset();
         about.update.whatsNew.execute();
+        location.reload();
       });
+      if (wbpConfig) try {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = '<a class="W_btn_b yawf-import-wbp" href="javascript:;"><span class="W_f14"></span></a>';
+        const importWbpButton = wrap.querySelector('.yawf-import-wbp');
+        importWbpButton.querySelector('.W_f14').textContent = i18n.configImportWbpButton;
+        importWbpButton.addEventListener('click', event => {
+          importData(wbpConfig);
+        });
+        container.append(...wrap.childNodes);
+      } catch (e) {
+        // 似乎不能导入，那就不管他了
+      }
       return container;
     },
   });
 
   css.append(`
-.yawf-export, .yawf-reset { margin-left: 10px; }
+.yawf-export, .yawf-reset, .yawf-import-wbp { margin-left: 10px; }
 `);
+
+  (function () {
+    document.addEventListener('wbpPost', function getData(event) {
+      try {
+        const data = JSON.parse(event.detail.slice(event.detail.indexOf('=') + 1));
+        wbpConfig = importer.ybjxbfConvert(data);
+      } catch (e) {
+        // 可能是数据损坏，总之不管他
+      }
+    });
+  }());
 
 }());

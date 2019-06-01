@@ -47,7 +47,7 @@
   rule.groups({
     baseClass: CommentUserFeedRule,
     tab: 'comment',
-    key: 'id',
+    key: 'name',
     type: 'usernames',
     version: 1,
     title: () => i18n.accountCommentGroupTitle,

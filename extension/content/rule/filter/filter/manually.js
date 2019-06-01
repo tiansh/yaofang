@@ -101,7 +101,7 @@
               text: i18n.manuallyHideFeedDialogText,
             });
             if (!answer) return;
-            hideList.configPool.reset();
+            await hideList.configPool.reset();
           });
           return button;
         },

@@ -10,18 +10,13 @@
   }[baseUrl.protocol] || null;
   browserInfo.name = browserName;
 
+  // browser.runtime.getBrowserInfo 这东西似乎在 content script 里面没法用
+  // 所以还不如用 UA
   if (browserName === 'Firefox') {
     try {
       browserInfo.fullVersion = navigator.userAgent.match(/Firefox\/([\d.]+)/)[1];
       browserInfo.majorVersion = parseInt(browserInfo.fullVersion, 10);
     } catch (fxUaErr) { /* ignore */ }
-    try {
-      browserInfo.runtime.getBrowserInfo().then(info => {
-        if (!info || !info.version) return;
-        browserInfo.fullVersion = info.version;
-        browserInfo.majorVersion = parseInt(info.version, 10);
-      });
-    } catch (FxApiErr) { /* ignore */ }
   }
   if (browserName === 'Chrome') {
     try {

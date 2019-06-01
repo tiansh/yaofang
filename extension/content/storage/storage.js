@@ -192,12 +192,13 @@
         const values = this.value;
         const keys = new Set(Object.keys(values).concat(Object.keys(newValues)));
         keys.forEach(key => {
-          const strNewValue = newValues[key] === void 0 ? void 0 : JSON.stringify(newValues[key]);
+          const newValue = newValues[key];
+          const strNewValue = newValue === void 0 ? void 0 : JSON.stringify(newValue);
           const oldValue = values[key];
           const strOldValue = oldValue === void 0 ? void 0 : JSON.stringify(oldValue);
           if (strNewValue === strOldValue) return;
           values[key] = strNewValue === void 0 ? void 0 : JSON.parse(strNewValue);
-          this.triggerOnChanged(key, JSON.parse(strNewValue), oldValue);
+          this.triggerOnChanged(key, strNewValue && JSON.parse(strNewValue), oldValue);
         });
       });
     }
@@ -254,15 +255,15 @@
     key(key) {
       return new ConfigKey(this, key);
     }
-    import(data) {
+    async import(data) {
       this.value = JSON.parse(JSON.stringify(data));
-      this.storage.set(this.value);
+      await this.storage.set(this.value);
     }
     export() {
       return JSON.parse(JSON.stringify(this.value));
     }
-    reset() {
-      this.storage.set({});
+    async reset() {
+      await this.storage.set({});
     }
   }
 

@@ -152,6 +152,10 @@
         "content/rule/feeds/media.js",
 
         "content/rule/about/about.js",
+        "content/rule/about/importer/importer.js",
+        "content/rule/about/importer/yaofang.js",
+        "content/rule/about/importer/yawf.js",
+        "content/rule/about/importer/ybjxbf.js",
         "content/rule/about/export.js",
         "content/rule/about/whatsnew.js",
         "content/rule/about/debug.js",

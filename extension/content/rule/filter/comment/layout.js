@@ -43,6 +43,17 @@
           if (!button.classList.contains('curr')) button.click();
         });
       });
+      observer.comment.onBefore(function switchToAllComment(comment) {
+        const feed = comment.closest('[mid]');
+        if (!feed) return;
+        const button = feed.querySelector([
+          'a[action-type="feed_list_commentSearch"][action-data*="filter=all"]:not([yawf-all-comment-again])',
+          'a[action-type="search_type"][action-data*="filter=all"]:not([yawf-all-comment-again])',
+        ].join(','));
+        if (!button) return;
+        button.setAttribute('yawf-all-comment-again', 'yawf-all-comment-again');
+        if (!button.classList.contains('curr')) button.click();
+      });
     },
   });
 

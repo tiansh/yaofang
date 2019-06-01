@@ -636,7 +636,7 @@
     const isSearch = isSearchFeedElement(feed);
     const contents = feedContentElements(feed, { short, long });
     const domList = [].concat(...contents.map(content => {
-      if (!content) return;
+      if (!content) return [];
       if (!isSearch) {
         return content.querySelectorAll('a[action-type="feed_list_url"]');
       } else {
@@ -647,7 +647,7 @@
       }
     }));
     const topics = new Set(feedParser.topic.dom(feed, { short, long }));
-    return domList.filter(link => !topics.has(link));
+    return domList.filter(link => link && !topics.has(link));
   };
   link.text = (feed, { short = false, long = true } = {}) => {
     const domList = link.dom(feed, { short, long });
