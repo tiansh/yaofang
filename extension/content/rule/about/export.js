@@ -104,6 +104,7 @@
         if (!config) {
           ui.alert({
             id: 'yawf-import-failed',
+            icon: 'warn',
             title: i18n.configImportFailTitle,
             text: i18n.configImportFail,
           });
@@ -120,6 +121,7 @@
         await rule.configPool.import(config);
         await ui.alert({
           id: 'yawf-import-success',
+          icon: 'succ',
           title: i18n.configImportSuccessTitle,
           text: i18n.configImportSuccess,
         });
@@ -151,8 +153,12 @@
         const text = JSON.stringify(data, null, 2);
         const blob = new Blob([text], { type: 'application/json' });
         const username = init.page.$CONFIG.nick;
-        const date = new Date().toISOString().replace(/-|T.*/g, '');
-        const filename = download.filename(`${username}-${i18n.configFilename}-${date}.json`);
+        const date = new Date();
+        const year = date.getFullYear() + '';
+        const month = ('0' + date.getMonth()).slice(-2);
+        const day = ('0' + date.getDate()).slice(-2);
+        const dateStr = year + month + day;
+        const filename = download.filename(`${username}-${i18n.configFilename}-${dateStr}.json`);
         download.blob({ blob, filename });
       });
       resetButton.addEventListener('click', async event => {
