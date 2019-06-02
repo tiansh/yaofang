@@ -91,18 +91,14 @@
       exportButton.querySelector('.W_f14').textContent = i18n.configExportButton;
       resetButton.querySelector('.W_f14').textContent = i18n.configResetButton;
       const readFile = async function (file) {
-        try {
-          if (file.size > (1 << 24)) throw new RangeError();
-          return await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.addEventListener('load', () => {
-              resolve(reader.result);
-            });
-            reader.readAsArrayBuffer(file);
+        if (file.size > (1 << 24)) throw new RangeError();
+        return new Promise(resolve => {
+          const reader = new FileReader();
+          reader.addEventListener('load', () => {
+            resolve(reader.result);
           });
-        } catch (e) {
-          // read failed
-        }
+          reader.readAsArrayBuffer(file);
+        });
       };
       const importData = async function ({ config, source }) {
         if (!config) {

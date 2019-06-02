@@ -88,7 +88,7 @@
           return [{ source: regex.source, flags: regex.flags }];
         }
         return [];
-      }
+      };
       const userIdMapper = userId => [{ id: userId }];
       const textMapper = text => [text];
 
@@ -171,21 +171,15 @@
   }
 
   const convertData = data => {
-    if (!Array.isArray(data.hideMods) || !data.version) throw TypeError();
+    if (!Array.isArray(data.hideMods)) throw TypeError();
     const config = new Converter().convert(data);
     return { config, source: i18n.ybjxbfScriptSource };
   };
 
   importer.addParser(function ybjxbf(dataArrayBuffer) {
     let text = null;
-    try {
-      const decoder = new TextDecoder();
-      text = decoder.decode(dataArrayBuffer);
-    } catch (e) {
-      // 如果不能用 UTF-8 解码，那么试试用 GBK
-      const decoder = new TextDecoder('gbk');
-      text = decoder.decode(dataArrayBuffer);
-    }
+    const decoder = new TextDecoder();
+    text = decoder.decode(dataArrayBuffer);
     const data = JSON.parse(text);
     return convertData(data);
   });

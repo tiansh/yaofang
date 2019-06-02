@@ -51,7 +51,7 @@
   clean.CleanGroup('feed', () => i18n.cleanFeedGroupTitle);
   clean.CleanRule('recommand', () => i18n.cleanFeedRecommand, 1, '[node-type="recommfeed"] { display: none !important; }');
   clean.CleanRule('feed_outer_tip', () => i18n.cleanFeedOuterTip, 1, {
-    acss: '.WB_feed .W_tips { display: none !important; }',
+    acss: '.WB_feed > .W_tips { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedOuterTip } },
   });
   clean.CleanRule('feed_tip', () => i18n.cleanFeedCommentTip, 1, {
