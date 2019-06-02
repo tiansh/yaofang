@@ -23,6 +23,11 @@
       tw: '首頁',
       en: 'Homepage',
     },
+    feedsHomepageNewest: {
+      cn: '使用最新微博代替首页（首页微博时间顺序排列）（推荐）',
+      tw: '使用最新微博代替首頁（首頁微博時間順序排列）（推薦）',
+      en: 'Use newest feeds for home page (home page timeline order) (suggested)',
+    },
     feedsHomepageSingleGroup: {
       cn: '使用单个分组页代替首页（首页微博时间顺序排列）{{i}}||分组{{group}}',
       tw: '使用單個分組頁代替首頁（首頁微博時間順序排列）{{i}}||分組{{group}}',
@@ -85,13 +90,16 @@
   // 因为 YAWF 脚本用的 -1，这里为了避免可能的冲突（虽然别的功能还是会冲突），所以用 -2
   const CUSTOM_GID = -2;
 
-  const fixHomeUrlToGroup = function (targetGroup) {
+  const fixHomeUrl = function (target) {
     const setParam = function (url) {
-      if (targetGroup === 'custom') {
+      if (target === 'newest') {
+        url.searchParams.delete('gid');
+        url.searchParams.set('is_new', 1);
+      } else if (target === 'custom') {
         url.searchParams.set('gid', CUSTOM_GID);
-      } else if (targetGroup.startsWith('g')) {
-        url.searchParams.set('gid', targetGroup.slice(1));
-      } else if (targetGroup === 'whisper') {
+      } else if (target.startsWith('g')) {
+        url.searchParams.set('gid', target.slice(1));
+      } else if (target === 'whisper') {
         url.searchParams.delete('gid');
         url.searchParams.set('whisper', 1);
       }
@@ -103,14 +111,15 @@
       if (!isHomeFeed && !notHomeFeed) return;
       const url = new URL(location.href);
       const hasGid = Boolean(+url.searchParams.get('gid'));
+      const isNew = Boolean(+url.searchParams.get('is_new'));
       const isSearch = Boolean(+url.searchParams.get('is_search'));
       const isSpecial = ['isfriends', 'vplus', 'isfriends', 'isgroupsfeed', 'whisper']
         .some(key => +url.searchParams.get(key));
       const isCustomGid = hasGid && url.searchParams.get('gid') < 0;
-      const shouldAddGid = isHomeFeed && !isSearch && !isSpecial;
+      const shouldBeFixed = isHomeFeed && !isSearch && !isSpecial;
       const shouldRemoveGid = notHomeFeed && isCustomGid;
-      const incorrectGid = isCustomGid && targetGroup !== 'custom';
-      if ((!hasGid || incorrectGid) && shouldAddGid) {
+      const incorrectGid = isCustomGid && target !== 'custom';
+      if ((!hasGid || incorrectGid) && !isNew && shouldBeFixed) {
         setParam(url);
         location.replace(url.href);
       } else if (hasGid && shouldRemoveGid) {
@@ -120,7 +129,7 @@
     };
     observer.dom.add(updateLocation);
 
-    const updateHomeLinksWithGid = function updateHomeLinksWithGid() {
+    const updateHomeLinks = function updateHomeLinks() {
       /** @type {HTMLAnchorElement[]} */
       const links = Array.from(document.querySelectorAll([
         '.gn_logo a', // 导航栏logo
@@ -133,8 +142,26 @@
         link.href = url.href;
       });
     };
-    observer.dom.add(updateHomeLinksWithGid);
+    observer.dom.add(updateHomeLinks);
   };
+
+  homepage.newestFeeds = rule.Rule({
+    id: 'filter_homepage_newest_feeds',
+    version: 21,
+    parent: homepage.homepage,
+    template: () => i18n.feedsHomepageNewest,
+    init() {
+      this.addConfigListener(config => {
+        if (config) {
+          homepage.singleGroup.setConfig(false);
+          homepage.multiGroup.setConfig(false);
+        }
+      });
+    },
+    ainit() {
+      fixHomeUrl('newest');
+    },
+  });
 
   let groupListLazyPromiseResolve;
   const groupListLazyPromise = new Promise(resolve => {
@@ -161,7 +188,10 @@
     },
     init() {
       this.addConfigListener(config => {
-        if (config) homepage.multiGroup.setConfig(false);
+        if (config) {
+          homepage.newestFeeds.setConfig(false);
+          homepage.multiGroup.setConfig(false);
+        }
       });
     },
     async ainit() {
@@ -170,7 +200,7 @@
         await groupListLazyPromise;
         group = this.ref.group.getConfig();
       }
-      fixHomeUrlToGroup(group);
+      fixHomeUrl(group);
     },
   });
 
@@ -206,7 +236,10 @@
     },
     init() {
       this.addConfigListener(config => {
-        if (config) homepage.singleGroup.setConfig(false);
+        if (config) {
+          homepage.newestFeeds.setConfig(false);
+          homepage.singleGroup.setConfig(false);
+        }
       });
     },
     ainit() {
@@ -219,7 +252,7 @@
 
       if (groups.length === 0) return;
 
-      fixHomeUrlToGroup('custom');
+      fixHomeUrl('custom');
 
       // 检查当前页面是否需要启用分组拼凑首页功能
       const checkPage = function checkMultiGroupPage() {
@@ -518,7 +551,7 @@
       css.append(`
 #v6_pl_content_homefeed [yawf-feed-preload="unread"] { display: none !important; }
 #home_new_feed_tip { display: none !important; }
-.WB_feed [node-type="feed_list_timeTip"] { display: none !important; }
+.WB_feed [node-type="yawf-feed_list_timeTip"], .WB_feed [node-type="feed_list_timeTip"] { display: none !important; }
 .WB_feed a.notes[action-type="feed_list_newBar"][node-type="feed_list_newBar"] { display: none !important; }
 .WB_feed div.W_loading[requesttype="newFeed"] { display: none !important; }
 .WB_feed .WB_notes[requesttype="newFeed"] { display: none !important; }
@@ -530,6 +563,7 @@
         if (feed.hasAttribute('yawf-feed-preload')) return;
         let isUnread = true;
         if (feed.matches('.WB_feed_type[yawf-feed-preload="show"] ~ *')) isUnread = false;
+        if (feed.matches('.WB_feed_type[yawf-feed-preload="show"] ~ * *')) isUnread = false;
         if (document.querySelectorAll('.WB_feed_type[yawf-feed-preload]').length < 5) isUnread = false;
         if (init.page.$CONFIG.uid === feedParser.author.id(feed)[0]) isUnread = false;
         feed.setAttribute('yawf-feed-preload', isUnread ? 'unread' : 'show');

@@ -18,6 +18,7 @@
     cleanLeftLike: { cn: '我的赞', tw: '我的讚', en: 'Like' },
     cleanLeftHot: { cn: '热门微博', tw: '熱門微博', en: 'Hot Feeds' },
     cleanLeftTV: { cn: '热门视频', tw: '熱門視頻', en: 'Hot Video' },
+    cleanLeftNewFeed: { cn: '最新微博', tw: '最新微博', en: '最新微博 (Newest Feeds)' },
     cleanLeftFriends: { cn: '好友圈', tw: '好友圈', en: 'Friends' },
     cleanLeftGroupToMe: { cn: '群微博', tw: '群微博', en: '群微博 (Group)' },
     cleanLeftSpecial: { cn: '特别关注', tw: '特别關注', en: 'Special Focus' },
@@ -94,6 +95,7 @@
   clean.CleanRule('like', () => i18n.cleanLeftLike, 1, leftHide('like'));
   clean.CleanRule('hot', () => i18n.cleanLeftHot, 1, leftHide('hot'));
   clean.CleanRule('tv', () => i18n.cleanLeftTV, 1, leftHide('tv'));
+  clean.CleanRule('new_feed', () => i18n.cleanLeftNewFeed, 21, leftHide('new'));
   clean.CleanRule('friends', () => i18n.cleanLeftFriends, 1, leftHide('friends'));
   clean.CleanRule('group_to_me', () => i18n.cleanLeftGroupToMe, 1, leftHide('groupsfeed'));
   clean.CleanRule('special', () => i18n.cleanLeftSpecial, 1, leftHide('special'));
@@ -107,6 +109,7 @@
     '#v6_pl_leftnav_group .lev:not([yawf-id])',
   ].join(','), {
     'a[href*="krcom.cn"]': 'leftnav_tv',
+    'a[href*="is_new=1"]': 'leftnav_new',
     'a[href*="/home?"]': 'leftnav_home',
     'a[href^="/at/"]': 'leftnav_message',
     'a[href^="/fav"]': 'leftnav_fav',

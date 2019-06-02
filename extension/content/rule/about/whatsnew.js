@@ -93,7 +93,7 @@
         button: {
           close() {
             whatsNewDialog.hide();
-            this.ref.last.setConfig(currentVersion);
+            whatsNew.ref.last.setConfig(currentVersion);
           },
         },
       });

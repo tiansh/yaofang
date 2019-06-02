@@ -32,7 +32,9 @@
     const content = document.createElement('span');
     content.textContent = i18n.cleanTabSelectAll;
     button.appendChild(content);
-    button.addEventListener('click', () => {
+    button.addEventListener('click', event => {
+      if (!event.isTrusted) return;
+      if (event.buttons !== 1) return;
       const group = clean[id];
       Object.keys(group).forEach(key => {
         const item = group[key];
@@ -86,6 +88,7 @@
 .yawf-clean-group + .yawf-config-group-items { display: grid; grid-template-columns: repeat(${i18n.cleanConfigColumnCount}, 1fr); grid-gap: 5px 10px; margin: 5px 20px; }
 .yawf-clean-group + .yawf-config-group-items > .yawf-config-rule { margin: 0; }
 .yawf-clean-group-all { float: right; font-weight: normal; cursor: pointer; }
+.yawf-whatsnew-dialog .yawf-clean-group-all, [node-type="searchFilterGroupLayer"] .yawf-clean-group-all { display: none; }
 `);
   }, { priority: priority.DEFAULT });
 
