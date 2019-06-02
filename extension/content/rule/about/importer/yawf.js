@@ -61,6 +61,7 @@
       rule('weibo.tool.auto_check_following.frequency', 'filter_follow_check.frequency', days => days * 86400e3);
       rule('weibo.tool.uncheck_follow_presenter', 'uncheck_follow_presenter');
       rule('weibo.tool.auto_unfold_ttartical', 'show_artical_without_follow');
+      rule('weibo.tool.load_weibo_by_newest', 'filter_homepage_newest_feeds');
       rule('weibo.tool.load_weibo_by_group', 'filter_homepage_single_group');
       rule('weibo.tool.load_weibo_by_group.group', 'filter_homepage_single_group.group', group => `g${group.id}`);
       rule('weibo.tool.load_weibo_by_multi_group.enabled', 'filter_homepage_multi_group');
@@ -172,6 +173,7 @@
       rule('weibo.layoutHideNavNoticeNew', 'clean_nav_notice_new');
       rule('weibo.layoutHideNavNew', 'clean_nav_new');
       rule('weibo.layoutHideNavHotTip', 'clean_left_level');
+      rule('weibo.layoutHideLeftNewFeed', 'clean_left_new_feed');
       rule('weibo.layoutHideLeftHome', 'clean_left_home');
       rule('weibo.layoutHideLeftFav', 'clean_left_fav');
       rule('weibo.layoutHideLeftLike', 'clean_left_like');
