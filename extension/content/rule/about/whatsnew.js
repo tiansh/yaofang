@@ -23,15 +23,15 @@
 
   Object.assign(i18n, {
     showWhatsNew: { cn: '更新后显示新功能提示', tw: '更新後顯示新功能提示', en: 'Show new features after update' },
-    installSuccessTitle: { cn: '药方(YAWF)安装成功', tw: '藥方(YAWF)安裝成功', en: 'YAWF Installation successed' },
+    installSuccessTitle: { cn: '药方 (YAWF) 安装成功', tw: '藥方 (YAWF) 安裝成功', en: 'YAWF Installation successed' },
     installSuccessText: {
-      cn: '感谢您安装药方(YAWF)扩展。您可以点击右上角的漏斗图标打开设置。此外您还可以选中并拖拽关键词、帐号、话题、来源等内容到网页右上角，快速创建规则。',
-      tw: '感謝您安裝藥方(YAWF)擴充套件。您可以點擊右上角的漏斗圖示打開設定。此外您還可以選中並拖拽關鍵字、帳號、話題、來源等內容到網頁右上角，快速創建規則。',
+      cn: '感谢您安装药方 (YAWF) 扩展。您可以点击右上角的漏斗图标打开设置。此外您还可以选中并拖拽关键词、帐号、话题、来源等内容到网页右上角，快速创建规则。',
+      tw: '感謝您安裝藥方 (YAWF) 擴充套件。您可以點擊右上角的漏斗圖示打開設定。此外您還可以選中並拖拽關鍵字、帳號、話題、來源等內容到網頁右上角，快速創建規則。',
       en: 'Thank you for installing YAWF. You can click on the funnel icon at the top-right corner to open up filter setting menu. You may also quickly create filters by dragging and dropping keywords, accounts, topics and sources to the top-right corner.',
     },
-    updateSuccessTitle: { cn: '药方(YAWF)新功能提示', tw: '藥方(YAWF)新功能提示', en: "YAWF What's New" },
-    updateSuccessHeader: { cn: '药方(YAWF)扩展已更新', tw: '藥方(YAWF)擴充套件已更新', en: 'Your YAWF extension has been updated' },
-    updateSuccessDetail: { cn: '当前版本添加或更新了以下{{count}}项功能', tw: '當前版本添加或更新了以下{{count}}項功能', en: 'The current version has added or updated the following {{count}} feature(s)' },
+    updateSuccessTitle: { cn: '药方 (YAWF) 新功能提示', tw: '藥方 (YAWF) 新功能提示', en: "YAWF What's New" },
+    updateSuccessHeader: { cn: '药方 (YAWF) 扩展已更新', tw: '藥方 (YAWF) 擴充套件已更新', en: 'Your YAWF extension has been updated' },
+    updateSuccessDetail: { cn: '当前版本添加或更新了以下 {{count}} 项功能', tw: '當前版本添加或更新了以下 {{count}} 項功能', en: 'The current version has added or updated the following {{count}} feature(s)' },
   });
 
   update.whatsNew = rule.Rule({
@@ -86,7 +86,7 @@
           const body = container.querySelector('.yawf-whatsnew-body');
           const footer = container.querySelector('.yawf-whatsnew-footer');
           header.textContent = i18n.updateSuccessHeader;
-          body.textContent = i18n.updateSuccessDetail;
+          body.textContent = i18n.updateSuccessDetail.replace('{{count}}', ruleItems.length);
           rule.render(body, ruleItems);
           footer.appendChild(whatsNew.render());
         },
@@ -103,6 +103,8 @@
 
   css.append(`
 .yawf-whatsnew-dialog { padding: 20px; width: 600px; } 
+.yawf-whatsnew-header { font-size: 140%; }
+.yawf-whatsnew-body { height: 300px; overflow: auto; margin: 0 -20px; padding: 0 20px; }
 `);
 
 }());
