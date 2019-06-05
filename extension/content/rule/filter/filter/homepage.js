@@ -121,9 +121,11 @@
       const incorrectGid = isCustomGid && target !== 'custom';
       if ((!hasGid || incorrectGid) && !isNew && shouldBeFixed) {
         setParam(url);
+        observer.dom.remove(updateLocation);
         location.replace(url.href);
       } else if (hasGid && shouldRemoveGid) {
         url.searchParams.delete('gid');
+        observer.dom.remove(updateLocation);
         location.replace(url);
       }
     };
@@ -562,21 +564,27 @@
       observer.feed.onBefore(function hideAutoLoadFeeds(feed) {
         if (feed.hasAttribute('yawf-feed-preload')) return;
         let isUnread = true;
+        // 如果一天一条微博出现在了现有的微博的后面，那么可能是因为动态加载塞进来的
         if (feed.matches('.WB_feed_type[yawf-feed-preload="show"] ~ *')) isUnread = false;
+        // 但是在后面不一定是现在的微博的弟弟妹妹，还可能是弟弟妹妹的孩子
+        // 这是因为他们在出现时会有一个出现的动画，为了做这个动画把他们套在一个父对象里面了
+        // 动画播放完成之后会被拿出来的（不过说实话，这动画一般人注意不到）
         if (feed.matches('.WB_feed_type[yawf-feed-preload="show"] ~ * *')) isUnread = false;
+        // 最早出现的几条不算延迟加载的
         if (document.querySelectorAll('.WB_feed_type[yawf-feed-preload]').length < 5) isUnread = false;
+        // 如果作者是自己那么不算延迟加载的（发微薄的时候会插入到最前面）
         if (init.page.$CONFIG.uid === feedParser.author.id(feed)[0]) isUnread = false;
         feed.setAttribute('yawf-feed-preload', isUnread ? 'unread' : 'show');
       });
 
       // 自动载入新内容
       observer.dom.add(function watchNewFeedTip() {
-        let tip = document.querySelector('#home_new_feed_tip');
-        if (browserInfo.name === 'Firefox') tip = tip && tip.wrappedJSObject;
+        const tip = document.querySelector('#home_new_feed_tip');
         // 微博自己把提示的状态和数量写在了提示横幅那个对象上
+        const $tip = tip && browserInfo.name === 'Firefox' ? tip.wrappedJSObject : tip;
         // status 不是 followHot 而且 count > 0 就说明有新消息
-        if (!tip || tip.status === 'followHot') return;
-        if (!tip.count) return;
+        if (!$tip || $tip.status === 'followHot') return;
+        if (!$tip.count) return;
         tip.click();
         if (tip.parentNode) tip.parentNode.removeChild(tip);
       });
