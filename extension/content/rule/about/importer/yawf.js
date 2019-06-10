@@ -315,6 +315,7 @@
       rule('weibo.layout.cmtorder.4', 'feed_button_order_comment.3');
       rule('weibo.layout.cmtorder.5', 'feed_button_order_comment.4');
       rule('weibo.tool.noTagDialog', 'feed_disable_tag_dialog');
+      rule('weibo.tool.highlight_low_reading', 'feed_low_reading_warn');
       rule('weibo.tool.weibo_large_font', 'feed_font_size');
       rule('weibo.tool.weibo_large_font.ratio', 'feed_font_size.ratio');
       rule('weibo.tool.auto_unfold_weibo', 'feed_long_expand');

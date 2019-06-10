@@ -144,6 +144,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_feed.WB_feed_v3 .WB_media_a { margin: -2px 0 0 6px; width: 258px; }
 .WB_feed.WB_feed_v3 .WB_media_a_mn .WB_pic { width: 80px; height: 80px; }
 .WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic { width: 80px !important; height: 80px !important; }
+.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img { width: 100% !important; height: 100% !important; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic { max-width: 120px; max-height: 120px; min-width: 36px; height: auto !important; width: auto !important; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic img { max-height: 120px; max-width: 120px; width: auto !important; height: auto !important; position: static; -webkit-transform: none; transform: none; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not(.yawf-WB_video):not(.WB_video_h5_v2) { width: 120px; height: 80px; min-width: 36px; }
@@ -449,5 +450,42 @@ ${[0, 1, 2, 3, 4].map(index => `
       }, tagDialog, !this.isEnabled());
     },
   });
+
+  i18n.lowReadingCountWarn = {
+    cn: '在自己个人主页高亮显示阅读数量|不超过{{count}}的微博',
+    tw: '在自己個人主頁高亮顯示閱讀數量|不超過{{count}}的微博',
+    en: 'Highlight feeds on my profile page which has | no more than {{count}} views',
+  };
+
+  layout.lowReadingCountWarn = rule.Rule({
+    id: 'feed_low_reading_warn',
+    version: 23,
+    parent: layout.layout,
+    template: () => i18n.lowReadingCountWarn,
+    ref: {
+      count: {
+        type: 'range',
+        min: 10,
+        max: 1000,
+        step: 10,
+        initial: 100,
+      },
+    },
+    init() {
+      const rule = this;
+      observer.feed.onAfter(function (/** @type {Element} */feed) {
+        const container = feed.closest('[id^="Pl_Official_MyProfileFeed__"]');
+        if (!container) return;
+        const popText = feed.querySelector('.WB_feed_handle [action-type="fl_pop"] i');
+        if (!popText) return;
+        const count = Number.parseInt(popText.title.match(/\d+/)[0], 10);
+        const limit = rule.ref.count.getConfig();
+        if (count > limit) return;
+        feed.setAttribute('yawf-low-reading', count);
+      });
+      css.append('.WB_feed.WB_feed .WB_cardwrap[yawf-low-reading] { box-shadow: 0 0 4px red inset; }');
+    },
+  });
+
 
 }());
