@@ -76,18 +76,16 @@
       const menuitems = document.querySelectorAll('.gn_topmenulist ul li.line');
       if (!menuitems || !menuitems.length) { setTimeout(menuitem, 100); return; }
       const reference = [...menuitems].pop();
-      const template = document.createElement('template');
-      template.innerHTML = `
-<ul>
-  <li class="line S_line1 yawf-config-menuline"></li>
-  <li><a href="javascript:void(0);" class="yawf-config-menuitem"></a></li>
-</ul>
+      const ul = document.createElement('ul');
+      ul.innerHTML = `
+<li class="line S_line1 yawf-config-menuline"></li>
+<li><a href="javascript:void(0);" class="yawf-config-menuitem"></a></li>
 `;
-      const container = document.importNode(template.content.firstElementChild, true);
-      reference.before(container);
+      const container = document.importNode(ul, true);
       const item = container.querySelector('.yawf-config-menuitem');
       item.addEventListener('click', onClick);
       item.textContent = i18n.filterMenuItem;
+      reference.before(...container.children);
     };
     if (['search', 'ttarticle'].includes(init.page.type())) return;
     icon(); menuitem();

@@ -25,19 +25,32 @@
       });
       window.dispatchEvent(event);
     };
+    let holder = null;
     if ('$CONFIG' in window) {
-      location.reload();
-      return;
+      if (window.$CONFIG) {
+        location.reload();
+        return;
+      } else {
+        const descriptor = Object.getOwnPropertyDescriptor(window, '$CONFIG');
+        holder = {};
+        Object.defineProperty(holder, '$CONFIG', descriptor);
+        delete window.$CONFIG;
+      }
     }
-    let $CONFIG = void 0;
     let proxied = void 0;
     Object.defineProperty(window, '$CONFIG', {
       configurable: true,
       enumerable: false,
       get() { return proxied; },
       set(value) {
+        let $CONFIG;
         Object.defineProperty(window, '$CONFIG', { enumerable: true });
-        $CONFIG = value;
+        if (holder) {
+          holder.$CONFIG = value;
+          $CONFIG = holder.$CONFIG;
+        } else {
+          $CONFIG = value;
+        }
         proxied = new Proxy($CONFIG, {
           set: function (self, property, value) {
             self[property] = value;
@@ -45,7 +58,7 @@
             return true;
           },
         });
-        reportResult($CONFIG);
+        reportResult(value);
       },
     });
     const onload = () => {
