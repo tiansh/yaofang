@@ -44,13 +44,21 @@
       west: {
         type: 'select',
         select: supportedFonts.then(fonts => (
-          fonts.west.map(([cssName, name]) => ({ value: name, text: name }))
+          fonts.west.map(([cssName, name]) => ({
+            value: name,
+            text: name,
+            style: `font-family: ${cssName}; font-size: 120%;`,
+          }))
         )),
       },
       chinese: {
         type: 'select',
         select: supportedFonts.then(fonts => (
-          fonts.chinese.map(([cssName, name]) => ({ value: name, text: name }))
+          fonts.chinese.map(([cssName, name]) => ({
+            value: name,
+            text: name,
+            style: `font-family: ${cssName}; font-size: 120%;`,
+          }))
         )),
       },
     },

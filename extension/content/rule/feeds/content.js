@@ -39,10 +39,10 @@
       ratio: {
         type: 'select',
         select: [
-          { value: '120', text: '120%' },
-          { value: '150', text: '150%' },
-          { value: '200', text: '200%' },
-          { value: '300', text: '300%' },
+          { value: '120', text: '120%', style: `font-size: 16px;` },
+          { value: '150', text: '150%', style: `font-size: 21px;` },
+          { value: '200', text: '200%', style: `font-size: 28px;` },
+          { value: '300', text: '300%', style: `font-size: 42px;` },
         ],
       },
     },

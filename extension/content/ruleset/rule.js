@@ -520,10 +520,11 @@
       container.classList.add('yawf-config-select');
       const select = document.createElement('select');
       const renderOptions = items => {
-        items.forEach(({ text, value }) => {
+        items.forEach(({ text, value, style = null }) => {
           const option = document.createElement('option');
           option.value = value;
           option.text = typeof text === 'function' ? text() : text;
+          if (style) option.style += ';' + style;
           select.add(option);
         });
         select.value = this.getConfig();
