@@ -144,7 +144,10 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_feed.WB_feed_v3 .WB_media_a { margin: -2px 0 0 6px; width: 258px; }
 .WB_feed.WB_feed_v3 .WB_media_a_mn .WB_pic { width: 80px; height: 80px; }
 .WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic { width: 80px !important; height: 80px !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img { width: 100% !important; height: 100% !important; }
+.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img { top: 50% !important; left: 50% !important; transform: translate(-50%, -50%); width: auto !important; height: auto !important; position: relative !important; }
+.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img[style*="left:0"] { width: 100% !important; }
+.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img[style*="top:0"] { height: 100% !important; }
+.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img:not([style*="top"]) { max-width; 100%; max-height: 100%; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic { max-width: 120px; max-height: 120px; min-width: 36px; height: auto !important; width: auto !important; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic img { max-height: 120px; max-width: 120px; width: auto !important; height: auto !important; position: static; -webkit-transform: none; transform: none; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not(.yawf-WB_video):not(.WB_video_h5_v2) { width: 120px; height: 80px; min-width: 36px; }
