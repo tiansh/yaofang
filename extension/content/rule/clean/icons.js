@@ -16,6 +16,7 @@
     cleanIconsApprove: { cn: '个人认证', tw: '個人認證', en: 'Personal Authentication' },
     cleanIconsApproveCo: { cn: '机构认证', tw: '企業認證', en: 'Weibo Verification' },
     cleanIconsApproveDead: { cn: '失效认证', tw: '失效認證', en: 'Failed verification' },
+    cleanIconsBigFun: { cn: '铁粉', tw: '鐵粉', en: '铁粉 (big funs?)' },
     cleanIconsClub: { cn: '微博达人', tw: '微博達人', en: 'Pioneer' },
     cleanIconsVGirl: { cn: '微博女郎', en: 'Weibo girl' },
     cleanIconsSupervisor: { cn: '微博监督员', tw: '微博監督員', en: 'Weibo Supervisor' },
@@ -34,7 +35,11 @@
         const container = document.createElement('span');
         container.innerHTML = '<i class="W_icon" style="display:inline-block!important"></i>';
         const i = container.querySelector('i');
-        i.classList.add(className);
+        if (typeof className === 'string') {
+          i.classList.add(className);
+        } else if (Array.isArray(className)) {
+          i.className = className.join(' ');
+        }
         label.appendChild(container);
       });
       return container;
@@ -47,6 +52,7 @@
   clean.CleanRule('approve', () => i18n.cleanIconsApprove, 1, '.approve, .icon_approve, .icon_pf_approve, .icon_approve_gold, .icon_pf_approve_gold { display: none !important; }', showIcons(['icon_approve', 'icon_approve_gold']));
   clean.CleanRule('approve_co', () => i18n.cleanIconsApproveCo, 1, '.approve_co, .icon_approve_co, .icon_pf_approve_co, [class^="W_icon_co"], [class^=".icon_approve_co_"], [class^=".icon_pf_approve_co_"] { display: none !important; }', showIcons(['icon_approve_co']));
   clean.CleanRule('approve_dead', () => i18n.cleanIconsApproveDead, 1, '.icon_approve_dead, .icon_pf_approve_dead { display: none !important; }', showIcons(['icon_approve_dead']));
+  clean.CleanRule('bigfun', () => i18n.cleanIconsBigFun, 26, '.W_icon_bf { display: none !important; }', showIcons([['W_icon_bf', 'icon_bigfans']]));
   clean.CleanRule('club', () => i18n.cleanIconsClub, 1, '.ico_club, .icon_pf_club, .icon_club { display: none !important; }', showIcons(['icon_club']));
   clean.CleanRule('v_girl', () => i18n.cleanIconsVGirl, 1, '.ico_vlady, .icon_pf_vlady, .icon_vlady { display: none !important; }', showIcons(['icon_vlady']));
   clean.CleanRule('supervisor', () => i18n.cleanIconsSupervisor, 1, '.icon_supervisor { display: none !important; }', showIcons(['icon_supervisor']));

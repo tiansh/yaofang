@@ -150,6 +150,7 @@
       rule('weibo.layoutHideIconApprove', 'clean_icons_approve');
       rule('weibo.layoutHideIconApproveCo', 'clean_icons_approve_co');
       rule('weibo.layoutHideIconApproveDead', 'clean_icons_approve_dead');
+      rule('weibo.layoutHideIconBigFun', 'clean_icons_bigfun');
       rule('weibo.layoutHideIconClub', 'clean_icons_club');
       rule('weibo.layoutHideIconVGirl', 'clean_icons_v_girl');
       rule('weibo.layoutHideIconSupervisor', 'clean_icons_supervisor');
