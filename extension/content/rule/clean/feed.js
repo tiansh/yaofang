@@ -101,7 +101,8 @@
   clean.CleanRule('source', () => i18n.cleanFeedSource, 1, {
     acss: `
 .WB_time+.S_txt2, .WB_time+.S_txt2+.S_link2, .WB_time+.S_txt2+.S_func2 { display: none !important; }
-.WB_feed_detail .WB_from a[date]::after { content: " "; display: block; } .WB_feed_detail .WB_from { height: 16px; overflow: hidden; }`,
+.WB_feed_detail .WB_from a[date]::after, .WB_feed_detail .WB_from a[yawf-date]::after { content: " "; display: block; }
+.WB_feed_detail .WB_from { height: 16px; overflow: hidden; }`,
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanFeedSourceDetail } },
   });
   clean.CleanRule('pop', () => i18n.cleanFeedPop, 1, `

@@ -164,7 +164,7 @@
   // 识别来源
   recognize.source = async function (target) {
     if (!(target instanceof Element)) return [];
-    if (!target.matches('.WB_from a:not([date])')) return [];
+    if (!target.matches('.WB_from a:not([date]):not([yawf-date])')) return [];
     const source = (target.title || target.textContent).trim();
     if (!source || source === '微博 weibo.com') return [];
     const template = i18n.sourceContextTitle;
