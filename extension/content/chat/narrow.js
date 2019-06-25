@@ -24,6 +24,7 @@
 #app .chatlist .chatlist-box ul { overflow-x: hidden; }
 #app .chatlist .chatlist-box .contactslist .sessionlist { height: 50px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .line { height: 50px; }
+#app .chatlist .chatlist-box .contactslist .sessionlist .list-left .avator-box { margin-right: 10px; margin-left: 0; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-left .avatar { width: 40px; height: 40px; margin: 0 10px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right { height: 40px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-top { height: 18px; line-height: 18px; }
