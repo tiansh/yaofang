@@ -86,5 +86,7 @@ module.exports = {
     'complexity': ['warn'],
 
     'no-console': ['off'],
+    'no-async-promise-executor': ['off'],
+    'require-atomic-updates': ['off'],
 	}
 }

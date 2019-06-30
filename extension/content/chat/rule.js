@@ -1,4 +1,4 @@
-﻿; (async function () {
+; (async function () {
 
   const yawf = window.yawf;
   const util = yawf.util;
