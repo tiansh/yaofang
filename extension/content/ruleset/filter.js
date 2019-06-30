@@ -277,7 +277,7 @@
   observer.feed.filter(function hideDuplicate(feed) {
     const mid = feed.getAttribute('mid');
     if (!mid) return null;
-    const all = Array.from(document.querySelectorAll('[mid]'));
+    const all = Array.from(document.querySelectorAll('.WB_feed_type[mid]'));
     if (all.find(that => that !== feed && that.getAttribute('mid') === mid)) return 'hide';
     return null;
   }, { priority: 1e6 });

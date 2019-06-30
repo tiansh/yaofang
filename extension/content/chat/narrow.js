@@ -18,14 +18,15 @@
 #app .searchlist .searchlist-box { width: var(--yawf-left-width); }
 #app .searchlist .searchlist-box .contactslist .title { margin: 4px 0 2px 10px; }
 #app .searchlist .searchlist-box .contactslist .sessionlist { height: 50px; }
-#app .searchlist .searchlist-box .contactslist .sessionlist .list-left .avatar { width: 40px; height: 40px; margin: 0 10px; }
+#app .searchlist .searchlist-box .contactslist .sessionlist .list-left .avatar { width: 40px; height: 40px; margin: 5px 10px; }
 #app .chatlist { top: 35px; }
 #app .chatlist .chatlist-box { width: var(--yawf-left-width); }
 #app .chatlist .chatlist-box ul { overflow-x: hidden; }
 #app .chatlist .chatlist-box .contactslist .sessionlist { height: 50px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .line { height: 50px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-left .avator-box { margin-right: 10px; margin-left: 0; }
-#app .chatlist .chatlist-box .contactslist .sessionlist .list-left .avatar { width: 40px; height: 40px; margin: 0 10px; }
+#app .chatlist .chatlist-box .contactslist .sessionlist .list-left .avatar { width: 40px; height: 40px; margin: 5px 10px; }
+#app .m-icon { bottom: 5px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right { height: 40px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-top { height: 18px; line-height: 18px; }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-bottom { height: 18px; line-height: 18px; max-width: calc(var(--yawf-left-width) - 75px); }

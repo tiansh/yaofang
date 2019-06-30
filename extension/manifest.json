@@ -49,7 +49,7 @@
       "exclude_matches": [
         "*://weibo.com/nguide/*",
         "*://weibo.com/a/bind/*",
-        "https://api.weibo.com/chat/*"
+        "https://api.weibo.com/chat*"
       ],
       "js": [
         "common/browser/browser.js",
@@ -172,12 +172,18 @@
       "js": [
         "content/util/inject.js",
         "content/util/strings.js",
+        "content/util/css.js",
+
+        "content/storage/storage.js",
+        "content/storage/config.js",
 
         "content/backend/message.js",
         "content/backend/chatframe.js",
 
+        "content/chat/init.js",
         "content/chat/inject.js",
-        "content/chat/narrow.js"
+        "content/chat/narrow.js",
+        "content/chat/rule.js"
       ],
       "all_frames": true,
       "run_at": "document_start"

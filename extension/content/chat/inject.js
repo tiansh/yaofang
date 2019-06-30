@@ -1,18 +1,18 @@
-; (function () {
+﻿; (function () {
 
   const yawf = window.yawf;
 
   const message = yawf.message;
   const util = yawf.util;
   const chatframe = yawf.chatframe;
+  const init = yawf.init;
 
   const strings = util.strings;
 
-  if (window.top === window) return;
+  const keyIn = 'yawf_chat_message_' + strings.randKey();
+  const keyOut = 'yawf_chat_' + strings.randKey();
 
-  const key = 'yawf_chat_message_' + strings.randKey();
-
-  util.inject(function (key) {
+  util.inject(function (keyIn, keyOut) {
     if (document.readyState === 'complete') {
       location.reload();
       return;
@@ -79,7 +79,7 @@
         });
       };
 
-      Object.defineProperty(window, key, {
+      Object.defineProperty(window, keyIn, {
         set: function (message) {
           if (message.method === 'chatUid') {
             chatUid(message.uid);
@@ -89,16 +89,39 @@
         enumerable: false,
       });
 
+      vueReady.then(function getUserData(root) {
+        const vue = getVueInstance(vue => vue.userdata)(root);
+        if (!vue || !vue.userdata) {
+          setTimeout(() => { getUserData(root); }, 0);
+          return;
+        }
+        const userData = vue.userdata;
+        const event = new CustomEvent(keyOut, {
+          detail: { userData: JSON.stringify(userData) },
+        });
+        window.dispatchEvent(event);
+      });
+
     }(window, document, Object, Promise));
 
-  }, key);
+  }, keyIn, keyOut);
 
-  message.export(function chatToUid(uid) {
-    util.inject(function (key, uid) {
-      window[key] = { method: 'chatUid', uid };
-    }, key, Number(uid));
-  });
+  // 如果当前页面是被内嵌的
+  if (window.top !== window) {
+    message.export(function chatToUid(uid) {
+      util.inject(function (keyIn, uid) {
+        window[keyIn] = { method: 'chatUid', uid };
+      }, keyIn, Number(uid));
+    });
 
-  chatframe.chatReady();
+    chatframe.chatReady();
+  }
+
+  window.addEventListener(keyOut, function (event) {
+    event.stopPropagation();
+    if (!event.detail.userData) return;
+    const userData = JSON.parse(event.detail.userData);
+    init.setUserData(userData);
+  }, true);
 
 }());
