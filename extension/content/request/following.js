@@ -50,8 +50,8 @@
           type: 'user',
           user: id,
           url: href,
-          avatar: avatar,
-          name: description,
+          avatar,
+          name,
           description,
         };
       })()) || (catched(function () {

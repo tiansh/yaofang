@@ -73,8 +73,9 @@
       normalize(value) {
         if (!value) return null;
         if (!value.timestamp) return null;
-        if (!Array.isArray(value.add)) return null;
-        if (!Array.isArray(value.lost)) return null;
+        if (!Array.isArray(value.add)) value.add = [];
+        if (!Array.isArray(value.lost)) value.lost = [];
+        if (!Array.isArray(value.rename)) value.rename = [];
         return value;
       },
     });
@@ -122,15 +123,30 @@
   // 比对新旧列表不同
   const checkListDiff = function (list, newList, lastChange) {
     // 如果之前没有数据，那么也就不用对比
-    if (!Array.isArray(list)) return { add: [], lost: [] };
-    const { add: lastAdd = [], lost: lastLost = [] } = lastChange || {};
+    if (!Array.isArray(list)) return { add: [], lost: [], rename: [] };
+    const { add: lastAdd = [], lost: lastLost = [], rename: lastRename = [] } = lastChange || {};
     const sameFollowItem = (x, y) => x.id === y.id;
+    const getName = x => x.name.replace(/@|\s?\(.*\)/g, '');
     // 先根据原有名单和未提交的更改恢复更早的名单
-    const oldList = list.filter(x => !lastAdd.find(y => x.id === y.id)).concat(lastLost);
+    const oldList = list
+      .filter(x => !lastAdd.find(y => sameFollowItem(x, y))).concat(lastLost)
+      .map(x => (lastRename.find(r => sameFollowItem(r.old, x)) || { old: x }).old);
     // 然后将新的名单与更早的名单比较
     const add = newList.filter(x => !oldList.find(y => sameFollowItem(y, x)));
     const lost = oldList.filter(y => !newList.find(x => sameFollowItem(y, x)));
-    return { add, lost };
+    const rename = oldList.map(oldItem => {
+      if (oldItem.type !== 'user') return null;
+      const newItem = newList.find(n => sameFollowItem(n, oldItem));
+      if (!newItem) return null;
+      const oldName = getName(oldItem);
+      const newName = getName(newItem);
+      if (oldName === newName) return null;
+      return Object.assign({}, newItem, {
+        old: oldItem,
+        new: newItem,
+      });
+    }).filter(v => v);
+    return { add, lost, rename };
   };
 
   // 去除重复数据
@@ -185,13 +201,13 @@
     try {
       const newList = removeDuplicate(fetchData.getConfig().list);
       const oldList = lastList.getConfig();
-      const changeList = (lastChange.getConfig() || {}).list;
-      const { add, lost } = checkListDiff(oldList && oldList.list, newList, changeList);
+      const changeList = (lastChange.getConfig() || {});
+      const { add, lost, rename } = checkListDiff(oldList && oldList.list, newList, changeList);
 
       const finishTime = Date.now();
       lastList.setConfig({ timestamp: finishTime, list: newList });
-      if (add.length || lost.length) {
-        lastChange.setConfig({ timestamp: finishTime, add, lost });
+      if (add.length || lost.length || rename.length) {
+        lastChange.setConfig({ timestamp: finishTime, add, lost, rename });
       } else {
         lastChange.setConfig(null);
       }
@@ -222,7 +238,7 @@
     // 这里我们用上 BOM 可以获得更好的兼容性
     // 在前面放一列序号，这样即便不能处理 BOM ，也可以躲开最前面一行的序数，不会出什么问题
     const content = '\ufeff#,name,homepage,avatar\r\n' + list.map((item, index) => {
-      const name = csvItem(item.name);
+      const name = csvItem(item.description);
       const homepage = csvItem(new URL(item.url, 'https://weibo.com').href);
       const avatar = csvItem(new URL(item.avatar, 'https://weibo.com').href);
       return [index + 1, name, homepage, avatar].join(',');
@@ -279,13 +295,14 @@
     },
     autoCheckFollowingAdd: { cn: '新增如下关注', tw: '新增如下關注', en: 'Recent Following' },
     autoCheckFollowingLost: { cn: '减少如下关注', tw: '減少如下關注', en: 'Recent Unfollowed' },
+    autoCheckFollowingRename: { cn: '如下关注修改了昵称', tw: '如下關注修改了暱稱', en: 'Recent Renamed' },
   });
 
   /**
    * @typedef {{ id: string, type: 'user'|'stock'|'topic'|'unknown', url: string, avatar: string, name: string, description: string }} FollowInfo
    * @param {{ timestamp: number, add: FollowInfo[], lost: FollowInfo[] }}
    */
-  const showChangeList = function ({ timestamp, add, lost }) {
+  const showChangeList = function ({ timestamp, add = [], lost = [], rename = [] }) {
     let resolve;
     const promise = new Promise(r => { resolve = r; });
     const followChangeDialog = ui.dialog({
@@ -293,27 +310,33 @@
       title: i18n.autoCheckFollowingDialogTitle,
       /** @param {Element} container */
       render(container) {
-        container.innerHTML = '<div class="yawf-following-notice-body"><div class="yawf-following-notice-detail"></div><div class="yawf-following-add" style="display: none;"><div class="yawf-following-add-title"></div><div class="yawf-following-add-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div><div class="yawf-following-lost" style="display: none;"><div class="yawf-following-lost-title"></div><div class="yawf-following-lost-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div></div><div class="yawf-following-notice-footer"><span class="yawf-following-notice-last-time-text"></span><span class="yawf-following-notice-last-time"></span></div>';
+        container.innerHTML = '<div class="yawf-following-notice-body"><div class="yawf-following-notice-detail"></div><div class="yawf-following-add" style="display: none;"><div class="yawf-following-add-title"></div><div class="yawf-following-add-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div><div class="yawf-following-lost" style="display: none;"><div class="yawf-following-lost-title"></div><div class="yawf-following-lost-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div><div class="yawf-following-rename" style="display: none;"><div class="yawf-following-rename-title"></div><div class="yawf-following-rename-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div></div><div class="yawf-following-notice-footer"><span class="yawf-following-notice-last-time-text"></span><span class="yawf-following-notice-last-time"></span></div>';
         container.querySelector('.yawf-following-notice-detail').textContent = i18n.autoCheckFollowingTip;
         container.querySelector('.yawf-following-add-title').textContent = i18n.autoCheckFollowingAdd;
         container.querySelector('.yawf-following-lost-title').textContent = i18n.autoCheckFollowingLost;
+        container.querySelector('.yawf-following-rename-title').textContent = i18n.autoCheckFollowingRename;
         container.querySelector('.yawf-following-notice-last-time-text').textContent = i18n.autoCheckFollowingLastTime;
         container.querySelector('.yawf-following-notice-last-time').textContent = formatLastTime(timestamp);
         [
           { area: container.querySelector('.yawf-following-add'), list: add },
           { area: container.querySelector('.yawf-following-lost'), list: lost },
+          { area: container.querySelector('.yawf-following-rename'), list: rename },
         ].forEach(({ area, list }) => {
           if (!list || !Array.isArray(list) || !list.length) return;
           area.style.display = '';
           const ul = area.querySelector('ul');
           list.forEach(item => {
             const wrap = document.createElement('ul');
-            wrap.innerHTML = '<li class="yawf-config-collection-item W_btn_b W_btn_tag"><div class="yawf-config-collection-item-content"><div class="yawf-config-user-item"><div class="yawf-config-user-avatar"><img /></div><a class="yawf-config-user-name" target="_blank"></a></div></div></li>';
+            wrap.innerHTML = '<li class="yawf-config-collection-item W_btn_b W_btn_tag"><div class="yawf-config-collection-item-content"><div class="yawf-config-user-item"><div class="yawf-config-user-avatar"><img /></div><div><a class="yawf-config-user-name" target="_blank"></a></div><div><span class="yawf-config-user-detail S_txt2"></span></div></div></div></li>';
             if (item.type === 'user') wrap.querySelector('.yawf-config-user-item').setAttribute('usercard', `id=${item.user}`);
             wrap.querySelector('img').setAttribute('src', item.avatar);
             const name = wrap.querySelector('.yawf-config-user-name');
-            name.textContent = item.name;
+            name.textContent = item.description;
             name.href = item.url;
+            if (item.old) {
+              const detail = wrap.querySelector('.yawf-config-user-detail');
+              detail.title = detail.textContent = '@' + item.old.name.replace(/@|\s*\(.*\)/g, '');
+            }
             const li = wrap.firstChild;
             ul.appendChild(li);
           });
@@ -448,10 +471,11 @@
   });
 
   css.append(`
-.yawf-following-add-title, .yawf-following-lost-title { font-weight: bold; margin: 10px 0 5px; } 
+.yawf-following-add-title, .yawf-following-lost-title, .yawf-following-rename-title { font-weight: bold; margin: 10px 0 5px; } 
 .yawf-following-notice-body { padding: 20px 20px 0; width: 600px; } 
 .yawf-following-notice-footer { padding: 20px; } 
 .yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
+.yawf-following-rename .yawf-config-user-name, .yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
 `);
 
   i18n.uncheckFollowPresenter = {

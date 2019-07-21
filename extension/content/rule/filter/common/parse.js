@@ -271,7 +271,7 @@
     const original = node => {
       if (!node.matches('.WB_expand > .WB_info > .W_fb[usercard]')) return null;
       if (!detail) return '';
-      return '@' + node.textContent;
+      return node.textContent.replace(/^@?/, '@');
     };
     parsers.push(original);
     /**
