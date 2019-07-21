@@ -109,6 +109,7 @@
         if (feed.querySelector('.WB_from a[href*="//vote.weibo.com/"]')) return 'hide';
         if (feed.querySelector('.WB_feed_spec_cont a[action-data*="vote.weibo.com"]')) return 'hide';
         if (feed.querySelector('a[suda-uatrack*="1022-vote"]')) return 'hide';
+        if (feed.querySelector('a[suda-uatrack*="1022-hudongvote"]')) return 'hide';
         if (feed.querySelector('.icon_sw_vote')) return 'hide';
         if (feedParser.source.text(feed).includes('投票')) return 'hide';
         return null;
