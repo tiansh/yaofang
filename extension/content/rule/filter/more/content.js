@@ -396,7 +396,30 @@
         const topics = feedParser.topic.dom(feed);
         if (topics.length >= limit) return 'hide';
         return null;
-      }, { priority: 1e6 });
+      });
+      this.addConfigListener(() => { observer.feed.rerun(); });
+    },
+  });
+
+  i18n.feedWithHuati = {
+    cn: '包含超话的微博',
+    tw: '包含超話的微博',
+    en: 'Feeds with chaohua',
+  };
+
+  content.feedWithHuati = rule.Rule({
+    id: 'filter_feed_with_huati',
+    version: 29,
+    parent: content.content,
+    template: () => i18n.feedWithHuati,
+    init() {
+      const rule = this;
+      observer.feed.filter(function feedWithHuati(feed) {
+        if (!rule.isEnabled()) return null;
+        const huati = feed.querySelector('a[suda-uatrack*="1022-topic"]');
+        if (huati) return 'hide';
+        return null;
+      });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
   });
