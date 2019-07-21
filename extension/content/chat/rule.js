@@ -25,11 +25,13 @@
     const hideApproveCo = userConfig.key('clean_icons_approve_co').get();
     const hideClub = userConfig.key('clean_icons_club').get();
     const hideVGirl = userConfig.key('clean_icons_v_girl').get();
+    const hideBigFun = userConfig.key('clean_icons_bigfun').get();
     // 其实有红色和橙色两种，不过他们 src 末尾一样
     if (hideApprove) css.append('.avator-box .m-icon img[src$="gg=="] { display: none; }');
     if (hideApproveCo) css.append('.avator-box .m-icon img[src$="QmCC"] { display: none; }');
     if (hideClub) css.append('.avator-box .m-icon img[src$="CYII"] { display: none; }');
     if (hideVGirl) css.append('.avator-box .m-icon img[src$="YII="] { display: none; }');
+    if (hideBigFun) css.append('#app .icon-area > i.tf { display: none; }');
   }());
 
 }());
