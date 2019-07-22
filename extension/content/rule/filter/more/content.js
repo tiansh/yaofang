@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
+  const init = yawf.init;
 
   const more = yawf.rules.more;
 
@@ -311,34 +312,6 @@
     },
   });
 
-  i18n.stockFeedFilter = {
-    cn: '含有股票链接的微博{{i}}',
-    tw: '含有股票連結的微博{{i}}',
-    en: 'Weibo with stock link {{i}}',
-  };
-  i18n.stockFeedFilterDetail = {
-    cn: '股票链接和话题相似，在发布框输入“$”即可添加股票链接。勾选以隐藏所有包含此类链接的微博。',
-  };
-
-  content.stock = rule.Rule({
-    id: 'filter_stock',
-    version: 1,
-    parent: content.content,
-    template: () => i18n.stockFeedFilter,
-    ref: {
-      i: { type: 'bubble', icon: 'ask', template: () => i18n.stockFeedFilterDetail },
-    },
-    init() {
-      const rule = this;
-      observer.feed.filter(function stockFeedFilter(feed) {
-        if (!rule.isEnabled()) return null;
-        if (feed.querySelector('a[suda-uatrack*="1022-stock"]')) return 'hide';
-        return null;
-      });
-      this.addConfigListener(() => { observer.feed.rerun(); });
-    },
-  });
-
   i18n.paidFeedFilter = {
     cn: '需要付费查看的微博{{i}}',
     tw: '需要付費查看的微博{{i}}',
@@ -395,29 +368,6 @@
         const limit = rule.ref.num.getConfig();
         const topics = feedParser.topic.dom(feed);
         if (topics.length >= limit) return 'hide';
-        return null;
-      });
-      this.addConfigListener(() => { observer.feed.rerun(); });
-    },
-  });
-
-  i18n.feedWithHuati = {
-    cn: '包含超话的微博',
-    tw: '包含超話的微博',
-    en: 'Feeds with chaohua',
-  };
-
-  content.feedWithHuati = rule.Rule({
-    id: 'filter_feed_with_huati',
-    version: 29,
-    parent: content.content,
-    template: () => i18n.feedWithHuati,
-    init() {
-      const rule = this;
-      observer.feed.filter(function feedWithHuati(feed) {
-        if (!rule.isEnabled()) return null;
-        const huati = feed.querySelector('a[suda-uatrack*="1022-topic"]');
-        if (huati) return 'hide';
         return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });

@@ -219,8 +219,8 @@
         topic = node.textContent.replace(/^[\s$]+|[\s$]+$/g, '');
       }
       if (topic) {
-        const [_, superTopic, text] = topic.match(/^(\ue627?)\s*(.*)$/);
-        if (superTopic && detail) return ` \ue627#${text}#`;
+        const [_, superTopic, text] = topic.match(/^(?=(\ue627?|.*\[超话\]))[\ue627\s]*(.*?)(?:\[超话\])?$/);
+        if (superTopic && detail) return ` #${text}[超话]# `;
         if (detail) return ` #${text}# `;
         return `#${text}#`;
       }
@@ -261,7 +261,7 @@
     const author = node => {
       if (!node.matches('.WB_detail > .WB_info > .W_fb[usercard]')) return null;
       if (!detail) return '';
-      return '@' + node.textContent;
+      return '@' + node.textContent.trim();
     };
     parsers.push(author);
     /**
@@ -271,7 +271,7 @@
     const original = node => {
       if (!node.matches('.WB_expand > .WB_info > .W_fb[usercard]')) return null;
       if (!detail) return '';
-      return node.textContent.replace(/^@?/, '@');
+      return node.textContent.trim().replace(/^@?/, '@');
     };
     parsers.push(original);
     /**
@@ -519,7 +519,7 @@
   };
   author.name = feed => {
     const domList = author.dom(feed);
-    return domList.map(dom => dom.textContent);
+    return domList.map(dom => dom.textContent.trim());
   };
   author.avatar = feed => {
     const domList = author.dom(feed);
@@ -558,7 +558,7 @@
   };
   original.name = feed => {
     const domList = original.dom(feed);
-    return domList.map(dom => dom.textContent);
+    return domList.map(dom => dom.textContent.trim());
   };
 
   // 提到（微博中提到的人，转发路径中的人同属于提到）
@@ -626,7 +626,7 @@
     const domList = topic.dom(feed, { short, long });
     return domList.map(dom => {
       const text = dom.title || dom.textContent;
-      return text.replace(/[#\ue627]/g, '').trim();
+      return text.replace(/[#\ue627]|\[超话\]$/g, '').trim();
     });
   };
 

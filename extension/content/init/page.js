@@ -25,13 +25,19 @@
     const $CONFIG = page.$CONFIG; if (!$CONFIG) return null;
     if ($CONFIG.bpType === 'page') {
       // 地点
-      if ($CONFIG.domain === '100101') return 'location';
+      if ($CONFIG.domain === '100101') return 'place';
+      // 电影
+      if ($CONFIG.domain === '100120') return 'movie';
+      // 图书
+      if ($CONFIG.domain === '100202') return 'book';
       // 个人主页
       if ($CONFIG.domain === '100505') return 'profile';
-      // 话题页
+      // 话题页（超话）
       if ($CONFIG.domain === '100808') return 'topic';
+      // 音乐
+      if ($CONFIG.domain === '101515') return 'music';
       // 股票
-      if ($CONFIG.domain === '230677') return 'stoke';
+      if ($CONFIG.domain === '230677') return 'stock';
     }
     // Unknown
     return null;

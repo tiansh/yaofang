@@ -50,4 +50,8 @@
     pageDeinited = true;
   });
 
+  backend.topicFilter = async function (detail, hideItems) {
+    await message.invoke.topicFilter(detail, hideItems);
+  };
+
 }());

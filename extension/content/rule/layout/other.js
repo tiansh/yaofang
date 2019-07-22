@@ -7,6 +7,7 @@
   const init = yawf.init;
   const message = yawf.message;
   const chatframe = yawf.chatframe;
+  const backend = yawf.backend;
 
   const layout = yawf.rules.layout;
 
@@ -357,6 +358,34 @@
 .layer_faces .faces_list li { overflow: hidden; }
 .layer_faces .faces_list img { border: 10px transparent solid; margin: -10px; }
 `);
+    },
+  });
+
+  Object.assign(i18n, {
+    topicCompleteWithout: {
+      cn: '在话题自动完成时不包括||{{place}}地点|{{movie}}电影|{{book}}图书|{{topic}}超话|{{music}}音乐|{{stock}}股票',
+      tw: '在話題自動完成時不包括||{{place}}地點|{{movie}}電影|{{book}}圖書|{{topic}}超話|{{music}}音樂|{{stock}}股票',
+      en: 'Exclude following items from topic auto complete||{{place}} place|{{movie}} movie|{{book}} book||{{topic}} super topic|{{music}} music|{{stock}} stock',
+    },
+  });
+
+  details.topicCompleteWithout = rule.Rule({
+    id: 'layout_topic_without',
+    version: 30,
+    parent: details.details,
+    template: () => i18n.topicCompleteWithout,
+    ref: Object.assign({}, ...['place', 'movie', 'book', 'topic', 'music', 'stock'].map(type => ({
+      [type]: { type: 'boolean', initial: true },
+    }))),
+    init() {
+      backend.onRequest('topic', async details => {
+        if (!this.isEnabled()) return {};
+        const hideItems = ['place', 'movie', 'book', 'topic', 'music', 'stock'].filter(type => {
+          return this.ref[type].getConfig();
+        });
+        await backend.topicFilter(details, hideItems);
+        return {};
+      });
     },
   });
 

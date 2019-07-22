@@ -26,6 +26,14 @@
         '*://*.rs.sinajs.cn/*.gif*',
       ],
     },
+  }, {
+    id: 'topic',
+    filter: {
+      urls: [
+        '*://weibo.com/aj/mblog/topic*',
+        '*://*.weibo.com/aj/mblog/topic*',
+      ],
+    },
   }];
 
   requests.forEach(({ id, filter }) => {

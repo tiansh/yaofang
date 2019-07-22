@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "default_locale": "zh_CN",
 
   "icons": {
@@ -30,6 +30,7 @@
       "background/message/message.js",
 
       "background/controller/request/blocking.js",
+      "background/controller/request/topicfilter.js",
       "background/controller/contextmenu/contextmenu.js",
       "background/controller/font/font.js",
       "background/controller/image/viewer.js",
@@ -121,6 +122,7 @@
         "content/rule/filter/more/myself.js",
         "content/rule/filter/more/commercial.js",
         "content/rule/filter/more/content.js",
+        "content/rule/filter/more/link.js",
         "content/rule/filter/comment/comment.js",
         "content/rule/filter/comment/layout.js",
         "content/rule/filter/comment/content.js",
