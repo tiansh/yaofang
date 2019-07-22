@@ -44,7 +44,7 @@
           const rule = this;
           observer.feed.filter(function feedWithPlaceFilter(feed) {
             if (!rule.isEnabled()) return null;
-            // if (init.page.type() === type) return null;
+            if (init.page.type() === type) return null;
             if (feed.querySelector(`a[suda-uatrack*="1022-${type}"]`)) return 'hide';
             if (recognizer && recognizer(feed)) return 'hide';
             return null;
