@@ -87,7 +87,7 @@
         search.set('end_id', lastPage[lastPage.length - 1].mid);
       }
       const url = 'https://weibo.com/aj/mblog/fsearch?' + search;
-      util.debug('fetch %s', url);
+      util.debug('fetch url %s', url);
       const result = await fetch(url, { credentials: 'include' }).then(r => r.json());
       const container = document.createElement('div');
       dom.content(container, result.data);
@@ -221,6 +221,7 @@
       url.searchParams.set('group_ids', this.groups.join(','));
       url.searchParams.set('callback', network.fakeCallback());
       util.debug('Check unread by groups: %o', url);
+      util.debug('fetch url %s', url);
       const resp = await fetch(url, { credentials: 'include' }).then(resp => resp.text());
       const data = network.parseJson(resp).data;
       const groupStatus = Object.assign(...data.groups);

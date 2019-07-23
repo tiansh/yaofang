@@ -15,6 +15,7 @@
   const getFollowingPage = async function (uid, pageUrl) {
     const url = pageUrl || `https://weibo.com/${uid}/myfollow`;
     util.debug('Fetch Follow: fetch page %s', url);
+    util.debug('fetch url %s', url);
     const resp = await fetch(url, { credentials: 'include' }).then(r => r.text());
     const re = /<script>FM\.view\({"ns":"pl\.relation\.myFollow\.index".*"html":(?=.*member_box)(".*")}\)<\/script>\n/;
     const dom = util.dom.content(document.createElement('div'), JSON.parse(resp.match(re)[1]));

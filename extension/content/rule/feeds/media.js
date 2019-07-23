@@ -161,6 +161,9 @@
           const path = 'weibo-images/' + download.filename(feedId) + '/' + filename;
           return { url, filename: path };
         });
+        files.forEach(file => {
+          util.debug('download fetch url %s', file.url);
+        });
         download.urls(files);
       };
 
@@ -169,9 +172,10 @@
         downloadLinkContainer.innerHTML = '<li><span class="line S_line1"><a class="S_txt1" href="javascript:;" target="_blank"><i class="W_ficon ficon_search S_ficon">|</i></a></span></li>';
         downloadLinkContainer.querySelector('i').after(i18n.downloadImageText);
         const downloadLink = downloadLinkContainer.querySelector('a');
-        downloadLink.addEventListener('click', () => {
+        downloadLink.addEventListener('click', event => {
           const { images } = getImagesInfo(viewLargeLink);
           downloadImages(images, downloadLink);
+          event.preventDefault();
         });
         return downloadLinkContainer.firstChild;
       };
@@ -311,6 +315,7 @@
         const images = Array.from(document.querySelectorAll([
           '.PCD_photolist img[src$=".gif"]:not([yawf-pause-animate])',
           '.WB_pic img[src$=".gif"]:not([yawf-pause-animate])',
+          'img.W_img_face[src$=".gif"]:not([yawf-pause-animate])',
         ].join(',')));
         images.forEach(async function (image) {
           const url = image.src;
@@ -318,6 +323,7 @@
           image.setAttribute('ori-src', url);
           image.setAttribute('yawf-ori-src', url);
           image.setAttribute('yawf-pause-animate', 'yawf-pause-animate');
+          util.debug('fetch url %s', url);
           const dataUrl = await fetch(url).then(resp => resp.blob()).then(blob => urls.blobToDataUrl(blob));
           const img = new Image();
           img.addEventListener('load', () => {

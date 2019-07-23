@@ -8,11 +8,12 @@
   const request = yawf.request = yawf.request || {};
 
   const topicSuggest = async function (key) {
-    const requestUrl = new URL('https://weibo.com/aj/mblog/topic?');
-    requestUrl.searchParams.set('ajwvr', 6);
-    requestUrl.searchParams.set('q', key);
-    requestUrl.searchParams.set('__rnd', +new Date());
-    const resp = await fetch(requestUrl, { credentials: 'include' }).then(r => r.json());
+    const url = new URL('https://weibo.com/aj/mblog/topic?');
+    url.searchParams.set('ajwvr', 6);
+    url.searchParams.set('q', key);
+    url.searchParams.set('__rnd', +new Date());
+    util.debug('fetch url %s', url);
+    const resp = await fetch(url, { credentials: 'include' }).then(r => r.json());
     const topics = new Set(Array.from(resp.data).map(({ topic }) => {
       topic = topic.replace(/\[超话\]$/, '');
       if (/\[.*\]/.test(topic)) return null;

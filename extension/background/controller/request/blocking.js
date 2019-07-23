@@ -24,6 +24,8 @@
         '*://*.beacon.sina.com.cn/*',
         '*://*.sbeacon.sina.com.cn/*',
         '*://*.rs.sinajs.cn/*.gif*',
+        '*://j.s.weibo.com/doit.png*',
+        '*://*.doubleclick.net/*',
       ],
     },
   }, {

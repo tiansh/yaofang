@@ -11,13 +11,14 @@
   const userSuggestCache = new Map();
 
   const userSuggestByTop = async function (key) {
-    const requestUrl = new URL('https://s.weibo.com/ajax/topsuggest.php');
-    requestUrl.searchParams.set('_k', network.getUniqueKey());
-    requestUrl.searchParams.set('_t', 1);
-    requestUrl.searchParams.set('_v', network.fakeCallback());
-    requestUrl.searchParams.set('key', key);
-    requestUrl.searchParams.set('uid', yawf.init.page.$CONFIG.uid);
-    const resp = await fetch(requestUrl, { credentials: 'include' }).then(r => r.text());
+    const url = new URL('https://s.weibo.com/ajax/topsuggest.php');
+    url.searchParams.set('_k', network.getUniqueKey());
+    url.searchParams.set('_t', 1);
+    url.searchParams.set('_v', network.fakeCallback());
+    url.searchParams.set('key', key);
+    url.searchParams.set('uid', yawf.init.page.$CONFIG.uid);
+    util.debug('fetch url %s', url);
+    const resp = await fetch(url, { credentials: 'include' }).then(r => r.text());
     const users = Array.from((network.parseJson(resp).data || {}).user);
     const result = users.map(user => ({
       id: user.u_id + '',
@@ -28,13 +29,14 @@
     return result;
   };
   const userSuggestByFollow = async function (key) {
-    const requestUrl = new URL('https://weibo.com/aj/relation/attention');
-    requestUrl.searchParams.set('_rnd', network.getUniqueKey());
-    requestUrl.searchParams.set('_t', 0);
-    requestUrl.searchParams.set('ajwvr', 6);
-    requestUrl.searchParams.set('q', key);
-    requestUrl.searchParams.set('type', 0);
-    const resp = await fetch(requestUrl, { credentials: 'include' }).then(r => r.json());
+    const url = new URL('https://weibo.com/aj/relation/attention');
+    url.searchParams.set('_rnd', network.getUniqueKey());
+    url.searchParams.set('_t', 0);
+    url.searchParams.set('ajwvr', 6);
+    url.searchParams.set('q', key);
+    url.searchParams.set('type', 0);
+    util.debug('fetch url %s', url);
+    const resp = await fetch(url, { credentials: 'include' }).then(r => r.json());
     const users = Array.from(resp.data);
     const result = users.map(user => ({
       id: user.uid + '',

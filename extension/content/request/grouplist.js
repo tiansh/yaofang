@@ -12,7 +12,9 @@
   };
 
   const groupList = functools.once(async function () {
-    const resp = await fetch('https://weibo.com/aj/f/group/list', { credentials: 'include' }).then(r => r.json());
+    const url = 'https://weibo.com/aj/f/group/list';
+    util.debug('fetch url %s', url);
+    const resp = await fetch(url, { credentials: 'include' }).then(r => r.json());
     const groups = resp.data.map(function (group) {
       return {
         id: 'g' + group.gid,

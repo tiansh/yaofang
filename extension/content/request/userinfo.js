@@ -13,7 +13,7 @@
   const userInfoCacheById = new Map();
   /** @type {Map<string,UserInfo>} */
   const userInfoCacheByName = new Map();
-  const url = new URL({
+  const baseUrl = new URL({
     userCard: '//weibo.com/aj/v6/user/newcard',
     userCard_abroad: '//www.weibo.com/aj/v6/user/newcard',
   // document.domain 基于 STK.lib.card.usercard.basecard 并非笔误
@@ -31,13 +31,14 @@
     if (name && userInfoCacheByName.has(name)) {
       return JSON.parse(JSON.stringify(userInfoCacheByName.get(name)));
     }
-    const requestUrl = new URL(url);
-    requestUrl.searchParams.set('type', '1');
-    requestUrl.searchParams.set('callback', network.fakeCallback());
-    if (id) requestUrl.searchParams.set('id', id);
-    else requestUrl.searchParams.set('name', name);
+    const url = new URL(baseUrl);
+    url.searchParams.set('type', '1');
+    url.searchParams.set('callback', network.fakeCallback());
+    if (id) url.searchParams.set('id', id);
+    else url.searchParams.set('name', name);
     try {
-      const resp = await fetch(requestUrl, { credentials: 'include' }).then(resp => resp.text());
+      util.debug('fetch url %s', url);
+      const resp = await fetch(url, { credentials: 'include' }).then(resp => resp.text());
       // 我仍然无法理解一个使用 JSON 包裹 HTML 的 API
       const html = network.parseJson(resp).data;
       const usercard = new DOMParser().parseFromString(html, 'text/html');
@@ -56,7 +57,7 @@
       }());
     } catch (error) {
       // 可能是用户不存在，也可能是其它问题
-      util.debug('Fetch user info failed: request %o, error: %o', requestUrl, error);
+      util.debug('Fetch user info failed: request %o, error: %o', url, error);
       return null;
     }
   };
