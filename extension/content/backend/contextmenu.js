@@ -1,7 +1,7 @@
 /**
  * 用来收集右键菜单并和后台脚本通讯
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf = window.yawf || {};
   const message = yawf.message;

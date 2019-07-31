@@ -1,7 +1,7 @@
 /**
  * 处理浏览器右键菜单
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const message = yawf.message;

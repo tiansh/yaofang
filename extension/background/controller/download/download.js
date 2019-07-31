@@ -1,7 +1,7 @@
 /**
  * 下载一个文件
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const message = yawf.message;

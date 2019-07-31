@@ -1,6 +1,7 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
+  const env = yawf.env;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
@@ -416,48 +417,50 @@ ${[0, 1, 2, 3, 4].map(index => `
     },
   });
 
-  i18n.disableTagDialog = {
-    cn: '屏蔽收藏微博时的添加标签对话框',
-    tw: '阻擋收藏微博時的添加標籤對話方塊',
-    en: 'Block the dialog after marking weibo favorite',
-  };
-
-  const tagDialog = 'yawf_tag_dialog_' + strings.randKey();
-  yawf.stk.wrap('lib.feed.plugins.favorite.tagDialog', function (tagDialog) {
-    let enable = null, trueInnerGetter = null;
-    let inner = function () { };
-    const initialize = function () {
-      if (enable === null || trueInnerGetter === null) return;
-      if (enable) inner = trueInnerGetter();
+  if (env.config.stkWrapSupported) {
+    i18n.disableTagDialog = {
+      cn: '屏蔽收藏微博时的添加标签对话框',
+      tw: '阻擋收藏微博時的添加標籤對話方塊',
+      en: 'Block the dialog after marking weibo favorite',
     };
-    Object.defineProperty(window, tagDialog, {
-      get() { return void 0; },
-      set(value) { enable = value; initialize(); },
-      enumerable: false,
-    });
-    return function (regFunc) {
-      return function (stk) {
-        trueInnerGetter = () => regFunc.call(this, stk);
-        initialize();
-        return function (...params) {
-          if (!inner) return null;
-          return inner.call(this, ...params);
+
+    const tagDialog = 'yawf_tag_dialog_' + strings.randKey();
+    yawf.stk.wrap('lib.feed.plugins.favorite.tagDialog', function (tagDialog) {
+      let enable = null, trueInnerGetter = null;
+      let inner = function () { };
+      const initialize = function () {
+        if (enable === null || trueInnerGetter === null) return;
+        if (enable) inner = trueInnerGetter();
+      };
+      Object.defineProperty(window, tagDialog, {
+        get() { return void 0; },
+        set(value) { enable = value; initialize(); },
+        enumerable: false,
+      });
+      return function (regFunc) {
+        return function (stk) {
+          trueInnerGetter = () => regFunc.call(this, stk);
+          initialize();
+          return function (...params) {
+            if (!inner) return null;
+            return inner.call(this, ...params);
+          };
         };
       };
-    };
-  }, tagDialog);
+    }, tagDialog);
 
-  layout.disableTagDialog = rule.Rule({
-    id: 'feed_disable_tag_dialog',
-    version: 1,
-    parent: layout.layout,
-    template: () => i18n.disableTagDialog,
-    init() {
-      util.inject(function (tagDialog, enableDialog) {
-        window[tagDialog] = enableDialog;
-      }, tagDialog, !this.isEnabled());
-    },
-  });
+    layout.disableTagDialog = rule.Rule({
+      id: 'feed_disable_tag_dialog',
+      version: 1,
+      parent: layout.layout,
+      template: () => i18n.disableTagDialog,
+      init() {
+        util.inject(function (tagDialog, enableDialog) {
+          window[tagDialog] = enableDialog;
+        }, tagDialog, !this.isEnabled());
+      },
+    });
+  }
 
   i18n.lowReadingCountWarn = {
     cn: '在自己个人主页高亮显示阅读数量|不超过{{count}}的微博',

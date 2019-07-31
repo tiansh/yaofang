@@ -5,7 +5,7 @@
  * 我们需要当前用户 id 才能读取用户的设置从而继续后面的工作
  */
 
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;

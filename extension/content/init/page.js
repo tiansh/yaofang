@@ -1,7 +1,7 @@
 /*
  * 检查当前页面的类型
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const init = yawf.init = yawf.init || {};

@@ -1,6 +1,7 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
+  const env = yawf.env;
   const util = yawf.util;
   const backend = yawf.backend;
   const observer = yawf.observer;
@@ -49,10 +50,12 @@
   clean.CleanGroup('other', () => i18n.cleanOtherGroupTitle);
   clean.CleanRule('ads', () => i18n.cleanOtherAds, 1, {
     init: function () {
-      backend.onRequest('ads', details => {
-        if (this.isEnabled()) return { cancel: true };
-        return {};
-      });
+      if (env.config.requestBlockingSupported) {
+        backend.onRequest('ads', details => {
+          if (this.isEnabled()) return { cancel: true };
+          return {};
+        });
+      }
     },
     ainit: function () {
       util.css.append([
@@ -106,14 +109,16 @@
 
     },
   });
-  clean.CleanRule('tracker', () => i18n.cleanOtherTracker, 1, {
-    init: function () {
-      backend.onRequest('tracker', details => {
-        if (this.isEnabled()) return { cancel: true };
-        return {};
-      });
-    },
-  });
+  if (env.requestBlockingSupported) {
+    clean.CleanRule('tracker', () => i18n.cleanOtherTracker, 1, {
+      init: function () {
+        backend.onRequest('tracker', details => {
+          if (this.isEnabled()) return { cancel: true };
+          return {};
+        });
+      },
+    });
+  }
   clean.CleanRule('music', () => i18n.cleanOtherMusic, 1, '.PCD_mplayer { display: none !important; }');
   clean.CleanRule('template', () => i18n.cleanOtherTemplate, 1, '.icon_setskin { display: none !important; }');
   clean.CleanRule('home_tip', () => i18n.cleanOtherHomeTip, 1, '#v6_pl_content_hometip { display: none !important }');

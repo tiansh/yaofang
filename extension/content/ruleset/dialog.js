@@ -1,7 +1,7 @@
 /**
  * 这个文件用于显示一个显示了若干条规则的对话框
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;

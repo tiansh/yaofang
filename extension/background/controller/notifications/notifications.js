@@ -1,7 +1,7 @@
 /**
  * 处理桌面提示
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const message = yawf.message;

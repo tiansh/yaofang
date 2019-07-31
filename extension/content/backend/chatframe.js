@@ -1,6 +1,6 @@
 /**
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf = window.yawf || {};
   const chatframe = yawf.chatframe = {};

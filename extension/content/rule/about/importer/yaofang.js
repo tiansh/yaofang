@@ -1,4 +1,4 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const importer = yawf.importer;

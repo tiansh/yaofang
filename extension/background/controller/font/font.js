@@ -1,7 +1,7 @@
 /**
  * 列出所有支持的字体
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const message = yawf.message;

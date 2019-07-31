@@ -1,4 +1,4 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const config = yawf.config;

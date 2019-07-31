@@ -79,7 +79,7 @@
  *   base: Array<RuleItem> = yawf.rule.tabs
  * }): Array<Rule> 用于根据筛选条件列出对应的规则
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
 

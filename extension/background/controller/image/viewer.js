@@ -1,7 +1,7 @@
 /**
  * 打开查看图片页面
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const message = yawf.message;

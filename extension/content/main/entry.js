@@ -1,6 +1,6 @@
 // 这个文件用于向界面上添加漏斗图标和菜单项
 
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;

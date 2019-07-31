@@ -1,7 +1,8 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;
+  const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
   const catched = f => function (...args) {
@@ -16,7 +17,7 @@
     const url = pageUrl || `https://weibo.com/${uid}/myfollow`;
     util.debug('Fetch Follow: fetch page %s', url);
     util.debug('fetch url %s', url);
-    const resp = await fetch(url, { credentials: 'include' }).then(r => r.text());
+    const resp = await network.fetchText(url);
     const re = /<script>FM\.view\({"ns":"pl\.relation\.myFollow\.index".*"html":(?=.*member_box)(".*")}\)<\/script>\n/;
     const dom = util.dom.content(document.createElement('div'), JSON.parse(resp.match(re)[1]));
 

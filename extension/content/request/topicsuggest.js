@@ -1,10 +1,11 @@
 /**
  * 当输入话题时，给出一个话题列表以供选择
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;
+  const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
   const topicSuggest = async function (key) {
@@ -13,7 +14,7 @@
     url.searchParams.set('q', key);
     url.searchParams.set('__rnd', +new Date());
     util.debug('fetch url %s', url);
-    const resp = await fetch(url, { credentials: 'include' }).then(r => r.json());
+    const resp = await network.fetchJson(url);
     const topics = new Set(Array.from(resp.data).map(({ topic }) => {
       topic = topic.replace(/\[超话\]$/, '');
       if (/\[.*\]/.test(topic)) return null;

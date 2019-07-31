@@ -1,7 +1,8 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;
+  const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
   const i18n = util.i18n;
@@ -14,7 +15,7 @@
   const groupList = functools.once(async function () {
     const url = 'https://weibo.com/aj/f/group/list';
     util.debug('fetch url %s', url);
-    const resp = await fetch(url, { credentials: 'include' }).then(r => r.json());
+    const resp = await network.fetchJson(url);
     const groups = resp.data.map(function (group) {
       return {
         id: 'g' + group.gid,

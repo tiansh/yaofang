@@ -1,7 +1,7 @@
 /**
  * 这个文件用来维护用户信息
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;
@@ -38,7 +38,7 @@
     else url.searchParams.set('name', name);
     try {
       util.debug('fetch url %s', url);
-      const resp = await fetch(url, { credentials: 'include' }).then(resp => resp.text());
+      const resp = await network.fetchText(url);
       // 我仍然无法理解一个使用 JSON 包裹 HTML 的 API
       const html = network.parseJson(resp).data;
       const usercard = new DOMParser().parseFromString(html, 'text/html');

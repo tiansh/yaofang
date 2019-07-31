@@ -1,6 +1,7 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
+  const env = yawf.env;
   const util = yawf.util;
   const backend = yawf.backend;
   const observer = yawf.observer;
@@ -40,14 +41,16 @@
   clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }');
   clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '.gn_nav_list>li:nth-child(3) { display: none !important; }');
   clean.CleanRule('game', () => i18n.cleanNavGame, 1, '.gn_nav_list>li:nth-child(4) { display: none !important; }');
-  clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
-    init: function () {
-      backend.onRequest('hotSearch', details => {
-        if (this.isEnabled()) return { cancel: true };
-        return {};
-      });
-    },
-  });
+  if (env.requestBlockingSupported) {
+    clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
+      init: function () {
+        backend.onRequest('hotSearch', details => {
+          if (this.isEnabled()) return { cancel: true };
+          return {};
+        });
+      },
+    });
+  }
   clean.CleanRule('notice_new', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
   clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }');
 

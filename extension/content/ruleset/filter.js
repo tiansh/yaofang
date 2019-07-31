@@ -10,7 +10,7 @@
  *   onFinally(callback: feed => Promise?, result)
  *   onDone()
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
 

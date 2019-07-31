@@ -5,7 +5,7 @@
  * yawf.observer.dom.add(callback: Function) 添加一个回调
  * yawf.observer.dom.remove(callback: Function) 取消一个回调
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
 

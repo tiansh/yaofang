@@ -1,4 +1,4 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;
@@ -222,7 +222,7 @@
       url.searchParams.set('callback', network.fakeCallback());
       util.debug('Check unread by groups: %o', url);
       util.debug('fetch url %s', url);
-      const resp = await fetch(url, { credentials: 'include' }).then(resp => resp.text());
+      const resp = await network.fetchText(url);
       const data = network.parseJson(resp).data;
       const groupStatus = Object.assign(...data.groups);
       const result = Object.assign(...this.groups.map(group => ({ ['status_' + group]: Number(groupStatus[group]) })));

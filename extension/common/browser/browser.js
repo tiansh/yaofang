@@ -1,4 +1,4 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf = window.yawf || {};
   const browserInfo = yawf.browserInfo = {};

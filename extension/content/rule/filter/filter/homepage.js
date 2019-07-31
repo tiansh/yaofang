@@ -1,6 +1,7 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
+  const env = yawf.env;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
@@ -465,6 +466,7 @@
 
       // 初始化未读提示
       const initUnread = async function (groups, query, getter, { feedlist }) {
+        if (!env.config.stkInfoSupported) return;
         const searchParams = ['is_ori', 'is_forward', 'is_text', 'is_pic', 'is_video', 'is_music', 'is_article', 'key_word', 'start_time', 'end_time', 'is_search', 'is_searchadv'];
         // 不支持搜索页面
         if (searchParams.some(param => query.has(param))) return;
@@ -599,6 +601,7 @@
     template: () => i18n.feedsDesktopNotify,
     ref: { whitelist: { type: 'boolean' } },
     ainit() {
+      notifications.init();
       const whitelist = this.ref.whitelist.getConfig();
 
       // 完成过滤后再提示有未读消息

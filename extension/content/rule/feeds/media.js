@@ -1,6 +1,7 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
+  const env = yawf.env;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
@@ -28,10 +29,14 @@
   });
 
   Object.assign(i18n, {
-    viewOriginal: {
+    viewOriginal: env.config.contextMenuSupported ? {
       cn: '查看图片添加“查看原图”链接|打开{{open}}||{{direct}}点击缩略图时直接查看原图||{{contextmenu}}添加到右键菜单',
       tw: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖||{{contextmenu}}添加到操作功能表',
       en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View original pictures by clicking on thumbnail || {{contexmenu}} Add to context menu',
+    } : {
+      cn: '查看图片添加“查看原图”链接|打开{{open}}||{{direct}}点击缩略图时直接查看原图',
+      tw: '查看圖片添加「查看原圖」連結|打開{{open}}||{{direct}}點擊縮圖時直接查看原圖',
+      en: 'add "Original Picture" link for images | which targeted to {{open}} || {{direct}} View original pictures by clicking on thumbnail',
     },
     viewOriginalPage: { cn: '包含原图的网页', tw: '包含原圖的網頁', en: 'page with original picture' },
     viewOriginalImage: { cn: '原图', tw: '原圖', en: 'original picture' },
@@ -216,7 +221,7 @@
         }, true);
       }
 
-      if (contextMenuView || contextMenuDownload) {
+      if (env.config.contextMenuSupported && (contextMenuView || contextMenuDownload)) {
         contextmenu.addListener(function (/** @type {MouseEvent} */event) {
           /** @type {Element & EventTarget} */
           const target = event.target;
@@ -250,10 +255,14 @@
   });
 
   Object.assign(i18n, {
-    downloadImage: {
+    downloadImage: env.config.contextMenuSupported ? {
       cn: '查看图片添加“批量下载”链接|使用{{name}}文件名保存||{{direct}}点击缩略图时直接开始下载||{{contextmenu}}添加到右键菜单',
       tw: '查看圖片添加「批次下載」連結|使用{{name}}檔名儲存||{{direct}}點擊縮圖時直接開始下載||{{contextmenu}}添加到操作功能表',
       en: 'Add "Batch Download" link for images {{name}}|Use {{name}} filenames || {{direct}} Trigger download by clicking on thumbnail||{{contextmenu}} Add to context menu',
+    } : {
+      cn: '查看图片添加“批量下载”链接|使用{{name}}文件名保存||{{direct}}点击缩略图时直接开始下载',
+      tw: '查看圖片添加「批次下載」連結|使用{{name}}檔名儲存||{{direct}}點擊縮圖時直接開始下載表',
+      en: 'Add "Batch Download" link for images {{name}}|Use {{name}} filenames || {{direct}} Trigger download by clicking on thumbnail',
     },
     downloadImageNameOriginal: {
       cn: '原始',

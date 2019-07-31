@@ -13,7 +13,7 @@
  *   Deinit 与 Load 互斥
  */
 
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;

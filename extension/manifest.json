@@ -24,6 +24,7 @@
 
   "background": {
     "scripts": [
+      "common/global/env.js",
       "common/browser/browser.js",
       "common/util/functools.js",
 
@@ -53,6 +54,7 @@
         "https://api.weibo.com/chat*"
       ],
       "js": [
+        "common/global/env.js",
         "common/browser/browser.js",
         "common/util/functools.js",
         "common/util/urls.js",
@@ -67,6 +69,7 @@
         "content/util/dom.js",
 
         "common/network/network.js",
+        "common/network/fetch.js",
         "content/request/userinfo.js",
         "content/request/usersuggest.js",
         "content/request/topicsuggest.js",
@@ -91,6 +94,7 @@
         "content/backend/viewimage.js",
         "content/backend/chatframe.js",
         "content/backend/notifications.js",
+        "content/backend/fontlist.js",
 
         "content/ruleset/rule.js",
         "content/ruleset/observer.js",

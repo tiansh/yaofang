@@ -1,6 +1,7 @@
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
+  const env = yawf.env;
   const util = yawf.util;
   const init = yawf.init;
   const rule = yawf.rule;
@@ -238,6 +239,8 @@
    * 用来维护所有和消息流过滤规则右键菜单
    */
   ; (async function () {
+
+    if (!env.config.contextMenuSupported) return;
 
     contextmenu.addListener(async function (event) {
       if (init.page.type() === 'search') return null;

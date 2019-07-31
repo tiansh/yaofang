@@ -1,7 +1,7 @@
 /**
  * 当输入用户名时，给出一个用户列表以供选择
  */
-; (async function () {
+; (function () {
 
   const yawf = window.yawf;
   const util = yawf.util;
@@ -18,7 +18,7 @@
     url.searchParams.set('key', key);
     url.searchParams.set('uid', yawf.init.page.$CONFIG.uid);
     util.debug('fetch url %s', url);
-    const resp = await fetch(url, { credentials: 'include' }).then(r => r.text());
+    const resp = await network.fetchText(url);
     const users = Array.from((network.parseJson(resp).data || {}).user);
     const result = users.map(user => ({
       id: user.u_id + '',
@@ -36,7 +36,7 @@
     url.searchParams.set('q', key);
     url.searchParams.set('type', 0);
     util.debug('fetch url %s', url);
-    const resp = await fetch(url, { credentials: 'include' }).then(r => r.json());
+    const resp = await network.fetchJson(url);
     const users = Array.from(resp.data);
     const result = users.map(user => ({
       id: user.uid + '',
