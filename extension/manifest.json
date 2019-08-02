@@ -19,7 +19,16 @@
     "downloads",
     "notifications",
     "alarms",
-    "<all_urls>"
+
+    "*://*.miaopai.com/*",
+    "*://*.sina.cn/*",
+    "*://*.sina.com.cn/*",
+    "*://*.sinaimg.cn/*",
+    "*://*.sinajs.cn/*",
+    "*://*.t.cn/*",
+    "*://*.weibo.com/*",
+    "*://*.doubleclick.net/*",
+    "*://*.221edc3f-9e16-4973-a522-4ca21e7c8540.invalid/*"
   ],
 
   "background": {
