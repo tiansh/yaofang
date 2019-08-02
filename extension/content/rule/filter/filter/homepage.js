@@ -601,7 +601,6 @@
     template: () => i18n.feedsDesktopNotify,
     ref: { whitelist: { type: 'boolean' } },
     ainit() {
-      notifications.init();
       const whitelist = this.ref.whitelist.getConfig();
 
       // 完成过滤后再提示有未读消息
@@ -634,7 +633,6 @@
           }, 0);
         });
       });
-
 
     },
   });

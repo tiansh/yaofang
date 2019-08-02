@@ -1,15 +1,17 @@
 ; (function () {
 
   const yawf = window.yawf = window.yawf || {};
+  const env = yawf.env;
   const util = yawf.util = yawf.util || {};
 
+  const prefix = env.config.consolePrefix;
   const pending = [];
   const pendingOutput = (...args) => { pending.push(args); };
   const output = (message, ...args) => {
     if (typeof message === 'string') {
-      console.log(`Yaofang | ${message}`, ...args);
+      console.log(`${prefix} | ${message}`, ...args);
     } else if (message !== void 0) {
-      console.log(`Yaofang |`, message, ...args);
+      console.log(`${prefix} |`, message, ...args);
     }
   };
   const noop = () => { };

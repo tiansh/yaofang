@@ -13,4 +13,8 @@
   config.requestBlockingSupported = false;
   config.chatInPageSupported = true;
 
+  config.consolePrefix = 'Yaofang';
+
+  config.contextMenuKey = 'Y';
+
 }());

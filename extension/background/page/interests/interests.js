@@ -4,7 +4,7 @@
  * 用户在操作时甚至不会被提示将会关注账号，以及会关注哪些账号
  * 因此这个脚本试图屏蔽该页面，且不会提供任何设置
  */
-(async function () {
+; (function () {
 
   let counter = 0;
   browser.webRequest.onBeforeRequest.addListener(details => {

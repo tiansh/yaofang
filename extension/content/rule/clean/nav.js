@@ -41,7 +41,7 @@
   clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }');
   clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '.gn_nav_list>li:nth-child(3) { display: none !important; }');
   clean.CleanRule('game', () => i18n.cleanNavGame, 1, '.gn_nav_list>li:nth-child(4) { display: none !important; }');
-  if (env.requestBlockingSupported) {
+  if (env.config.requestBlockingSupported) {
     clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
       init: function () {
         backend.onRequest('hotSearch', details => {

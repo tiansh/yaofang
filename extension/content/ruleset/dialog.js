@@ -49,7 +49,7 @@
   };
   configDom.layer = () => {
     const container = document.createElement('div');
-    container.innerHTML = '<div class="yawf-config-layer" node-type="searchFilterGroupLayer"></div>';
+    container.innerHTML = '<div class="yawf-config-layer"></div>';
     return container.removeChild(container.firstChild);
   };
 
@@ -101,26 +101,46 @@
     const tablist = left.querySelector('ul');
     const search = tablist.appendChild(configDom.search());
     const searchInput = search.querySelector('input');
-    const layer = right.appendChild(configDom.layer());
     /** @type {Element?} */
     let current = null;
     /** @type {WeakMap<Element, Function>} */
     const tabInit = new WeakMap();
-    const tabLeft = tabs.map(tab => {
+    const tabLayer = tabs.map(tab => {
+      const layer = right.appendChild(configDom.layer());
+      return layer;
+    });
+    const hideAllLayer = function () {
+      [...tabLayer, searchLayer].forEach(layer => {
+        if (layer.style.display !== 'none') {
+          layer.style.display = 'none';
+        }
+      });
+    };
+    const tabLeft = tabs.map((tab, index) => {
+      const layer = tabLayer[index];
       const tabLeft = tablist.appendChild(configDom.item(tab.getRenderResult()));
       tabInit.set(tabLeft, () => {
+        hideAllLayer();
+        layer.innerHTML = '';
         render(layer, rule.query({ base: [tab] }));
+        layer.style.display = 'block';
       });
       return tabLeft;
     });
-    tabInit.set(search, () => { renderSearch(layer, searchInput.value); });
+    const searchLayer = right.appendChild(configDom.layer());
+    searchLayer.classList.add('.yawf-config-layer-search');
+    tabInit.set(search, () => {
+      hideAllLayer();
+      searchLayer.innerHTML = '';
+      renderSearch(searchLayer, searchInput.value);
+      searchLayer.style.display = 'block';
+    });
     const setCurrent = tabLeft => {
       if (current === tabLeft) return;
       if (current) current.classList.remove('current');
       current = tabLeft;
       tabLeft.classList.add('current');
       if (search !== tabLeft && searchInput.value) searchInput.value = '';
-      layer.innerHTML = '';
       tabInit.get(tabLeft)();
     };
     // 自动选中第一个选项卡
@@ -135,7 +155,7 @@
     searchInput.addEventListener('input', event => {
       if (!searchInput.value && current !== search) return;
       if (current !== search) setCurrent(search);
-      else renderSearch(layer, searchInput.value);
+      else tabInit.get(search)();
     });
   };
 

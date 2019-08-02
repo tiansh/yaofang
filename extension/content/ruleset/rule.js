@@ -522,12 +522,12 @@
       const renderOptions = items => {
         items.forEach(({ text, value, style = null }) => {
           const option = document.createElement('option');
-          option.value = value;
+          option.value = JSON.stringify(value);
           option.text = typeof text === 'function' ? text() : text;
           if (style) option.style += ';' + style;
           select.add(option);
         });
-        select.value = this.getConfig();
+        select.value = JSON.stringify(this.getConfig());
       };
       if (Array.isArray(this.select)) renderOptions(this.select);
       else Promise.resolve(this.select).then(items => {
@@ -537,7 +537,7 @@
       select.addEventListener('change', event => {
         if (!event.isTrusted) {
           this.renderValue(container);
-        } else this.setConfig(select.value);
+        } else this.setConfig(JSON.parse(select.value));
       });
       container.appendChild(select);
       return container;
@@ -547,8 +547,9 @@
       const selector = `select[yawf-config-input="${this.configId}"]`;
       const select = container.querySelector(selector);
       const config = this.getConfig();
-      if (select && select.value !== config) {
-        select.value = config;
+      const configStr = JSON.stringify(config);
+      if (select && select.value !== configStr) {
+        select.value = configStr;
       }
       return container;
     }

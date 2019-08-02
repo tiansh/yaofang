@@ -88,7 +88,7 @@
 .yawf-clean-group + .yawf-config-group-items { display: grid; grid-template-columns: repeat(${i18n.cleanConfigColumnCount}, 1fr); grid-gap: 5px 10px; margin: 5px 20px; }
 .yawf-clean-group + .yawf-config-group-items > .yawf-config-rule { margin: 0; }
 .yawf-clean-group-all { float: right; font-weight: normal; cursor: pointer; }
-.yawf-whatsnew-dialog .yawf-clean-group-all, [node-type="searchFilterGroupLayer"] .yawf-clean-group-all { display: none; }
+.yawf-whatsnew-dialog .yawf-clean-group-all, .yawf-config-layer-search .yawf-clean-group-all { display: none; }
 `);
   }, { priority: priority.DEFAULT });
 

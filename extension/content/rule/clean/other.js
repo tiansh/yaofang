@@ -27,7 +27,8 @@
     },
     cleanOtherIM: { cn: '私信聊天（右下） {{i}}', en: 'Chat (bottom right) {{i}}' },
     cleanOtherIMDetail: {
-      cn: '隐藏后您还可以在私信页面收发私信：鼠标指向右上角消息图标在下拉菜单中选择“私信”即可打开私信页面。配合“[[layout_chat_in_page]]”使用时只隐藏在新标签页打开聊天页面的按钮。',
+      cn: '隐藏后您还可以在私信页面收发私信：鼠标指向右上角消息图标在下拉菜单中选择“私信”即可打开私信页面。' +
+        (env.config.chatInPageSupported ? '配合“[[layout_chat_in_page]]”使用时只隐藏在新标签页打开聊天页面的按钮。' : ''),
     },
     cleanOtherIMNews: { cn: '热点提醒（右下）', tw: '熱點提醒（右下）', en: 'News, bottom right' },
     cleanOtherBackTop: { cn: '返回顶部', tw: '返回頂部', en: 'Back to Top' },
@@ -109,7 +110,7 @@
 
     },
   });
-  if (env.requestBlockingSupported) {
+  if (env.config.requestBlockingSupported) {
     clean.CleanRule('tracker', () => i18n.cleanOtherTracker, 1, {
       init: function () {
         backend.onRequest('tracker', details => {

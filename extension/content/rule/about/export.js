@@ -192,7 +192,7 @@
 .yawf-export, .yawf-reset, .yawf-import-wbp { margin-left: 10px; }
 `);
 
-  (function () {
+  ; (function () {
     document.addEventListener('wbpPost', function getData(event) {
       try {
         const data = JSON.parse(event.detail.slice(event.detail.indexOf('=') + 1));

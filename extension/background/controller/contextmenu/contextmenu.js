@@ -4,6 +4,7 @@
 ; (function () {
 
   const yawf = window.yawf;
+  const env = yawf.env;
   const message = yawf.message;
   const browserInfo = yawf.browserInfo;
 
@@ -28,7 +29,7 @@
      * @param {string} title
      * @param {string} accessKey
      */
-    return function (title, accessKey) {
+    return function (title, accessKey = null) {
       let key = null;
       if (accessKey && /^[0-9A-Za-z]/.test(accessKey)) {
         key = accessKey.toUpperCase();
@@ -56,7 +57,7 @@
     if (!Array.isArray(items) || !items.length) return;
     browser.menus.removeAll();
     const rootMenu = browser.menus.create({
-      title: menuTitleWithAccessKey(browser.i18n.getMessage('extensionName'), 'Y'),
+      title: menuTitleWithAccessKey(browser.i18n.getMessage('extensionName'), env.config.contextMenuKey),
     });
     items.forEach(({ title, accessKey = null, data }) => {
       browser.menus.create({

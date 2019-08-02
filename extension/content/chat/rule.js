@@ -6,7 +6,7 @@
 
   const css = util.css;
 
-  (async function avatarShape() {
+  ; (async function avatarShape() {
     const userConfig = await init.userConfig;
     const isEnabled = userConfig.key('layout_avatar_shape').get();
     if (!isEnabled) return;
@@ -19,7 +19,7 @@
     }
   }());
 
-  (async function () {
+  ; (async function () {
     const userConfig = await init.userConfig;
     const hideApprove = userConfig.key('clean_icons_approve').get();
     const hideApproveCo = userConfig.key('clean_icons_approve_co').get();

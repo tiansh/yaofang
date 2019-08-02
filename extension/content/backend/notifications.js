@@ -6,9 +6,6 @@
 
   const util = yawf.util;
 
-  notifications.init = function () {
-  };
-
   notifications.show = async function ({ title, content, icon = null, duration = Infinity }) {
     return await message.invoke.showNotifications({ title, content, icon, duration });
   };
