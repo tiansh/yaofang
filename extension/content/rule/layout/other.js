@@ -569,7 +569,7 @@
     });
   }
 
-  if (env.chatInPageSupported) {
+  if (env.config.chatInPageSupported) {
 
     i18n.chatInPage = {
       cn: '在微博页面内整合聊天窗口',

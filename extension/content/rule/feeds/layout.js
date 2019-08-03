@@ -197,10 +197,12 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
             const playing = video.classList.contains('wbv-playing');
             if (playing) {
               container.setAttribute('yawf-video-play', '');
-              videoObserver.disconnect();
+              if (videoObserver) videoObserver.disconnect();
+              return true;
             }
+            return false;
           };
-          setPlayAttribute();
+          if (setPlayAttribute()) return;
           videoObserver = new MutationObserver(setPlayAttribute);
           videoObserver.observe(video, { attributes: true, attributeFilter: ['class'], childList: false, characterData: false });
         });
