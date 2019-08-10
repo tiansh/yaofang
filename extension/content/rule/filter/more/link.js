@@ -22,7 +22,7 @@
   });
 
   Object.assign(i18n, {
-    feedWithLink: { cn: '带有{}的微博', tw: '帶有{}的微博', en: 'Feeds contains {}' },
+    feedWithLink: { cn: '带有{}的微博', tw: '帶有{}的微博', en: 'Feeds contain {}' },
     feedWithLinkPlace: { cn: '位置链接', tw: '位置連結', en: 'links of places' },
     feedWithLinkMovie: { cn: '电影链接', tw: '電影連結', en: 'links of movies' },
     feedWithLinkBook: { cn: '图书链接', tw: '圖書連結', en: 'links of books' },

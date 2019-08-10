@@ -41,7 +41,7 @@
       cn: '在单条微博页面可以看到的相关微博推荐',
     },
     cleanOtherRelatedVideo: { cn: '相关视频推荐', tw: '相關視頻推薦', en: 'Related Videos' },
-    cleanOtherRelatedArtical: { cn: '头条文章页推荐阅读', tw: '頭條文章頁推薦閱讀', en: 'Suggested Artical' },
+    cleanOtherRelatedArticle: { cn: '头条文章页推荐阅读', tw: '頭條文章頁推薦閱讀', en: 'Suggested Article' },
     cleanOtherSendWeibo: { cn: '首页外的微博发布框 {{i}}', tw: '首頁外的微博發佈框 {{i}}', en: 'All other Weibo publishers {{i}}' },
     cleanOtherSendWeiboDetail: {
       cn: '除了首页的微博发布框，右上角按钮弹出的快速发布框外；其他的各种发布框。如微博文章下方转发用的发布框等。',
@@ -142,7 +142,7 @@
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherRelatedFeedsDetail } },
   });
   clean.CleanRule('related_video', () => i18n.cleanOtherRelatedVideo, 1, '.video_box_more { display: none !important; }');
-  clean.CleanRule('related_artical', () => i18n.cleanOtherRelatedArtical, 1, '.WB_artical [node-type="recommend"] { display: none !important; }');
+  clean.CleanRule('related_article', () => i18n.cleanOtherRelatedArticle, 1, '.WB_artical [node-type="recommend"] { display: none !important; }');
   clean.CleanRule('send_weibo', () => i18n.cleanOtherSendWeibo, 1, {
     acss: '.send_weibo_simple { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherSendWeiboDetail } },

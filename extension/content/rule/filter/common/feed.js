@@ -281,7 +281,7 @@
       dropAreaContent: {
         cn: '您可以将文本、帐号名、头像、话题、来源等拖放至此处以创建过滤规则',
         tw: '您可以將文本、帳號名、頭像、話題、來源等拖放至此處以創建過濾規則',
-        en: 'by draging text, account names, avatars, topics, sources, etc.',
+        en: 'by dragging text, account names, avatars, topics, sources, etc.',
       },
     });
 

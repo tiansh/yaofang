@@ -10,8 +10,10 @@
   config.stkWrapSupported = true;
   config.stkInfoSupported = true;
   config.contextMenuSupported = true;
-  config.requestBlockingSupported = false;
+  config.requestBlockingSupported = true;
   config.chatInPageSupported = true;
+
+  config.externalMenuSupported = false;
 
   config.consolePrefix = 'Yaofang';
 

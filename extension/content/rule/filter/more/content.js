@@ -239,7 +239,7 @@
   i18n.wenwoDrFeedFilter = {
     cn: '含有爱问医生健康科普文章的微博{{i}}',
     tw: '含有愛問醫生健康科普文章的微博{{i}}',
-    en: 'Weibo with 爱问医生 (iask medical) artical {{i}}',
+    en: 'Weibo with 爱问医生 (iask medical) article {{i}}',
   };
   i18n.wenwoDrFeedFilterDetail = {
     cn: '爱问医生健康科普文章是一些来自 wenwo.com 的健康、医疗相关文章。打开爱问医生健康科普文章的网站时，您可能会自动关注文章作者或相应帐号。开启以隐藏包含此类文章的微博。',

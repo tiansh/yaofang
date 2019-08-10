@@ -114,7 +114,7 @@
       rule('showAllGroups', 'layout_side_show_all_groups');
       rule('noHomeMargins', 'layout_side_merge');
       rule('showAllText', 'feed_long_expand');
-      rule('showAllArticleText', 'show_artical_without_follow');
+      rule('showAllArticleText', 'show_article_without_follow');
       rule('directAllFeeds', 'filter_profile_show_all');
       rule('directBigImg', 'feed_view_original');
       rule('squareAvatar', 'layout_avatar_shape');
@@ -126,6 +126,7 @@
       rule('noHomeMargins', 'feed_no_space');
       rule('moveSrcToBtm', 'feed_source_at_bottom');
       rule('unwrapText', 'feed_author_content_nowrap');
+      rule('customStyles', 'custom_css');
 
       clean('TimelineMods', 'filter_fake_weibo');
       clean('Level', 'clean_icons_level');
@@ -143,7 +144,7 @@
       clean('Friends', 'clean_left_friends');
       clean('ToMe', 'clean_left_group_to_me');
       clean('RecommendedTopic', 'clean_middle_recommended_topic');
-      clean('RecomFeed', 'clean_middle_feed_recommand');
+      clean('RecomFeed', 'clean_middle_feed_recommend');
       clean('MemberTip', 'clean_middle_member_tip');
       clean('MusicRecom', 'clean_right_ranks');
       clean('Topic', 'clean_right_hot_topic');
@@ -152,7 +153,7 @@
       clean('MovieRecom', 'clean_right_member');
       clean('AttFeed', 'clean_right_att_feed');
       clean('Notice', 'clean_right_notice');
-      clean('RecomFeed', 'clean_feed_recommand');
+      clean('RecomFeed', 'clean_feed_recommend');
       clean('CommentTip', 'clean_feed_feed_tip');
       clean('MemberCover', 'clean_feed_vip_background');
       clean('TopicCard', 'clean_feed_card');

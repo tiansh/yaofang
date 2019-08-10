@@ -189,7 +189,7 @@
       rule('weibo.layoutHideLeftNews', 'clean_left_news');
       rule('weibo.layoutHideLeftCount', 'clean_left_count');
       rule('weibo.layoutHideMiddleRecommendedTopic', 'clean_middle_recommended_topic');
-      rule('weibo.layoutHideMiddleFeedRecommand', 'clean_middle_feed_recommand');
+      rule('weibo.layoutHideMiddleFeedRecommand', 'clean_middle_feed_recommend');
       rule('weibo.layoutHideMiddleMemberTip', 'clean_middle_member_tip');
       rule('weibo.layoutHideRightInfo', 'clean_right_info');
       rule('weibo.layoutHideRightRecomMusicRank', 'clean_right_ranks');
@@ -201,7 +201,7 @@
       rule('weibo.layoutHideRightHongbaoRank', 'clean_right_hongbao_rank');
       rule('weibo.layoutHideRightAttFeed', 'clean_right_att_feed');
       rule('weibo.layoutHideRightNotice', 'clean_right_notice');
-      rule('weibo.layoutHideWeiboRecomFeed', 'clean_feed_recommand');
+      rule('weibo.layoutHideWeiboRecomFeed', 'clean_feed_recommend');
       rule('weibo.layoutHideWeiboFeedOuterTip', 'clean_feed_feed_outer_tip');
       rule('weibo.layoutHideWeiboFeedTip', 'clean_feed_feed_tip');
       rule('weibo.layoutHideWeiboGroupTip', 'clean_feed_group_tip');
@@ -210,7 +210,7 @@
       rule('weibo.layoutHideWeiboPicTag', 'clean_feed_pic_tag');
       rule('weibo.layoutHideWeiboSonTitle', 'clean_feed_son_title');
       rule('weibo.layoutHideWeiboCard', 'clean_feed_card');
-      rule('weibo.layoutHideWeiboArticalPay', 'clean_feed_artical_pay');
+      rule('weibo.layoutHideWeiboArticalPay', 'clean_feed_article_pay');
       rule('weibo.layoutHideWeiboTag', 'clean_feed_tag');
       rule('weibo.layoutHideWeiboMovieTag', 'clean_feed_related_link');
       rule('weibo.layoutHideWeiboSource', 'clean_feed_source');
@@ -237,7 +237,7 @@
       rule('weibo.layoutHidePersonAlbum', 'clean_profile_album');
       rule('weibo.layoutHidePersonHotTopic', 'clean_profile_hot_topic');
       rule('weibo.layoutHidePersonHotWeibo', 'clean_profile_hot_weibo');
-      rule('weibo.layoutHidePersonUserList', 'clean_profile_recommand_feed');
+      rule('weibo.layoutHidePersonUserList', 'clean_profile_recommend_feed');
       rule('weibo.layoutHidePersonHongbao', 'clean_profile_user_list');
       rule('weibo.layoutHidePersonWenwoDr', 'clean_profile_hongbao');
       rule('weibo.layoutHidePersonTimeline', 'clean_profile_wenwo_dr');
@@ -295,6 +295,7 @@
       rule('weibo.tool.color_override.transparency2', 'layout_theme_color.transparency2');
       rule('weibo.tool.color_override.color3', 'layout_theme_color.color3');
       rule('weibo.tool.color_override.transparency3', 'layout_theme_color.transparency3');
+      rule('weibo.tool.userstyle', 'custom_css');
       // 微博展示
       rule('weibo.tool.no_weibo_space', 'feed_no_space');
       rule('weibo.tool.from_in_bottom', 'feed_source_at_bottom');
@@ -326,6 +327,7 @@
       rule('weibo.tool.unwrapContent.text', 'feed_content_line_break.text');
       rule('weibo.tool.replace_link', 'feed_link_use_url');
       rule('weibo.tool.replace_image_emoji', 'feed_unicode_emoji');
+      rule('weibo.tool.show_vote_result', 'show_vote_result');
       rule('weibo.other.customize_source', 'feed_no_custom_source');
       rule('weibo.tool.viewOriginal', 'feed_view_original');
       rule('weibo.tool.viewOriginal.open', 'feed_view_original.open');

@@ -11,9 +11,9 @@
   const rule = yawf.rule;
 
   i18n.filterMenuItem = {
-    cn: '过滤器设置',
-    tw: '篩選器設定',
-    en: 'Filter Settings',
+    cn: '药方设置',
+    tw: '藥方設定',
+    en: 'YAWF Settings',
   };
 
   // 缩小搜索框宽度以留出漏斗按钮的位置

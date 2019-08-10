@@ -4,7 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
-  const commentParser = yawf.comment;
+  const request = yawf.request;
 
   const feeds = yawf.rules.feeds;
 
@@ -185,6 +185,127 @@
         });
       };
       observer.dom.add(useTextEmoji);
+    },
+  });
+
+  Object.assign(i18n, {
+    showVoteResult: {
+      cn: '投票微博显示投票情况{{i}}',
+      tw: '投票微博顯示投票情況{{i}}',
+      en: 'Show votes for feeds with voting {{i}}',
+    },
+    showVoteResultDetail: {
+      cn: '在当前页面展示投票结果而无需打开新页。展示仅供查看，如需投票仍需要在新页面打开。另请注意，无论是否开启本功能，微博投票会导致您自动点赞该微博。',
+      tw: '在當前頁面展示投票結果而無需打開新頁。展示僅供查看，如需投票仍需要在新頁面打開。另請注意，無論是否開啟本功能，微博投票會導致您自動點贊該微博。',
+      en: "View other's votes without open a new page. You are still required to open the new page to vote. Please be noticed that, voting will automatically like the feed regardless whether this option is enabled or not.",
+    },
+    followVoteLink: {
+      cn: '点赞微博并参与投票',
+      tw: '點贊微博並參與投票',
+      en: 'Like this feed and vote',
+    },
+  });
+
+  content.showVoteResult = rule.Rule({
+    id: 'show_vote_result',
+    version: 33,
+    parent: content.content,
+    template: () => i18n.showVoteResult,
+    ref: {
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.showVoteResultDetail },
+    },
+    ainit() {
+      observer.feed.onAfter(async function (/** @type {Element} */feed) {
+        const voteCard = feed.querySelector('.WB_feed_spec[action-type="fl_jumpurl"][action-data*="vote.weibo.com"]');
+        if (!voteCard) return;
+        const url = new URL(new URLSearchParams(voteCard.getAttribute('action-data')).get('url'));
+        if (!url.href.startsWith('https://vote.weibo.com/h5/index/index?')) return;
+        const voteId = url.searchParams.get('vote_id');
+        if (!voteId) return;
+        const placeholder = document.createElement('div');
+        voteCard.parentNode.parentNode.replaceChild(placeholder, voteCard.parentNode);
+        const voteResult = await request.voteDetail(voteId);
+        const template = document.createElement('div');
+        template.innerHTML = '<div class="yawf-vote-detail S_txt1 S_bg2 "><div class="yawf-vote-title"></div><div class="yawf-vote-subtitle S_txt2"></div><div class="yawf-vote-option-list"></div><div class="yawf-vote-footer"></div></div>';
+
+        const container = template.firstChild;
+        const title = container.querySelector('.yawf-vote-title');
+        const subtitle = container.querySelector('.yawf-vote-subtitle');
+        const optionList = container.querySelector('.yawf-vote-option-list');
+        const footer = container.querySelector('.yawf-vote-footer');
+        const voteInfo = voteResult.vote_info;
+        const withImage = voteInfo.option_list.some(option => option.pic);
+        if (withImage) {
+          optionList.classList.add('yawf-vote-with-image');
+        }
+
+        title.textContent = voteInfo.title;
+        // 未截至的投票会出现形如“截止日期 x年x月x日 xx::xx”格式的字串
+        // 此时识别后面的日期以方便“使用本机时区”功能将其修正为本机时间
+        if (/^.*\d+年\d+月\d+日 \d+:\d+$/.test(voteInfo.show_str)) {
+          const [_i, text, dateStr] = voteInfo.show_str.match(/^(.*?)(\d+年\d+月\d+日 \d+:\d+)$/);
+          const [_j, year, month, date, hour, min] = dateStr.match(/(\d+)年(\d+)月(\d+)日 (\d+):(\d+)/);
+          const timestamp = Date.UTC(year, month - 1, date, hour - 8, min);
+          subtitle.appendChild(document.createTextNode(text));
+          const dateText = subtitle.appendChild(document.createElement('span'));
+          dateText.textContent = dateStr;
+          dateText.setAttribute('date', timestamp);
+        } else {
+          subtitle.textContent = voteInfo.show_str;
+        }
+        voteInfo.option_list.forEach(option => {
+          const wrap = document.createElement('div');
+          wrap.innerHTML = '<div class="yawf-vote-option-item"><div class="yawf-vote-option-text"><span class="yawf-vote-option-title"></span><span class="yawf-vote-option-count"></span></div><div class="yawf-vote-option-bar S_bg1"></div></div>';
+          const container = wrap.firstChild;
+          const text = container.firstChild.firstChild;
+          text.textContent = option.title;
+          const count = text.nextSibling;
+          count.textContent = option.part_num;
+          container.style.setProperty('--yawf-vote-ratio', option.part_ratio / 100);
+          if (withImage) {
+            const wrap = document.createElement('div');
+            wrap.innerHTML = '<div class="yawf-vote-option-image"><img /></div>';
+            const img = wrap.firstChild.firstChild;
+            img.src = option.pic;
+            img.alt = option.text;
+            container.insertBefore(wrap.firstChild, container.firstChild);
+          }
+          if (option.selected === '1') {
+            container.classList.add('yawf-vote-selected');
+          }
+          optionList.appendChild(container);
+        });
+        if (voteInfo.status === '1') {
+          const link = document.createElement('div');
+          link.setAttribute('action-type', voteCard.getAttribute('action-type'));
+          link.setAttribute('action-data', voteCard.getAttribute('action-data'));
+          link.textContent = i18n.followVoteLink;
+          footer.appendChild(link);
+        }
+        placeholder.replaceWith(container);
+      });
+
+      const fontRatio = content.fontSize.isEnabled() ? content.fontSize.ref.ratio.getConfig() : 100;
+      const fontSize = { 120: 16, 150: 21, 200: 28, 300: 42 }[fontRatio] || 12;
+      const smallImage = yawf.rules.feeds.layout.smallImage.isEnabled();
+      css.append(`
+.yawf-vote-detail { font-size: ${fontSize}px; }
+.yawf-vote-detail { margin-left: 10px; padding: 10px; box-shadow: 0 0 2px #777; border-radius: 3px; }
+.yawf-vote-title { font-weight: bold; } 
+.yawf-vote-option-item { border: 1px solid #ebebeb; margin: 5px 0; line-height: 2; padding: 0 5px; position: relative; }
+.yawf-vote-option-text { display: flex; position: relative; z-index: 1; }
+.yawf-vote-option-title { flex: 1 1 auto; } 
+.yawf-vote-option-count { flex: 0 0 auto; }
+.yawf-vote-option-count::before { content: "("; }
+.yawf-vote-option-count::after { content: ")"; }
+.yawf-vote-option-bar { content: " "; width: calc(100% * var(--yawf-vote-ratio)); height:100%; position: absolute; top: 0; left: 0; z-index: 0; }
+.yawf-vote-selected { font-weight: bold; }
+.yawf-vote-with-image { display: grid; grid-template-columns: repeat(auto-fill, ${smallImage ? '120px' : '225px'}); grid-gap: 10px; }
+.yawf-vote-option-image { position: relative; z-index: 2; margin: 0 -5px -5px;}
+.yawf-vote-option-image img { max-width: 100%; max-height: 225px; }
+.yawf-vote-footer:empty { display: none; }
+.yawf-vote-footer { margin-top: 10px; cursor: pointer; }
+`);
     },
   });
 

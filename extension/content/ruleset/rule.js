@@ -724,6 +724,50 @@
   rule.class.ColorConfigItem = ColorConfigItem;
 
   /**
+   * 一个文本输入框
+   * 对应一个 textarea 输入框
+   */
+  class TextConfigItem extends ConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+    }
+    get initial() { return ''; }
+    normalize(value) {
+      if (typeof value !== 'string') return this.initial;
+      return value;
+    }
+    render() {
+      const container = document.createElement('span');
+      container.setAttribute('yawf-config-item', this.configId);
+      container.classList.add('yawf-config-text');
+      const textarea = document.createElement('textarea');
+      textarea.classList.add('yawf-config-textarea', 'W_input');
+      textarea.value = this.getConfig();
+      textarea.addEventListener('input', event => {
+        if (!event.isTrusted) textarea.value = this.getConfig();
+        else this.setConfig(textarea.value);
+      });
+      textarea.addEventListener('blur', event => {
+        this.renderValue(container);
+      });
+      textarea.setAttribute('yawf-config-input', this.configId);
+      container.appendChild(textarea);
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `textarea[yawf-config-input="${this.configId}"]`;
+      const textarea = container.querySelector(selector);
+      const config = this.getConfig();
+      if (textarea && textarea.value !== config) {
+        textarea.value = config;
+      }
+      return container;
+    }
+  }
+  rule.class.ColorConfigItem = ColorConfigItem;
+
+  /**
    * 显示一个小图标，鼠标划上去可以显示弹出起泡
    * 这个项目不对应设置值
    */
@@ -1245,6 +1289,7 @@
     if (item.type === 'number') return new NumberConfigItem(item, parent);
     if (item.type === 'range') return new RangeConfigItem(item, parent);
     if (item.type === 'color') return new ColorConfigItem(item, parent);
+    if (item.type === 'text') return new TextConfigItem(item, parent);
     if (item.type === 'bubble') return new BubbleConfigItem(item, parent);
     if (item.type === 'strings') return new StringCollectionConfigItem(item, parent);
     if (item.type === 'regexen') return new RegExpCollectionConfigItem(item, parent);
@@ -1417,9 +1462,9 @@
     rule.query().forEach(rule => rule.execute());
   };
 
-  init.onReady(async () => {
+  init.onReady(() => {
     rule.init();
-  }, { priority: priority.DEFAULT, async: true });
+  }, { priority: priority.DEFAULT });
 
   css.append(`
 .yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
@@ -1428,12 +1473,14 @@
 .yawf-config-rule > label + label { margin-left: 8px; }
 .yawf-config-rule > br + label { margin-left: 20px; }
 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }
+.yawf-config-select { height: 20px; }
 .yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
 .yawf-config-range { position: relative; }
 .yawf-config-range-wrap { display: none; position: absolute; left: 0; right: 0; margin: 0; bottom: calc(100% + 2px); height: 80px; background: #f0f0f0; background: Menu; }
 .yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
 .yawf-config-color input[type="color"] { width: 45px; box-sizing: border-box; height: 20px; vertical-align: middle; }
+.yawf-config-text textarea { width: calc(100% - 20px); padding-left: 10px; padding-right: 10px; min-height: 120px; resize: vertical; }
 .yawf-config-collection-input { margin: 5px; }
 .yawf-config-collection-list { display: block; margin: 5px; }
 .yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; }

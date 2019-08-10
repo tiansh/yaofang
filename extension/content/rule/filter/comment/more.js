@@ -141,7 +141,7 @@
   i18n.commentWithForward = {
     cn: '隐藏含有转发消息的微博',
     tw: '隱藏含有轉發消息的微博',
-    en: 'Comments contains forwarded messages',
+    en: 'Comments contain forwarded messages',
   };
 
   more.commentWithForward = rule.Rule({

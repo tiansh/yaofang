@@ -90,6 +90,7 @@
       'a[action-type="fl_url_addparams"][title]',
     ].join(','));
     if (!link) return [];
+    if (link.matches('[suda-uatrack*="1022-topic"]')) return [];
     const text = link.title.trim();
     if (text.match(/^https?:/) || text === '网页链接') return [];
     const template = i18n.contentTextContextTitle;
@@ -155,9 +156,10 @@
       topic = target.title.replace(/^[\s#]+|[\s#]+$/g, '');
     }
     if (!topic) return [];
+    const text = topic.replace(/^\ue627|\[超话\]$|超话$/g, '');
     const template = i18n.topicContextTitle;
-    const title = template.replace('{1}', () => topic);
-    return [{ title, type: 'topic', value: topic }];
+    const title = template.replace('{1}', () => text);
+    return [{ title, type: 'topic', value: text }];
   };
   rule.addFastListener(recognize.topic);
 

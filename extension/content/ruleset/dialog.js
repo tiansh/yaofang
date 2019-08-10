@@ -128,7 +128,7 @@
       return tabLeft;
     });
     const searchLayer = right.appendChild(configDom.layer());
-    searchLayer.classList.add('.yawf-config-layer-search');
+    searchLayer.classList.add('yawf-config-layer-search');
     tabInit.set(search, () => {
       hideAllLayer();
       searchLayer.innerHTML = '';

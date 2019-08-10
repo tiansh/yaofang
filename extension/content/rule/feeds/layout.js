@@ -125,7 +125,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
   i18n.smallImage = {
     cn: '缩小缩略图尺寸 {{i}}||{{repost}}缩小转发原文宽度',
     tw: '縮小縮略圖尺寸 {{i}}||{{repost}}縮小轉發原文寬度',
-    en: 'Decrease the size of image寸 {{i}}||{{repost}} Decrease the width of original feeds',
+    en: 'Decrease the size of image {{i}}||{{repost}} Decrease the width of original feeds',
   };
   i18n.smallImageDetail = {
     cn: '缩小图片尺寸仅影响图片在您的网页上的显示效果，不能降低网络数据流量用量。',

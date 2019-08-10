@@ -43,7 +43,7 @@
     manuallyHideFeedDialogTitle: {
       cn: '重置隐藏',
       tw: '重設隱藏',
-      en: 'Reset Hadding',
+      en: 'Reset Hiding',
     },
     manuallyHideFeedDialogText: {
       cn: '确定清除隐藏微博的历史记录吗，清除后之前隐藏的微博会重新显示。',
@@ -79,7 +79,7 @@
   let hideList = null;
   init.onReady(async function () {
     hideList = await hideListPromise();
-  }, { priority: util.priority.BEFORE, async: true });
+  }, { priority: util.priority.BEFORE });
 
   manually.manuallyHideFeed = rule.Rule({
     id: 'filter_manually_hide',

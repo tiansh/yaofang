@@ -86,7 +86,7 @@
   let followingContext = null;
   init.onReady(async function () {
     followingContext = await getContext();
-  }, { priority: util.priority.BEFORE, async: true });
+  }, { priority: util.priority.BEFORE });
 
   // 获取第一页的数据
   const fetchInitialize = async function () {
@@ -489,6 +489,7 @@
     version: 1,
     parent: following.following,
     template: () => i18n.uncheckFollowPresenter,
+    initial: true,
     ainit() {
       observer.dom.add(function uncheckFollowPresenter() {
         const inputs = Array.from(document.querySelectorAll('input[type="checkbox"][checked][action-data*="follow"]:not([yawf-uncheck-follow])'));
@@ -500,17 +501,18 @@
     },
   });
 
-  i18n.showArticalWithoutFollow = {
+  i18n.showArticleWithoutFollow = {
     cn: '头条文章不关注作者直接显示全文',
     tw: '頭條文章不關注作者直接顯示全文',
-    en: 'Show whole artical without follow the author',
+    en: 'Show whole article without follow the author',
   };
 
-  following.showArticalWithoutFollow = rule.Rule({
-    id: 'show_artical_without_follow',
+  following.showArticleWithoutFollow = rule.Rule({
+    id: 'show_article_without_follow',
     version: 1,
     parent: following.following,
-    template: () => i18n.showArticalWithoutFollow,
+    template: () => i18n.showArticleWithoutFollow,
+    initial: true,
     ainit() {
       css.append(`
 .WB_editor_iframe, .WB_editor_iframe_new { height: auto !important; }

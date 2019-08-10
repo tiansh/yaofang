@@ -28,7 +28,7 @@
     textCount: {
       cn: '（约{1}字）',
       tw: '（約{1}字）',
-      en: ' (about {1} charactors)',
+      en: ' (about {1} characters)',
     },
   });
 

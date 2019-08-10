@@ -50,6 +50,34 @@
         });
       },
     });
+  } else if (function supportMutationEvent() {
+    // 用户脚本版无法用 background 脚本拦截网络请求
+    // Mutation Event 会在节点插入之前触发，阻止插入就可以阻止脚本运行
+    // MutationObserver 会在节点插入之后触发，并不能保证阻止 JSONP 请求成功进行
+    // 此外除了 GM3 意外的猴子，用户脚本无法保证 document-start，所以也不能靠拦截 STK 注册来实现这个功能
+    // 我们应该也没有几个 GM3 的用户，所以不打算为 GM3 做特殊处理
+    // Mutation Event 为待废弃功能，如果某天浏览器停止支持这个功能，这里只能删掉
+    const placeholder = document.createElement('div');
+    let supported = false;
+    placeholder.addEventListener('DOMNodeInserted', () => { supported = true; });
+    placeholder.appendChild(document.createElement('span'));
+    return supported;
+  }()) {
+    clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
+      init: function () {
+        document.documentElement.addEventListener('DOMNodeInserted', event => {
+          const script = event.target;
+          if (!script || (script.tagName || '').toLowerCase() !== 'script') return;
+          const pattern = /^https?:\/\/s.weibo.com\/ajax\/jsonp\/gettopsug\?(?:.*&)?_cb=(STK_\d+)/;
+          const match = script.src.match(pattern);
+          if (!match || !match[1]) return;
+          const callback = match[1];
+          util.inject(function (callback) { delete window[callback]; }, callback);
+          event.preventDefault();
+          if (script.parentNode) script.parentNode.removeChild(script);
+        });
+      },
+    });
   }
   clean.CleanRule('notice_new', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
   clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }');

@@ -42,7 +42,7 @@
     configImportWarningExternal: {
       cn: '您正在导入来自“{}”的设置，导入工具会尽量将您的设置转换为本扩展支持的功能，但实际效果仍会有所不同。导入后建议您打开扩展的设置复查各项设置。导入的设置会覆盖您当前已有的设置，确实要导入设置吗？',
       tw: '您正試圖匯入來自於「{}」的設定，匯入工具會盡可能將您的設定轉換為本擴充套件支援的功能，但實際效果仍會有所不同。執行匯入後，建議您打開設定方塊手工複查。匯入的設定會覆蓋您當前已有的設定，您確定要匯入設定嗎？',
-      en: 'You are trying to import settings from "{}". Importing tool will try its best to convert your settings to what this extension supported. And due to the limitation, some features may not work as your expect. Remeber to recheck the settings after importing. The imported settings may replace your current settings. Are you sure you want to import this file?',
+      en: 'You are trying to import settings from "{}". Importing tool will try its best to convert your settings to what this extension supported. And due to the limitation, some features may not work as your expect. Remember to recheck the settings after importing. The imported settings may replace your current settings. Are you sure you want to import this file?',
     },
     configImportSuccessTitle: { cn: '设置导入完成', tw: '設定匯入完成', en: 'Import settings completed' },
     configImportSuccess: { cn: '已经成功地导入了设置', tw: '已经成功地匯入了設定', en: 'Successfully imported settings' },
@@ -50,7 +50,7 @@
     configImportFail: {
       cn: '导入设置文件时出现错误，可能是使用了错误的文件，文件已损坏或文件的版本不支持',
       tw: '匯入設定檔案時出現錯誤，可能是使用了錯誤的檔案，檔案已損壞或為不支援的版本',
-      en: 'Error occurred during importing process. Wrong file may be used, the file may be broken, or the version of setting file is not supported.',
+      en: 'Error occurred during importing process. Wrong file may be used, the file may be broken, or the version of setting file may not be supported.',
     },
     configExportButton: { cn: '导出', tw: '匯出', en: 'Export' },
     configResetButton: { cn: '重置', tw: '重設', en: 'Reset' },

@@ -25,7 +25,7 @@
   i18n.adFeedFilter = {
     cn: '推广微博/粉丝通微博/品牌速递/好友赞过的微博 {{i}}',
     tw: '推廣微博/粉絲通微博/品牌速遞/好友贊過的微博 {{i}}',
-    en: 'Ad Weibo / Instered not followed Weibo {{i}}',
+    en: 'Ad Weibo / Inserted not followed Weibo {{i}}',
   };
   i18n.adFeedFilterDetail = {
     cn: '这些微博一般出现在您的首页，带有“推荐”“好友赞过”等标记，但大多来自您并未关注的人。',

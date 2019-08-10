@@ -12,7 +12,7 @@
   i18n.commentLayoutGroupTitle = {
     cn: '评论展示',
     tw: '評論展示',
-    en: 'Commets Layout',
+    en: 'Comments Layout',
   };
 
   const layout = comment.layout = {};

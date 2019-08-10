@@ -11,8 +11,10 @@
  *   当出错时调用，此时应当消除之前行为的各种副作用
  *   Deinit 可能不触发 Ready，也可能在 Ready 之后
  *   Deinit 与 Load 互斥
+ *
+ * 如果注册的回调返回一个 thenable 对象，那么会等它解决再继续后续的回调
+ * 如果不希望让后面的逻辑异步进行，请不要直接用 async 函数，而是在普通函数里再写一个 async
  */
-
 ; (function () {
 
   const yawf = window.yawf;
@@ -38,26 +40,28 @@
 
   /** @type {boolean?} */
   let status = null;
-  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
+  /** @type {Set<{ callback: Function, priority: number }>} */
   const onReadyCallback = new Set();
-  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
+  /** @type {Set<{ callback: Function, priority: number }>} */
   const onLoadCallback = new Set();
-  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
+  /** @type {Set<{ callback: Function, priority: number }>} */
   const onConfigChangeCallback = new Set();
-  /** @type {Set<{ callback: Function, priority: number, async: boolean? }>} */
+  /** @type {Set<{ callback: Function, priority: number }>} */
   const onDeinitCallback = new Set();
 
   const noop = () => { };
 
   /**
-   * @param {Set<{ callback: Function, priority: number, async: boolean? }>} set
+   * @param {Set<{ callback: Function, priority: number }>} set
    */
   const runSet = async set => {
     const list = [...set.values()].sort((p, q) => q.priority - p.priority);
-    for (const { callback, async } of list) {
+    for (const { callback } of list) {
       try {
         const result = callback();
-        if (async) await result;
+        if (result && typeof result.then === 'function') {
+          await Promise.resolve(result);
+        }
       } catch (e) {
         util.debug('Error while initializing:\n%o', e);
       }
@@ -110,9 +114,9 @@
   };
 
   const register = callbackCollection => (
-    (callback, { priority = util.priority.DEFAULT, async = false } = {}) => {
+    (callback, { priority = util.priority.DEFAULT } = {}) => {
       if (status === null) {
-        callbackCollection.add({ callback, priority, async });
+        callbackCollection.add({ callback, priority });
       } else if (status) {
         Promise.resolve().then(callback);
       }

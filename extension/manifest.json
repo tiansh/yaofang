@@ -86,6 +86,7 @@
         "content/request/grouplist.js",
         "content/request/feedsbygroup.js",
         "content/request/following.js",
+        "content/request/votedetail.js",
 
         "content/storage/storage.js",
         "content/storage/config.js",
@@ -160,6 +161,7 @@
         "content/rule/layout/scroll.js",
         "content/rule/layout/other.js",
         "content/rule/layout/theme.js",
+        "content/rule/layout/usercss.js",
 
         "content/rule/feeds/feeds.js",
         "content/rule/feeds/layout.js",

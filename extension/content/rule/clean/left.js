@@ -23,7 +23,7 @@
     cleanLeftGroupToMe: { cn: '群微博', tw: '群微博', en: '群微博 (Group)' },
     cleanLeftSpecial: { cn: '特别关注', tw: '特别關注', en: 'Special Focus' },
     cleanLeftWhisper: { cn: '悄悄关注', tw: '悄悄關注', en: 'Secret Following' },
-    cleanLeftVPlus: { cn: '付费订阅（V+）', tw: '付費訂閱（V+）', en: 'Paid Subscrib (V+)' },
+    cleanLeftVPlus: { cn: '付费订阅（V+）', tw: '付費訂閱（V+）', en: 'Paid Subscribe (V+)' },
     cleanLeftNew: { cn: '新微博提示红点', tw: '新微博提示紅點', en: 'Red dot for new Feeds' },
     cleanLeftNews: { cn: '新消息计数', tw: '新消息計數', en: 'Counts for News' },
     cleanLeftCount: { cn: '新分组微博计数', tw: '新分組微博計數', en: 'Counts of Feeds by Group' },

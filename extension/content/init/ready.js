@@ -14,7 +14,7 @@
     const $CONFIG = init.page.$CONFIG;
     await config.init($CONFIG.uid);
     util.i18n = $CONFIG.lang;
-  }, { priority: priority.FIRST, async: true });
+  }, { priority: priority.FIRST });
 
   util.debug('yawf loading, hide all');
   const hideAll = css.add('.WB_miniblog { visibility: hidden; opacity: 0; }');
