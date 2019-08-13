@@ -13,7 +13,7 @@
   config.requestBlockingSupported = true;
   config.chatInPageSupported = true;
 
-  config.externalMenuSupported = false;
+  config.externalMenuSupported = true;
 
   config.consolePrefix = 'Yaofang';
 

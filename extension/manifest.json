@@ -100,6 +100,7 @@
         "content/backend/message.js",
         "content/backend/request.js",
         "content/backend/contextmenu.js",
+        "content/backend/externalmenu.js",
         "content/backend/download.js",
         "content/backend/viewimage.js",
         "content/backend/chatframe.js",

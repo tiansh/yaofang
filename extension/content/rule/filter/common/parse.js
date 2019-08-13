@@ -219,7 +219,7 @@
         topic = node.textContent.replace(/^[\s$]+|[\s$]+$/g, '');
       }
       if (topic) {
-        const [_, superTopic, fullText] = topic.match(/^(?=(\ue627?|.*\[超话\]|.*超话$))[\ue627\s]*(.*?)(?:\[超话\]|超话)?$/);
+        const [_, superTopic, text] = topic.match(/^(?=(\ue627?|.*\[超话\]|.*超话$))[\ue627\s]*(.*?)(?:\[超话\]|超话)?$/);
         if (superTopic && detail) return ` #${text}[超话]# `;
         if (detail) return ` #${text}# `;
         return `#${text}#`;

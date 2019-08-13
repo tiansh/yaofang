@@ -81,4 +81,32 @@
     }
   });
 
+
+  browser.menus.onShown.addListener(async (info, tab) => {
+    if (!info.contexts.includes('tab')) return;
+    const contextMenuIndex = ++lastContextMenuIndex;
+    let items;
+    try {
+      items = await message.invoke(tab.id).listExternalMenu();
+    } catch (e) {
+      /* no menu */
+    }
+    if (contextMenuIndex !== lastContextMenuIndex) return;
+    if (!items || !items.length) return;
+    const rootMenu = browser.menus.create({
+      title: menuTitleWithAccessKey(browser.i18n.getMessage('extensionName'), env.config.contextMenuKey),
+      contexts: ['tab'],
+    });
+    items.forEach(({ title, id }) => {
+      browser.menus.create({
+        parentId: rootMenu,
+        title: menuTitleWithAccessKey(title, null),
+        onclick: function () {
+          message.invoke(tab.id).externalMenuClicked(id);
+        },
+      });
+    });
+    browser.menus.refresh();
+  });
+
 }());

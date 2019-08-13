@@ -154,10 +154,7 @@
         const blob = new Blob([text], { type: 'application/json' });
         const username = init.page.$CONFIG.nick;
         const date = new Date();
-        const year = date.getFullYear() + '';
-        const month = ('0' + date.getMonth()).slice(-2);
-        const day = ('0' + date.getDate()).slice(-2);
-        const dateStr = year + month + day;
+        const dateStr = date.toISOString().replace(/-|T.*/g, '');
         const filename = download.filename(`${username}-${i18n.configFilename}-${dateStr}.json`);
         download.blob({ blob, filename });
       });

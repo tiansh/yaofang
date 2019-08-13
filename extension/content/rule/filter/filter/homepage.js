@@ -582,8 +582,9 @@
       // 自动载入新内容
       observer.dom.add(function watchNewFeedTip() {
         const tip = document.querySelector('#home_new_feed_tip');
+        if (!tip) return;
         // 微博自己把提示的状态和数量写在了提示横幅那个对象上
-        const $tip = tip && browserInfo.name === 'Firefox' ? tip.wrappedJSObject : tip;
+        const $tip = tip && browserInfo.name === 'Firefox' && tip.wrappedJSObject || tip;
         // status 不是 followHot 而且 count > 0 就说明有新消息
         if (!$tip || $tip.status === 'followHot') return;
         if (!$tip.count) return;

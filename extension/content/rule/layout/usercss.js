@@ -32,7 +32,9 @@
       en: 'Apply Custom CSS {{i}}||{{css}}',
     },
     userCssDetail: {
-      cn: '错误配置的自定义样式可能导致您的网页显示不正常，使用来源不明的 CSS 代码可能危害您的隐私安全。建议您仅添加您信任的 CSS 样式。如果您使用的样式导致设置窗口无法正常显示，您可以在猴子的菜单中找到禁用自定义 CSS 的选项。',
+      cn: '错误配置的自定义样式可能导致您的网页显示不正常，使用来源不明的 CSS 代码可能危害您的隐私安全。建议您仅添加您信任的 CSS 样式。如果您使用的样式导致设置窗口无法正常显示，' + (env.name === 'WebExtension' ? '您可以在标签页上右键找到禁用功能' : '您可以在“猴子”扩展的菜单中找到禁用功能') + '。',
+      tw: '錯誤設定的自訂式樣可導致您的網頁不能正常顯示，使用來源不明的 CSS 程式碼可能威脅您的隱私安全。建議您僅添加您信任的 CSS 式樣。如果您使用的式樣導致設定方框無法正常顯示，' + (env.name === 'WebExtension' ? '您可以在索引標籤上按右鍵找到停用功能' : '您可以在「猴子」擴展的功能列中找到停用功能') + '。',
+      en: 'Misconfigured custom CSS may make your web page being rendered incorrectly. Using CSS from untrusted source may harm your privacy. Make sure only adding CSS from you trusted source. In case custom CSS breaks this setting dialog, ' + (env.name === 'WebExtension' ? 'you may disable it from context menu of browser tab' : 'you may disable it from the menu item in "monkey" extension') + '.',
     },
     disableUserCss: {
       cn: '禁用自定义 CSS 样式',
@@ -41,6 +43,8 @@
     },
     disableUserCssText: {
       cn: '已禁用自定义 CSS 样式。如果您配置的自定义 CSS 样式导致界面出现任何问题，您可以在设置中选择启用后，删除导致问题的规则。',
+      tw: '已停用自訂 CSS 式樣。如果您設定的自訂 CSS 式樣導致介面出現任何問題，您可以在這定中選擇啟用後，刪除導致問題的規則。',
+      en: 'Custom CSS had been disabled. In case any custom CSS break the webpage, you may enable and then edit it in the setting dialog.',
     },
   });
 
@@ -76,14 +80,16 @@
         // 我们添加一个可以禁用这个功能的方式以防有用户把设置对话框给隐藏了或者弄乱了改不回去
         externalMenu.add({
           title: i18n.disableUserCss,
-          callback: () => {
+          callback: async () => {
             this.setConfig(false);
-            ui.alert({
+            style.textContent = '';
+            await ui.alert({
               id: 'yawf-disable-user-css',
               icon: 'succ',
               title: i18n.disableUserCss,
               text: i18n.disableUserCssText,
             });
+            location.reload();
           },
         });
       },

@@ -34,7 +34,6 @@
     button.appendChild(content);
     button.addEventListener('click', event => {
       if (!event.isTrusted) return;
-      if (event.buttons !== 1) return;
       const group = clean[id];
       Object.keys(group).forEach(key => {
         const item = group[key];

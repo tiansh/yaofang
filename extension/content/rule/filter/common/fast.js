@@ -102,7 +102,16 @@
   // 识别用户的头像、链接等
   recognize.account = async function (target) {
     if (!(target instanceof Element)) return [];
-    const find = selector => target.querySelector(selector) || target.closest(selector);
+    const find = selector => {
+      const parent = target.closest(selector);
+      if (parent) return parent;
+      const content = target.querySelector(selector);
+      if (!content) return null;
+      const container = content.closest('[comment_id], [mid]');
+      if (!container) return null;
+      if (target === container || container.contains(target)) return content;
+      return null;
+    };
     const user = { id: null, name: null, type: 'account' };
     // 用户链接
     ; (function (userlink) {
