@@ -295,7 +295,7 @@
       rule('weibo.tool.color_override.transparency2', 'layout_theme_color.transparency2');
       rule('weibo.tool.color_override.color3', 'layout_theme_color.color3');
       rule('weibo.tool.color_override.transparency3', 'layout_theme_color.transparency3');
-      rule('weibo.tool.userstyle', 'custom_css');
+      rule('weibo.tool.userstyle', 'custom_css.css');
       // 微博展示
       rule('weibo.tool.no_weibo_space', 'feed_no_space');
       rule('weibo.tool.from_in_bottom', 'feed_source_at_bottom');

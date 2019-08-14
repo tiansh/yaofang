@@ -5,6 +5,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const init = yawf.init;
+  const observer = yawf.observer;
 
   const i18n = util.i18n;
 
@@ -89,6 +90,14 @@
     };
     if (['search', 'ttarticle'].includes(init.page.type())) return;
     icon(); menuitem();
+  });
+
+  init.onLoad(() => {
+    observer.dom.add(function fixNavBarUS() {
+      // 统一海外版导航栏
+      const navUs = document.querySelector('.WB_global_nav_us');
+      if (navUs) navUs.classList.remove('WB_global_nav_us');
+    });
   });
 
 }());

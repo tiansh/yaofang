@@ -54,6 +54,7 @@
       version: 1,
       parent: userCss.userCss,
       template: () => i18n.userCss,
+      initial: true,
       ref: {
         css: { type: 'text' },
         i: { type: 'bubble', icon: 'warn', template: () => i18n.userCssDetail },
