@@ -484,7 +484,7 @@ ${[0, 1, 2, 3, 4].map(index => `
         initial: 100,
       },
     },
-    init() {
+    ainit() {
       const rule = this;
       observer.feed.onAfter(function (/** @type {Element} */feed) {
         const container = feed.closest('[id^="Pl_Official_MyProfileFeed__"]');

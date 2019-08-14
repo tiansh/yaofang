@@ -58,6 +58,10 @@
       imgs = Array.from(container.querySelectorAll('.WB_media_wrap .WB_pic img'));
       img = container.querySelector('.media_show_box img') ||
         container.querySelector('.current img');
+      if (ref.matches('[action-type="widget_photoview"]')) {
+        img = document.createElement('image');
+        img.src = 'https://wx1.sinaimg.cn/large/' + new URLSearchParams(ref.getAttribute('action-data')).get('pid') + '.jpg';
+      }
       // fallthrough
     } else if (ref.matches('.WB_expand_media .tab_feed_a *')) {
       // 已经展开详情的评论配图
@@ -137,7 +141,7 @@
         let images, current;
         const update = function () {
           ({ images, current } = getImagesInfo(viewLargeLink));
-          viewOriginalLink.href = images[current];
+          viewOriginalLink.href = images[current - 1];
         };
         viewOriginalLink.addEventListener('click', event => {
           if (viewType === 'page') {

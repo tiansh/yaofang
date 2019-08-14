@@ -249,9 +249,8 @@
       rule('weibo.layoutHideOtherTemplate', 'clean_other_template');
       rule('weibo.layoutHideOtherHomeTip', 'clean_other_home_tip');
       rule('weibo.layoutHideOtherFooter', 'clean_other_footer');
-      rule('weibo.layoutHideOtherWbIm', 'clean_other_im');
-      rule('weibo.layoutHideOtherIM', 'clean_other_im_news');
-      rule('weibo.layoutHideOtherIMNews', 'clean_other_back_top');
+      rule('weibo.layoutHideOtherIM', 'clean_other_im');
+      rule('weibo.layoutHideOtherIMNews', 'clean_other_im_news');
       rule('weibo.layoutHideOtherTip', 'clean_other_tip');
       rule('weibo.layoutHideOtherRelatedWB', 'clean_other_related_feeds');
       rule('weibo.layoutHideOtherRelatedVideo', 'clean_other_related_video');

@@ -64,7 +64,7 @@
     return supported;
   }()) {
     clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
-      init: function () {
+      ainit: function () {
         document.documentElement.addEventListener('DOMNodeInserted', event => {
           const script = event.target;
           if (!script || (script.tagName || '').toLowerCase() !== 'script') return;

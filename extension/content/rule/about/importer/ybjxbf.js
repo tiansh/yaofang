@@ -167,7 +167,7 @@
       clean('Footer', 'clean_other_footer');
       clean('FeedRecom', 'clean_other_related_feeds');
       clean('FeedRecom', 'clean_other_related_video');
-      clean('IMNews', 'clean_other_back_top');
+      clean('IMNews', 'clean_other_im_news');
     }
   }
 
