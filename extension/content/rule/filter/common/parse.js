@@ -725,6 +725,9 @@
   feedParser.isSearchFeed = feed => isSearchFeedElement(feed);
   feedParser.isForward = feed => isForwardFeedElement(feed);
 
+  feedParser.mid = feed => feed.getAttribute('mid');
+  feedParser.omid = feed => feed.getAttribute('omid');
+
   // 评论内容
   commentParser.text = target => {
     const elements = commentContentElements(target);

@@ -257,10 +257,11 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
     init() {
       const width = this.isEnabled() ? this.ref.width.getConfig() : 600;
       css.append(`
-:root { --yawf-feed-width: ${width}px; }
+:root { --yawf-feed-width: ${width}px; --yawf-left-padding: 0px; }
 .B_index, .B_discover, .B_message { --yawf-left-width: 150px; --yawf-right-width: 250px; }
 .B_page { --yawf-left-width: 0px; --yawf-right-width: 320px; }
-.B_index[yawf-merge-left], .B_message[yawf-merge-left] { --yawf-left-width: 0px; }
+.B_index[yawf-merge-left], .B_message[yawf-merge-left] { --yawf-left-width: 0px; --yawf-left-padding: 10px; }
+.B_artical { --yawf-feed-width: 1000px; --yawf-left-width: 0px; --yawf-right-width: 0px; }
 
 html .B_index .WB_frame,
 html .B_message .WB_frame,
@@ -304,7 +305,7 @@ body .WB_tab_a .tab_box::after { order: 1; flex: 1 0 0; height: auto; }
 body .WB_tab_a .tab_box_a .fr_box { flex: 1 0 0; }
 body .WB_tab_a .tab_box_a::after { content: none; }
 body .WB_feed_v3 .WB_face .opt { right: calc(132px - var(--yawf-feed-width)); }
-body a.W_gotop.W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
+body a.W_gotop.W_gotop { margin-left: calc(calc(calc(var(--yawf-feed-width) + var(--yawf-left-padding)) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
 body .WB_timeline { margin-left: calc(calc(calc(20px + var(--yawf-feed-width)) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
 html .WB_artical .WB_feed_repeat .WB_feed_publish, html .WB_artical .WB_feed_repeat .repeat_list { padding: 0 20px; }
 html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_minitab { margin: 0 16px 10px; }

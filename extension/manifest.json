@@ -138,6 +138,7 @@
         "content/rule/filter/more/commercial.js",
         "content/rule/filter/more/content.js",
         "content/rule/filter/more/link.js",
+        "content/rule/filter/more/toomany.js",
         "content/rule/filter/comment/comment.js",
         "content/rule/filter/comment/layout.js",
         "content/rule/filter/comment/content.js",

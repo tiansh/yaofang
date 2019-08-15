@@ -128,6 +128,12 @@
       rule('weibo.other.paid', 'filter_paid');
       rule('weibo.other.multi_topic', 'filter_multiple_topics_feed');
       rule('weibo.other.multi_topic.num', 'filter_multiple_topics_feed.num');
+      rule('weibo.other.same_account', 'flooding_author');
+      rule('weibo.other.same_account.number', 'flooding_author.number');
+      rule('weibo.other.same_account.action', 'flooding_author.number.action', action => ({ fold: 'fold', hidden: 'hide' }[action]));
+      rule('weibo.other.same_forward', 'flooding_forward');
+      rule('weibo.other.same_forward.number', 'flooding_forward.number');
+      rule('weibo.other.same_forward.action', 'flooding_forward.number.action', action => ({ fold: 'fold', hidden: 'hide' }[action]));
       // 评论过滤
       rule('weibo.other.comment_show_all', 'comment_layout_by_time');
       rule('weibo.other.fold_child_comment', 'comment_layout_hide_sub');
@@ -173,7 +179,6 @@
       rule('weibo.layoutHideNavHotSearch', 'clean_nav_hot_search');
       rule('weibo.layoutHideNavNoticeNew', 'clean_nav_notice_new');
       rule('weibo.layoutHideNavNew', 'clean_nav_new');
-      rule('weibo.layoutHideNavHotTip', 'clean_left_level');
       rule('weibo.layoutHideLeftNewFeed', 'clean_left_new_feed');
       rule('weibo.layoutHideLeftHome', 'clean_left_home');
       rule('weibo.layoutHideLeftFav', 'clean_left_fav');

@@ -254,7 +254,8 @@
 [yawf-feed-display="fold"] { position: relative; }
 [yawf-feed-display="fold"] > * { display: none; }
 [yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; }
-.WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: block; max-height: 0; transition: max-height, padding 0.1s; overflow: hidden; padding: 0 20px; }
+.WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: none; }
+.WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail { display: block; max-height: 0; transition: max-height, padding 0.1s; overflow: hidden; padding: 0 20px; }
 .WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { max-height: 1000px; padding: 0 20px 27px; }
 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
 `);

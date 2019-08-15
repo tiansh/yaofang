@@ -110,6 +110,8 @@
       rule('filterHot', 'filter_fans_top');
       rule('filterTaobao', 'filter_tb_tm_feed');
       rule('filterDeleted', 'filter_deleted_forward');
+      rule('filterFlood', 'weibo.other.same_account');
+      rule('maxFlood', 'weibo.other.same_account.number', Number);
       rule('showAllMsgNav', 'layout_left_messages');
       rule('showAllGroups', 'layout_side_show_all_groups');
       rule('noHomeMargins', 'layout_side_merge');
