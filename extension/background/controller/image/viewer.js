@@ -12,7 +12,7 @@
     images.forEach(image => url.searchParams.append('i', image));
     url.hash = current;
     browser.tabs.create({
-      index: sender.tab.index,
+      index: sender.tab.index + 1,
       url: url.href,
       active: !background,
       openerTabId: sender.tab.id,

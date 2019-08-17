@@ -583,11 +583,17 @@
       observer.dom.add(function watchNewFeedTip() {
         const tip = document.querySelector('#home_new_feed_tip');
         if (!tip) return;
+        // 如果不在第一页或者有特殊的过滤条件那么没法自动载入
+        const search = new URLSearchParams(location.search);
+        const cannotLoad = search.get('page') > 1 || ['is_ori', 'is_pic', 'is_video', 'is_music', 'is_search'].some(key => search.get(key));
+        if (cannotLoad) return;
         // 微博自己把提示的状态和数量写在了提示横幅那个对象上
         const $tip = tip && browserInfo.name === 'Firefox' && tip.wrappedJSObject || tip;
         // status 不是 followHot 而且 count > 0 就说明有新消息
         if (!$tip || $tip.status === 'followHot') return;
         if (!$tip.count) return;
+        // 如果超过 50 条他会自动重新加载，我们骗他一下
+        if ($tip.count > 50) $tip.count = 50;
         tip.click();
         if (tip.parentNode) tip.parentNode.removeChild(tip);
       });

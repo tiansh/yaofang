@@ -38,6 +38,7 @@
    * @return {boolean}
    */
   const contains = function (parent, child) {
+    if (!parent || !child) return false;
     if (!(child instanceof Node)) {
       const children = Array.from(child);
       return children.every(child => contains(parent, child));
@@ -254,6 +255,24 @@
       return null;
     };
     parsers.push(emotion);
+
+    /**
+     * 如果我们拿到一个作者或者原作者的链接，我们还可以拿到他的那些小图标
+     * @param {Element} node
+     */
+    const userIcons = function (node) {
+      const isSearch = isSearchFeedElement(feedContainer(node));
+      const items = [];
+      if (isSearch) {
+        const sibling = [...node.parentNode.children];
+        items.push(...sibling.filter(item => item.matches('a[title]')));
+      } else {
+        items.push(...node.parentNode.querySelectorAll('[title]'));
+      }
+      const icons = items.filter(item => item !== node && item.title.trim());
+      return icons.map(icon => `[${icon.title.trim()}]`);
+    };
+
     /**
      * @作者（文本✗，正则✓）
      * @param {Element} node
@@ -261,7 +280,9 @@
     const author = node => {
       if (!node.matches('.WB_detail > .WB_info > .W_fb[usercard]')) return null;
       if (!detail) return '';
-      return '@' + node.textContent.trim();
+      const name = '@' + node.textContent.trim();
+      const icons = userIcons(node);
+      return [name, ...icons].join(' ');
     };
     parsers.push(author);
     /**
@@ -271,7 +292,9 @@
     const original = node => {
       if (!node.matches('.WB_expand > .WB_info > .W_fb[usercard]')) return null;
       if (!detail) return '';
-      return node.textContent.trim().replace(/^@?/, '@');
+      const name = node.textContent.trim().replace(/^@?/, '@');
+      const icons = userIcons(node);
+      return [name, ...icons].join(' ');
     };
     parsers.push(original);
     /**
@@ -566,9 +589,10 @@
   mention.dom = (feed, { short = false, long = true } = {}) => {
     const contents = feedContentElements(feed, { short, long });
     if (!isSearchFeedElement(feed)) {
-      const domList = contents.map(content => content ? Array.from(content.querySelectorAll(
-        'a[href*="loc=at"][usercard*="name"]',
-      )) : []).reduce((x, y) => x.concat(y));
+      const domList = contents.map(content => {
+        if (!content) return [];
+        return Array.from(content.querySelectorAll('a[href*="loc=at"][usercard*="name"]'));
+      }).reduce((x, y) => x.concat(y));
       return domList;
     } else {
       const linkList = contents.map(content => (

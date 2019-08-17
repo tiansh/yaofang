@@ -64,7 +64,10 @@
     observer.dom.add(function () {
       const icons = Array.from(document.querySelectorAll('a > .W_icon_yystyle'));
       icons.forEach(function (icon) {
-        icon.parentNode.remove();
+        const link = icon.parentNode;
+        const replacement = document.createElement('span');
+        replacement.title = link.title;
+        link.parentNode.replaceChild(replacement, link);
       });
     });
     css.append('.W_icon_yystyle, .W_icon_yy { display: none !important; }');

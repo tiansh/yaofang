@@ -152,7 +152,7 @@
 .WB_global_nav .gn_nav_list li .gn_name .S_txt1 { height: 26px; display: inline-block; width: 4em; }
 `);
         } else {
-          css.append('.WB_global_nav .gn_nav_list li.gn_name.S_txt1 { display: none; }');
+          css.append('.WB_global_nav .gn_nav_list li a.gn_name .S_txt1 { display: none; }');
         }
       }
       hideNavName.remove();

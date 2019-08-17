@@ -721,14 +721,15 @@
           if (!showChatWindow) return;
           const target = event.target;
           if (!(target instanceof Element)) return;
-          const chatTo = target.closest('[action-type="webim.conversation"]');
+          const chatTo = target.closest('a[href*="api.weibo.com/chat"]');
           if (!chatTo) return;
-          const data = chatTo.getAttribute('action-data');
-          const uid = Number(new URLSearchParams(data).get('uid'));
+          const data = new URL(chatTo.hash.slice(1), location.href);
+          const uid = Number(data.searchParams.get('to_uid'));
           if (!uid) return;
           showChatWindow();
           chatToUid(uid);
           event.stopPropagation();
+          event.preventDefault();
         }, true);
 
       },

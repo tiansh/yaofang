@@ -26,6 +26,8 @@
         '*://*.rs.sinajs.cn/*.gif*',
         '*://j.s.weibo.com/doit.png*',
         '*://*.doubleclick.net/*',
+        '*://js.t.sinajs.cn/t5/home/js/common/extra/exposure.js*',
+        '*://js.t.sinajs.cn/open/analytics/js/suda.js*',
       ],
     },
   }, {
