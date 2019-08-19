@@ -25,6 +25,7 @@
  *   users: 多个用户（id）
  *   usernames: 多个用户名
  *   topics: 多个话题
+ *   key: 一个键盘按键
  *
  * ConfigItem 的属性和方法包括：
  * 显示相关
@@ -723,6 +724,64 @@
   }
   rule.class.ColorConfigItem = ColorConfigItem;
 
+  i18n.keyboardDisabled = {
+    cn: '（已禁用）',
+    tw: '（已停用）',
+    en: '(Disabled)',
+  };
+
+  /**
+   * 一个设置按键的设置项
+   */
+  class KeyboardConfigItem extends ConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+    }
+    get initial() { return null; }
+    normalize(value) {
+      if (value === null) return null;
+      if (typeof value !== 'number') return this.initial;
+      if (value < 0 || value > keyboard.alter.MAX) return this.initial;
+      return value;
+    }
+    render() {
+      const container = document.createElement('span');
+      container.setAttribute('yawf-config-item', this.configId);
+      container.classList.add('yawf-config-key');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = keyboard.name(this.getConfig());
+      button.addEventListener('keydown', event => {
+        if (!event.isTrusted) return;
+        const code = keyboard.event(event);
+        if (code === keyboard.code.TAB) return;
+        if (code === keyboard.code.TAB + keyboard.alter.SHIFT) return;
+        if (code === keyboard.code.ESC) {
+          this.setConfig(null);
+        } else {
+          this.setConfig(code);
+        }
+        event.preventDefault();
+        event.stopPropagation();
+      }, true);
+      button.setAttribute('yawf-config-input', this.configId);
+      container.appendChild(button);
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `button[type="button"][yawf-config-input="${this.configId}"]`;
+      const button = container.querySelector(selector);
+      const config = this.getConfig();
+      const text = config ? keyboard.name(config) : i18n.keyboardDisabled;
+      if (button && button.textContent !== text) {
+        button.textContent = text;
+      }
+      return container;
+    }
+  }
+  rule.class.KeyboardConfigItem = KeyboardConfigItem;
+
   /**
    * 一个文本输入框
    * 对应一个 textarea 输入框
@@ -1297,6 +1356,7 @@
     if (item.type === 'usernames') return new UserNameCollectionConfigItem(item, parent);
     if (item.type === 'topics') return new TopicCollectionConfigItem(item, parent);
     if (item.type === 'groups') return new GroupIdCollectionConfigItem(item, parent);
+    if (item.type === 'key') return new KeyboardConfigItem(item, parent);
     if (item.type === 'offscreen') return new OffscreenConfigItem(item, parent);
     return new ConfigItem(item, parent);
   };

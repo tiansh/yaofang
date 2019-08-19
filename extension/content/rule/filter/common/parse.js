@@ -154,6 +154,7 @@
     }
     return node.closest('[mid]');
   };
+  feedParser.feedNode = node => feedContainer(node);
 
   /**
    * 获取节点所在的评论
@@ -167,6 +168,7 @@
     }
     return node.closest('[comment_id]');
   };
+  feedParser.commentNode = node => feedContainer(node);
 
   const textParser = function (detail, containerType) {
     const parsers = [];
@@ -749,8 +751,8 @@
   feedParser.isSearchFeed = feed => isSearchFeedElement(feed);
   feedParser.isForward = feed => isForwardFeedElement(feed);
 
-  feedParser.mid = feed => feed.getAttribute('mid');
-  feedParser.omid = feed => feed.getAttribute('omid');
+  feedParser.mid = node => feedContainer(node).getAttribute('mid');
+  feedParser.omid = node => feedContainer(node).getAttribute('omid');
 
   // 评论内容
   commentParser.text = target => {

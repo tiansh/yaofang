@@ -87,6 +87,7 @@
         "content/request/feedsbygroup.js",
         "content/request/following.js",
         "content/request/votedetail.js",
+        "content/request/feedfavorite.js",
 
         "content/storage/storage.js",
         "content/storage/config.js",
@@ -169,6 +170,7 @@
         "content/rule/feeds/layout.js",
         "content/rule/feeds/content.js",
         "content/rule/feeds/media.js",
+        "content/rule/feeds/reading.js",
 
         "content/rule/about/about.js",
         "content/rule/about/importer/importer.js",

@@ -1,16 +1,19 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const env = yawf.env;
+  const init = yawf.init;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
+  const request = yawf.request;
+  const feedParser = yawf.feed;
 
   const feeds = yawf.rules.feeds;
 
   const i18n = util.i18n;
   const css = util.css;
   const strings = util.strings;
+  const dialog = util.dialog;
 
   const layout = feeds.layout = {};
 
@@ -257,10 +260,10 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
     init() {
       const width = this.isEnabled() ? this.ref.width.getConfig() : 600;
       css.append(`
-:root { --yawf-feed-width: ${width}px; --yawf-left-padding: 0px; }
+:root { --yawf-feed-width: ${width}px; --yawf-extra-padding: 0px; }
 .B_index, .B_discover, .B_message { --yawf-left-width: 150px; --yawf-right-width: 250px; }
 .B_page { --yawf-left-width: 0px; --yawf-right-width: 320px; }
-.B_index[yawf-merge-left], .B_message[yawf-merge-left] { --yawf-left-width: 0px; --yawf-left-padding: 10px; }
+.B_index[yawf-merge-left], .B_message[yawf-merge-left] { --yawf-left-width: 0px; --yawf-extra-padding: 10px; }
 .B_artical { --yawf-feed-width: 1000px; --yawf-left-width: 0px; --yawf-right-width: 0px; }
 
 html .B_index .WB_frame,
@@ -305,7 +308,7 @@ body .WB_tab_a .tab_box::after { order: 1; flex: 1 0 0; height: auto; }
 body .WB_tab_a .tab_box_a .fr_box { flex: 1 0 0; }
 body .WB_tab_a .tab_box_a::after { content: none; }
 body .WB_feed_v3 .WB_face .opt { right: calc(132px - var(--yawf-feed-width)); }
-body a.W_gotop.W_gotop { margin-left: calc(calc(calc(var(--yawf-feed-width) + var(--yawf-left-padding)) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
+body a.W_gotop.W_gotop { margin-left: calc(calc(calc(var(--yawf-feed-width) + var(--yawf-extra-padding)) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
 body .WB_timeline { margin-left: calc(calc(calc(20px + var(--yawf-feed-width)) + calc(var(--yawf-left-width) + var(--yawf-right-width))) / 2); }
 html .WB_artical .WB_feed_repeat .WB_feed_publish, html .WB_artical .WB_feed_repeat .repeat_list { padding: 0 20px; }
 html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_minitab { margin: 0 16px 10px; }
@@ -420,50 +423,62 @@ ${[0, 1, 2, 3, 4].map(index => `
     },
   });
 
-  if (env.config.stkWrapSupported) {
-    i18n.disableTagDialog = {
+  Object.assign(i18n, {
+    disableTagDialog: {
       cn: '屏蔽收藏微博时的添加标签对话框',
       tw: '阻擋收藏微博時的添加標籤對話方塊',
       en: 'Block the dialog after marking weibo favorite',
-    };
+    },
+    favoriteFailTitle: {
+      cn: '收藏微博',
+      en: 'Feed Favorite',
+    },
+    favoriteFailText: {
+      cn: '收藏时发生错误',
+      en: 'Error while adding favorite feeds',
+    },
+    favoritedFeed: {
+      cn: '已收藏',
+      en: 'Favorite Added',
+    },
+  });
 
-    const tagDialog = 'yawf_tag_dialog_' + strings.randKey();
-    yawf.stk.wrap('lib.feed.plugins.favorite.tagDialog', function (tagDialog) {
-      let enable = null, trueInnerGetter = null;
-      let inner = function () { };
-      const initialize = function () {
-        if (enable === null || trueInnerGetter === null) return;
-        if (enable) inner = trueInnerGetter();
-      };
-      Object.defineProperty(window, tagDialog, {
-        get() { return void 0; },
-        set(value) { enable = value; initialize(); },
-        enumerable: false,
-      });
-      return function (regFunc) {
-        return function (stk) {
-          trueInnerGetter = () => regFunc.call(this, stk);
-          initialize();
-          return function (...params) {
-            if (!inner) return null;
-            return inner.call(this, ...params);
-          };
-        };
-      };
-    }, tagDialog);
-
-    layout.disableTagDialog = rule.Rule({
-      id: 'feed_disable_tag_dialog',
-      version: 1,
-      parent: layout.layout,
-      template: () => i18n.disableTagDialog,
-      init() {
-        util.inject(function (tagDialog, enableDialog) {
-          window[tagDialog] = enableDialog;
-        }, tagDialog, !this.isEnabled());
-      },
-    });
-  }
+  layout.disableTagDialog = rule.Rule({
+    id: 'feed_disable_tag_dialog',
+    version: 1,
+    parent: layout.layout,
+    template: () => i18n.disableTagDialog,
+    init() {
+      document.addEventListener('click', async event => {
+        if (!event.isTrusted) return;
+        if (!['www.weibo.com', 'weibo.com'].includes(location.host)) return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const button = target.closest('[action-type="fl_favorite"]');
+        if (!button) return;
+        const isFavorite = button.getAttribute('favorite');
+        if (isFavorite) return; // 不处理取消收藏的逻辑
+        event.stopPropagation();
+        event.preventDefault();
+        const feed = feedParser.feedNode(button);
+        const $CONFIG = init.page.$CONFIG;
+        const success = await request.feedFavorite(feed, { $CONFIG });
+        if (!success) {
+          dialog.alert({
+            id: 'yawf-favorite-fail',
+            icon: 'warn',
+            title: i18n.favoriteFailTitle,
+            text: i18n.favoriteFailText,
+          });
+        } else {
+          button.setAttribute('favorite', '1');
+          const text = button.querySelector('[node-type="favorite_btn_text"]') || button;
+          text.innerHTML = '<span><em class="W_ficon ficon_favorite S_spetxt">\xFB</em><em></em></span>';
+          text.querySelector('em + em').textContent = i18n.favoritedFeed;
+        }
+      }, true);
+    },
+  });
 
   i18n.lowReadingCountWarn = {
     cn: '在自己个人主页高亮显示阅读数量|不超过{{count}}的微博',
