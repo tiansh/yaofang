@@ -88,6 +88,7 @@
         "content/request/following.js",
         "content/request/votedetail.js",
         "content/request/feedfavorite.js",
+        "content/request/image.js",
 
         "content/storage/storage.js",
         "content/storage/config.js",

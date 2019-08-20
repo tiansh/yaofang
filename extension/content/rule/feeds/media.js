@@ -5,6 +5,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
+  const request = yawf.request;
   const download = yawf.download;
   const contextmenu = yawf.contextmenu;
   const imageViewer = yawf.imageViewer;
@@ -336,8 +337,7 @@
           image.setAttribute('ori-src', url);
           image.setAttribute('yawf-ori-src', url);
           image.setAttribute('yawf-pause-animate', 'yawf-pause-animate');
-          util.debug('fetch url %s', url);
-          const dataUrl = await fetch(url).then(resp => resp.blob()).then(blob => urls.blobToDataUrl(blob));
+          const dataUrl = await request.getImage(url).then(blob => urls.blobToDataUrl(blob));
           const img = new Image();
           img.addEventListener('load', () => {
             const width = img.naturalWidth, height = img.naturalHeight;
