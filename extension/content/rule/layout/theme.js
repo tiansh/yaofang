@@ -42,9 +42,9 @@
       cn: 'Yet Another Weibo Filter 模板设置',
     },
     setSkinByPreview: {
-      cn: '您要在药方扩展中使用“{{name}}”模板吗？启用后您访问各种页面时都将使用当前的模板。在脚本中使用皮肤不会影响其他用户查看您个人主页时的模板样式。',
-      tw: '您要在藥方擴展中使用「{{name}}」模板嗎？啟用後您訪問各種頁面時都將使用當前的模板。在腳本中使用皮膚不會影響其他用戶查看您個人主頁時的模板樣式。',
-      en: 'Do you want to enable the template "{{name}}" in YAWF? All pages will show current template if you choose enable it. The template only applied on your browser.',
+      cn: '您要在药方扩展中使用“{1}”模板吗？启用后您访问各种页面时都将使用当前的模板。在脚本中使用皮肤不会影响其他用户查看您个人主页时的模板样式。',
+      tw: '您要在藥方擴展中使用「{1}」模板嗎？啟用後您訪問各種頁面時都將使用當前的模板。在腳本中使用皮膚不會影響其他用戶查看您個人主頁時的模板樣式。',
+      en: 'Do you want to enable the template "{1}" in YAWF? All pages will show current template if you choose enable it. The template only applied on your browser.',
     },
   });
 
@@ -123,10 +123,11 @@
         const answer = await ui.confirm({
           id: 'yawf-use-skin',
           title: i18n.setSkinByPreviewTitle,
-          text: i18n.setSkinByPreview,
+          text: i18n.setSkinByPreview.replace('{1}', () => name),
         });
         if (answer) {
           rule.ref.skin.setConfig(skinId);
+          rule.setConfig(true);
           search.delete('skinId');
           location.search = search;
         }

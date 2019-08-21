@@ -93,7 +93,7 @@
 
 
   clean.tagElements = function (name, selector, identifiers) {
-    const tagElements = function () {
+    const tagElements = function tagElements() {
       const elements = Array.from(document.querySelectorAll(selector));
       if (!elements.length) return;
       elements.forEach(function (element) {

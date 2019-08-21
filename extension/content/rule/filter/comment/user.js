@@ -61,7 +61,7 @@
     },
     fast: {
       types: [['commentuser', 'account'], ['original', 'author', 'mention']],
-      radioGroup: 'original',
+      radioGroup: 'commentuser',
       render: commentParser.fast.render.user,
     },
   });

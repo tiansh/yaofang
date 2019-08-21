@@ -32,6 +32,7 @@
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-bottom { height: 18px; line-height: 18px; max-width: calc(var(--yawf-left-width) - 75px); }
 #app .chatlist .chatlist-box .contactslist .sessionlist .list-right .content-bottom .lastmsg { font-size: 12px; }
 #app .chatbox > .right { left: var(--yawf-left-width); right: 0; width: auto !important; }
+#app .settings { top: 35px; }
 #app .message { bottom: var(--yawf-text-height); }
 #app .message .header { height: 40px; line-height: 40px; }
 #app .message .header .moresets { top: 40px; }
@@ -43,6 +44,8 @@
 #app .atwho-wrap .editor { height: 70px; }
 #app .text .sendbox_prompt { display: none; }
 #app .login { display: none; }
+#app .modal1 { max-height: calc(100vh - 10px); }
+#app .modal1.members .modal1-left .userlist { max-height: calc(100vh - 160px); }
 `;
   const style = document.createElement('style');
   style.textContent = css;

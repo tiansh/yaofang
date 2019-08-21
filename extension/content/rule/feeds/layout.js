@@ -448,7 +448,7 @@ ${[0, 1, 2, 3, 4].map(index => `
     version: 1,
     parent: layout.layout,
     template: () => i18n.disableTagDialog,
-    init() {
+    ainit() {
       document.addEventListener('click', async event => {
         if (!event.isTrusted) return;
         if (!['www.weibo.com', 'weibo.com'].includes(location.host)) return;

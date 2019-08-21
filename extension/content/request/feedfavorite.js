@@ -35,13 +35,14 @@
           try {
             const resp = await fetch(url, {
               method: 'POST',
-              body,
+              body: new URLSearchParams(body),
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
               },
+              credentials: 'include',
             }).then(resp => resp.json());
             success = resp.code === '100000';
-          } catch (e) { alert(e); console.log(e); }
+          } catch (e) { console.error(e); }
           const event = new CustomEvent(key, {
             detail: { success: JSON.stringify(success) },
           });

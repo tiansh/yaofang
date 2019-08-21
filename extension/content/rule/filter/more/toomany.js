@@ -26,9 +26,9 @@
     floodingFeedHide: { cn: '隐藏', tw: '隱藏', en: 'hidden' },
     floodingFeedFold: { cn: '折叠', tw: '折疊', en: 'folded' },
     floodingAuthor: {
-      cn: '相同作者|超过{{number}}条微博|时超出的{{action}}',
-      tw: '相同作者|超過{{number}}條微博|時超出的{{action}}',
-      en: 'Feeds by same author will | be {{action}} | when more than {{number}} seen',
+      cn: '相同作者|超过{{number}}条微博|时超出的{{action}}||{{group}}在分组页面同样生效',
+      tw: '相同作者|超過{{number}}條微博|時超出的{{action}}||{{group}}在分組頁面同樣生效',
+      en: 'Feeds by same author will | be {{action}} | when more than {{number}} seen||{{group}} Also apply to grouping pages',
     },
     floodingAuthorReason: {
       cn: '刷屏',
@@ -67,6 +67,7 @@
           { value: 'fold', text: () => i18n.floodingFeedFold },
         ],
       },
+      group: { type: 'boolean' },
     },
     init() {
       const rule = this;
@@ -80,6 +81,12 @@
         const [author] = feedParser.author.id(feed);
         // 自己的微博发多少也不触发这个规则
         if (String(me) === String(author)) return null;
+        // 个人主页不工作
+        if (init.page.type() === 'profile') return null;
+        // 分组页面根据设置决定是否生效
+        if (init.page.type() === 'group') {
+          if (rule.ref.group.getConfig()) return null;
+        }
         parsed.set(feed, author);
         const feeds = [...document.querySelectorAll('[mid]')];
         const count = feeds.filter(feed => parsed.get(feed) === author).length;
