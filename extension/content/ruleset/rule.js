@@ -1193,7 +1193,7 @@
       const index = values.findIndex((item, index) => this.track(item, index) === track);
       if (index !== -1) {
         values.splice(index, 1);
-        if (!this.configCacheDirty) {
+        if (!this.configCacheDirty && Array.isArray(this.configCache)) {
           this.configCache.splice(index, 1);
         }
       }
