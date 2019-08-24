@@ -54,9 +54,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!overWidth && !overHeight) return [[2, 2]];
     if (overWidth && overHeight) {
       const ratio = imageWidth * containerHeight / containerWidth / imageHeight;
-      if (ratio > 1 / 0.9) return [[0, 0], [0, 1], [1, 1]];
-      if (ratio < 0.9) return [[0, 0], [1, 0], [1, 1]];
-      return [[0, 0], [1, 1]];
+      if (ratio > 1 / 0.9) {
+        return [[1, 1], [0, 0], [0, 1]];
+      } else if (ratio > 0.9) {
+        return [[1, 1], [0, 0]];
+      } else if (ratio > 0.5) {
+        return [[1, 1], [0, 0], [1, 0]];
+      } else {
+        return [[1, 0], [1, 1], [0, 0]];
+      }
     }
     if (overHeight) return [[2, 0], [2, 1]];
     if (overWidth) return [[0, 2], [1, 2]];
@@ -92,15 +98,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     const validModes = availableViewModes();
     const index = validModes.findIndex(mode => mode + '' === current + '');
-    if (index !== -1 && useNext) {
+    if (useNext) {
       setViewMode(validModes[(index + 1) % validModes.length]);
-    } else if (index === -1) {
-      const fallback = validModes.find(mode => {
-        if ((mode[0] === 0) !== (current[0] === 0)) return false;
-        if ((mode[1] === 0) !== (current[1] === 0)) return false;
-        return true;
-      }) || validModes[0];
-      setViewMode(fallback);
+    } else {
+      setViewMode(validModes[index === -1 ? 0 : index]);
     }
   };
 
