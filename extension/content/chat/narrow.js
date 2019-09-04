@@ -6,7 +6,7 @@
 #app { --yawf-left-width: 240px; --yawf-text-height: 100px; }
 #app .chat { overflow: hidden; }
 #app .chat .chatbox { width: 100vw; margin: 0; }
-#app .chat .chatbox .msglist { width: var(--yawf-left-width); border-radius: 0; }
+#app .chat .chatbox .msglist { width: calc(5px + var(--yawf-left-width)); border-radius: 0; }
 #app .user { height: 0px; }
 #app .user .left { display: none; }
 #app .user .right { position: absolute; top: 5px; left: calc(100% - 70px); }
