@@ -14,6 +14,7 @@
   const layout = yawf.rules.layout = {};
   layout.layout = rule.Tab({
     template: () => i18n.layoutTabTitle,
+    pagemenu: true,
   });
 
 }());

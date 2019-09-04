@@ -94,7 +94,7 @@
    * @param {Element} inner
    * @param {Array<Tab>} tabs
    */
-  const renderTabs = function (inner, tabs) {
+  const renderTabs = function (inner, tabs, { initial = null } = {}) {
     inner.classList.add('yawf-config-inner');
     const left = inner.appendChild(configDom.left());
     const right = inner.appendChild(configDom.right());
@@ -142,9 +142,10 @@
       tabLeft.classList.add('current');
       if (search !== tabLeft && searchInput.value) searchInput.value = '';
       tabInit.get(tabLeft)();
+      right.scrollTo(0, 0);
     };
-    // 自动选中第一个选项卡
-    setCurrent(tabLeft[0]);
+    // 自动选中目标选项卡，或第一个选项卡
+    setCurrent(tabLeft[(initial && tabs.indexOf(initial) + 1 || 1) - 1]);
     left.addEventListener('click', event => {
       const tabLeft = event.target.closest('.yawf-config-tab');
       if (!tabLeft) return;
@@ -184,13 +185,13 @@
   };
   rule.render = render;
 
-  rule.dialog = function (rules = null) {
+  rule.dialog = function (tab) {
     try {
       ui.dialog({
         id: 'yawf-config',
         title: i18n.configDialogTitle,
         render: inner => {
-          if (!rules) renderTabs(inner, tabs);
+          renderTabs(inner, tabs, { initial: tab });
         },
       }).show();
     } catch (e) { util.debug('Error while showing rule dialog %o', e); }

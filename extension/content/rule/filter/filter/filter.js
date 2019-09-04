@@ -16,6 +16,7 @@
   const filter = yawf.rules.filter = {};
   filter.filter = rule.Tab({
     template: () => i18n.filterTabTitle,
+    pagemenu: true,
   });
 
 }());

@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
+  const pagemenu = yawf.pagemenu;
 
   const feeds = yawf.rules.feeds;
 
@@ -70,6 +71,15 @@
         };
         observer.dom.add(showButton);
       }
+
+      pagemenu.add({
+        title: i18n.feedOnlySwitch,
+        onClick: function () {
+          rule.ref._enabled.setConfig(!rule.ref._enabled.getConfig());
+        },
+        section: 10,
+        order: 0,
+      });
 
       document.addEventListener('keydown', event => {
         if (!event.isTrusted) return;

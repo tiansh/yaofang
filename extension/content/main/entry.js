@@ -6,6 +6,7 @@
   const util = yawf.util;
   const init = yawf.init;
   const observer = yawf.observer;
+  const pagemenu = yawf.pagemenu;
 
   const i18n = util.i18n;
 
@@ -38,6 +39,7 @@
   const iconCss = `
 .gn_filter .W_ficon { font-family: "yawf-iconfont" !important; }
 @font-face { font-family: "yawf-iconfont"; font-style: normal; font-weight: normal; src: url("data:image/woff;base64,d09GRk9UVE8AAAPIAAoAAAAABbQAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABDRkYgAAAA9AAAANUAAADot8EQFkZGVE0AAAHMAAAAGgAAABxtAw0mT1MvMgAAAegAAABJAAAAYFmdYldjbWFwAAACNAAAADgAAAFCAA0DAGhlYWQAAAJsAAAAMAAAADYD5a1oaGhlYQAAApwAAAAdAAAAJAaAA4BobXR4AAACvAAAAAgAAAAICAAAd21heHAAAALEAAAABgAAAAYAAlAAbmFtZQAAAswAAADkAAAB1Hh5OPRwb3N0AAADsAAAABYAAAAg/4YAM3icVY2xagJBFADfO+9O1GNNJBcLFwWxPLUXAumvDekPQUmjTYjYCNbP0sLO+Ak2NsLWfkN+ZN/ebiTaBG6qqWYQfB8QUSyzxaT/MZ7PJvPZJ6AHCC/c8liWuOlvImxXofL1PiT6l6isa7aZt00SSFjVJcCDhPWjBCHhpwHePSGgVQgXLzdG4CF230hxqlApc1El9ZwP+HgdhMqtYk7NxaVlkVdMEn+T3bkeuY7dE3HH7rgX8PD3NT7oc6gzfXJT0pk9kT0HIt8+UbzYm4RCiqp/hZJWXgAAAHicY2BgYGQAgjO2i86D6AtJW7VhNABKVQagAAB4nGNgZmFg/MLAysDBNJPpDAMDQz+EZnzNYMzIycDAxMAGJKGAkQEJBKS5pjA4MEQyRDLr/NdhiGGawdCMUAPkKQAhIwBYTwumAAAAeJxjYGBgZoBgGQZGBhCwAfIYwXwWBgUgzQKEIH7k//8Q8v8KqEoGRjYGGJP6gGYGUxcAAJgrBwx4nGNgZGBgAOK+F//94vltvjJwszCAwIWkrdpwuvx/LXMX0wwgl4OBCSQKAFMCC7x4nGNgZGBgmvG/liGGhQEEmLsYGBlQARMAU6MDCAAAAAQAAAAEAAB3AABQAAACAAB4nJWPwWoCMRCGv+gqihV6KB7EQ85ClmTxJL12n0C8i+zKXjawCuKLeOn79EH6BH2ETnSglFJoA0m+mf+fzAR44IohLcOUhXKPEc/KfZa8KmfieVceMDEj5SFT48VpsrFk5reqxD0epfrOfTa8KGfieVMeMONDecjcPHFhx5kaR8OeSCuczhNcdufaNfvY1rGV8If+JZWaSnfHgQpLQY6Xey379yZ3PbASLYjfSZ2/xZTydBm7Q2WL3Nu1/TaOxGHlgneFD+L9+y+2MlzHUXxJT63TmGyr7tjE1obc/+O1T5RwTOJ4nGNgZgCD/80MRkCKkQENAAAoVQG5AAA=") format("woff"); }
+.gn_topmenulist_yawf { top: 34px; right: -17px; width: 134px; }
 `;
 
   const searchStyle = util.css.add(searchCss);
@@ -47,11 +49,72 @@
     iconStyle.remove();
   });
 
-  const onClick = function (e) {
+  const onClick = function (event, tab = null) {
     try {
-      rule.dialog();
+      rule.dialog(tab);
     } catch (e) { util.debug('Error while prompting dialog: %o', e); }
-    e.preventDefault();
+    event.preventDefault();
+  };
+
+  // 给漏斗图标添加一个菜单
+  const addScriptMenu = function (container) {
+    const menuList = document.createElement('div');
+    menuList.innerHTML = '<div class="gn_topmenulist gn_topmenulist_yawf" node-type="msgLayer" style="display: none;"><ul></ul><div class="W_layer_arrow"><span class="W_arrow_bor W_arrow_bor_t"><i class="S_line3"></i><em class="S_bg2_br"></em></span></div></div>';
+    container.appendChild(menuList.firstChild);
+    const dropdown = container.querySelector('.gn_topmenulist_yawf');
+    const ul = dropdown.querySelector('ul');
+    // 允许其他功能向菜单里面塞东西
+    pagemenu.ready(ul);
+    // 在鼠标移入或获得焦点时展示下拉菜单
+    const addTempClassName = async function (classNames, delay) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      dropdown.classList.add(...classNames);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      dropdown.classList.remove(...classNames);
+    };
+    let mouseInCount = 0, shown = false;
+    const showDropdown = function () {
+      mouseInCount++;
+      if (!shown) {
+        shown = true;
+        dropdown.style.display = 'block';
+        addTempClassName('UI_speed_fast', 'UI_ani_fadeInDown', 200);
+      }
+    };
+    const hideDropdown = async function () {
+      const lastInCount = mouseInCount;
+      await new Promise(resolve => setTimeout(resolve, 200));
+      if (lastInCount !== mouseInCount) return;
+      if (shown) {
+        shown = false;
+        await addTempClassName('UI_speed_fast', 'UI_ani_fadeOutUp', 200);
+        if (lastInCount !== mouseInCount) return;
+        dropdown.style.display = 'none';
+      }
+    };
+    container.addEventListener('mouseenter', showDropdown);
+    container.addEventListener('mouseleave', hideDropdown);
+    container.addEventListener('focusin', showDropdown);
+    container.addEventListener('focusout', hideDropdown);
+
+    // 添加菜单项，跳转到设置页面的各标签页
+    rule.tabs.forEach((tab, index) => {
+      if (!tab.pagemenu) return;
+      pagemenu.add({
+        title: tab.template,
+        onClick: event => onClick(event, tab),
+        order: index,
+      });
+    });
+
+    // 如果点击了漏斗图标，我们会直接显示设置窗口，但如果是触摸点击的，我们先显示下拉菜单
+    const onTouch = function (event) {
+      if (shown) return;
+      showDropdown();
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    container.addEventListener('touchstart', onTouch, true);
   };
   init.onLoad(() => {
     const icon = function () {
@@ -61,9 +124,9 @@
       template.innerHTML = `<div class="gn_set_list yawf-gn_set_list"><a node-type="filter" href="javascript:void(0);" class="gn_filter"><em class="W_ficon ficon_mail S_ficon">Y</em></a></div>`;
       const container = document.importNode(template.content.firstElementChild, true);
       const button = container.querySelector('.gn_filter');
-      reference.before(container);
       button.setAttribute('title', i18n.filterMenuItem);
       button.addEventListener('click', onClick);
+      reference.before(container);
       setTimeout(async () => {
         await searchStyle.ready;
         const [{ width, height }] = button.getClientRects();
@@ -87,6 +150,9 @@
       item.addEventListener('click', onClick);
       item.textContent = i18n.filterMenuItem;
       reference.before(...container.children);
+
+      const iconContainer = document.querySelector('.yawf-gn_set_list');
+      addScriptMenu(iconContainer);
     };
     if (['search', 'ttarticle'].includes(init.page.type())) return;
     icon(); menuitem();

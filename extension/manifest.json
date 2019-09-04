@@ -113,6 +113,7 @@
         "content/ruleset/observer.js",
         "content/ruleset/filter.js",
         "content/ruleset/dialog.js",
+        "content/ruleset/menu.js",
 
         "content/rule/filter/common/feed.js",
         "content/rule/filter/common/parse.js",
@@ -123,6 +124,7 @@
         "content/rule/filter/filter/homepage.js",
         "content/rule/filter/filter/profile.js",
         "content/rule/filter/filter/manually.js",
+        "content/rule/filter/filter/pause.js",
         "content/rule/filter/content/content.js",
         "content/rule/filter/content/text.js",
         "content/rule/filter/content/regex.js",

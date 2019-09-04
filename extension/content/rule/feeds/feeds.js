@@ -14,6 +14,7 @@
   const feeds = yawf.rules.feeds = {};
   feeds.feeds = rule.Tab({
     template: () => i18n.feedsTabTitle,
+    pagemenu: true,
   });
 
 }());

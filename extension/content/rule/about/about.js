@@ -15,6 +15,7 @@
   const about = yawf.rules.about = {};
   about.about = rule.Tab({
     template: () => i18n.aboutTabTitle,
+    pagemenu: true,
   });
 
 }());

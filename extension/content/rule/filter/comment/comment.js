@@ -15,6 +15,7 @@
   const comment = yawf.rules.comment = {};
   comment.comment = rule.Tab({
     template: () => i18n.commentTabTitle,
+    pagemenu: true,
   });
 
 }());

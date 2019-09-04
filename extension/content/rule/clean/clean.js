@@ -24,6 +24,7 @@
   const clean = yawf.rules.clean = {};
   clean.clean = rule.Tab({
     template: () => i18n.cleanTabTitle,
+    pagemenu: true,
   });
 
   const selectAllButton = id => {
