@@ -7,13 +7,18 @@
     const executeScript = `void(${func}(${args.map(value => JSON.stringify(value))}));`;
     const script = document.createElement('script');
     script.textContent = executeScript;
-    const target = document.head || document.body || document.documentElement || document.getElementsByTagName('*')[0];
+    const target = document.head || document.body || document.documentElement;
     return new Promise(resolve => {
       script.addEventListener('load', () => {
         resolve();
         script.parentElement.removeChild(script);
       });
-      target.appendChild(script);
+      if (target) target.appendChild(script);
+      else setTimeout(function injectScript() {
+        const target = document.head || document.body || document.documentElement;
+        if (!target) setTimeout(injectScript, 10);
+        else target.appendChild(script);
+      }, 10);
     });
   };
 
