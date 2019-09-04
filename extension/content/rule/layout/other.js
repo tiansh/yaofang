@@ -542,6 +542,7 @@
             '.WB_from:not([yawf-localtime])',
             '.cont_top .data:not([yawf-localtime])',
             'legend:not([yawf-localtime])',
+            '.layer_dialogue_v5 .time_s p',
           ].join(',');
           const elements = Array.from(document.querySelectorAll(selectors));
           elements.forEach(element => {
