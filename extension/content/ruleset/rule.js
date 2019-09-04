@@ -1546,6 +1546,7 @@
 .yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; }
 .yawf-config-collection-remove { display: block; position: absolute; top: 0; left: 0; display: flow-root; width: 20px; height: 20px; line-height: 20px; }
 .yawf-config-collection-item-content { max-width: 500px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.yawf-config-collection-user-id .yawf-config-collection-list { margin-left: -5px; }
 .yawf-config-collection-user-id .yawf-config-collection-item { width: 90px; height: 50px; padding: 1px 20px 1px 56px; text-align: left; }
 .yawf-config-collection-user-id .yawf-config-collection-remove { right: 0; left: auto; text-align: center; }
 .yawf-config-collection-user-id .yawf-config-collection-remove a { position: static; margin: 0; }
