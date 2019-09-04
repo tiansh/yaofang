@@ -324,7 +324,8 @@
       i: { type: 'bubble', icon: 'warn', template: () => i18n.pauseAnimatedImageDetail },
     },
     ainit() {
-      const emptyImage = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+      // 其实不写 encodeURI 效果上也没问题，但是微博转发文字生成看到 > 就会出错
+      const emptyImage = encodeURI('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>');
       observer.dom.add(function pauseAnimatedImage() {
         const images = Array.from(document.querySelectorAll([
           '.PCD_photolist img[src$=".gif"]:not([yawf-pause-animate])',
