@@ -5,11 +5,13 @@
   const rule = yawf.rule;
   const observer = yawf.observer;
   const request = yawf.request;
+  const feedParser = yawf.feed;
 
   const feeds = yawf.rules.feeds;
 
   const i18n = util.i18n;
   const css = util.css;
+  const ui = util.ui;
 
   const content = feeds.content = {};
 
@@ -114,7 +116,7 @@
         const brList = Array.from(document.querySelectorAll('.WB_text br'));
         brList.forEach(br => {
           const placeholder = document.createElement('span');
-          placeholder.className = 'yawf-linebreak';
+          placeholder.className = 'yawf-linebreak S_txt2';
           br.replaceWith(placeholder);
         });
       });
@@ -347,5 +349,303 @@
       observer.dom.add(customizeSource);
     },
   });
+
+  Object.assign(i18n, {
+    viewEditInfo: {
+      cn: '点击“已编辑”字样查看编辑历史',
+      tw: '點擊「已編輯」字樣查閱編輯歷史',
+      en: 'Click "Edited" ',
+    },
+    viewEditInfoDetail: {
+      cn: '查看编辑历史的弹框和原版不同，点击微博右上角菜单看到的微博编辑记录仍是原版。点左侧列表可以查看指定的版本，点右侧列表可以和当前显示的版本对比。',
+    },
+    viewEditInfoEdited: {
+      cn: '已编辑',
+      tw: '已編輯',
+      en: 'Edited',
+    },
+    viewEditTitle: {
+      cn: '微博编辑记录',
+      tw: '微博編輯記錄',
+      en: 'Edit History',
+    },
+    selectFeedVersion: {
+      cn: '选择版本以查看',
+      tw: '选择版本以查阅',
+      en: 'Select Version',
+    },
+    diffFeedVersion: {
+      cn: '与选定版本比对',
+      tw: '與選定版本比對',
+      en: 'Compare With',
+    },
+    viewEditLoading: {
+      cn: '正在加载编辑记录……',
+      tw: '正在載入編輯記錄……',
+      en: 'Loading edit history...',
+    },
+  });
+
+  content.viewEditInfo = rule.Rule({
+    id: 'view_edit_info',
+    version: 44,
+    parent: content.content,
+    template: () => i18n.viewEditInfo,
+    ref: {
+      i: { type: 'bubble', icon: 'info', template: () => i18n.viewEditInfoDetail },
+    },
+    ainit() {
+      /**
+       * @param {string} sourceStr
+       * @param {string} targetStr
+       */
+      const compare = function (sourceStr, targetStr) {
+        const matchReg = /\n|\[.{1,8}\]|#(?=.{1,31}#)[^#\n]*#|http:\S+|[a-zA-Z-]+|\s|\S/ug;
+        const source = sourceStr.trim().match(matchReg);
+        const target = targetStr.trim().match(matchReg);
+        const sl = source.length, tl = target.length;
+        /** @type {number[][]} */
+        const size = [...Array(sl)].map(_ => Array(tl));
+        /** @type {[number, number][][]} */
+        const from = [...Array(sl)].map(_ => Array(tl));
+        for (let si = 0; si < sl; si++) {
+          for (let ti = 0; ti < tl; ti++) {
+            if (source[si] === target[ti]) {
+              const d = si && ti ? size[si - 1][ti - 1] : 0;
+              from[si][ti] = [si - 1, ti - 1];
+              size[si][ti] = d + source[si].length;
+            } else {
+              const sd = si ? size[si - 1][ti] : 0;
+              const td = ti ? size[si][ti - 1] : 0;
+              if (sd > td) {
+                from[si][ti] = [si - 1, ti];
+                size[si][ti] = sd;
+              } else {
+                from[si][ti] = [si, ti - 1];
+                size[si][ti] = td;
+              }
+            }
+          }
+        }
+        const output = [];
+        for (let si = sl - 1, ti = tl - 1; si >= 0 || ti >= 0;) {
+          const [fs, ft] = si >= 0 && ti >= 0 ? from[si][ti] : [-1, -1];
+          if (fs !== si && ft !== ti) {
+            output.push({ type: 'same', chars: source.slice(fs + 1, si + 1) });
+          } else if (fs !== si) {
+            output.push({ type: 'delete', chars: source.slice(fs + 1, si + 1) });
+          } else if (ft !== ti) {
+            output.push({ type: 'insert', chars: target.slice(ft + 1, ti + 1) });
+          }
+          [si, ti] = [fs, ft];
+        }
+        let last = { type: 'same', str: '' };
+        const result = [last, ...output.reverse().map(({ type, chars }) => {
+          const str = chars.join('');
+          if (type === last.type) {
+            last.str += str;
+            return null;
+          }
+          last = { type, str };
+          return last;
+        })].filter(content => content && content.str);
+        return result;
+      };
+      const renderTextDiff = function (container, source, target) {
+        const diff = compare(source, target);
+        const fragement = document.createDocumentFragment();
+        diff.forEach(function ({ type, str }) {
+          str.split(/(\n)/g).forEach(part => {
+            const span = document.createElement('span');
+            span.classList.add('yawf-diff-' + type);
+            fragement.appendChild(span);
+            if (part === '\n') {
+              span.classList.add('S_txt2', 'yawf-diff-line-break');
+              fragement.appendChild(document.createElement('br'));
+            } else {
+              span.textContent = part;
+            }
+          });
+        });
+        container.innerHTML = '';
+        container.appendChild(fragement);
+      };
+      /**
+       * @param {HTMLElement} text
+       * @param {HTMLElement} source
+       * @param {HTMLElement} target
+       */
+      const renderImageDiff = function (ref, source, target) {
+        while (ref.nextSibling) ref.parentNode.removeChild(ref.nextSibling);
+        /** @returns {string} */
+        const getId = li => li.getAttribute('action-data');
+        /** @returns {[HTMLElement, string, HTMLElement[], Set<string>]} */
+        const getImages = function (dom) {
+          const wrap = dom.querySelector('.WB_media_wrap');
+          if (!wrap) return [null, '', [], new Set()];
+          const container = wrap.cloneNode(true);
+          const html = container.innerHTML;
+          const items = Array.from(container.querySelectorAll('li'));
+          const actionDatas = new Set(items.map(getId));
+          return [container, html, items, actionDatas];
+        };
+        const renderImages = function (images) {
+          ref.parentNode.appendChild(images);
+        };
+        const [sourceImg, sourceHtml, sourceItems, sourceActionDatas] = getImages(source);
+        const [targetImg, targetHtml, targetItems, targetActionDatas] = getImages(target);
+        // 如果压根没有图片，就什么都不用做
+        if (!sourceImg && !targetImg) return;
+        // 如果图片没变，那么展示一份就行了
+        if (sourceHtml === targetHtml) {
+          renderImages(sourceImg);
+          return;
+        }
+        // 标记修改
+        const sourceFilteredItems = sourceItems.map(item => {
+          if (targetActionDatas.has(getId(item))) return item;
+          item.classList.add('yawf-img-delete');
+          return null;
+        }).filter(item => item);
+        const targetFilteredItems = targetItems.map(item => {
+          if (sourceActionDatas.has(getId(item))) return item;
+          item.classList.add('yawf-img-insert');
+          return null;
+        }).filter(item => item);
+        sourceFilteredItems.forEach((sourceItem, index) => {
+          const targetItem = targetFilteredItems[index];
+          if (getId(sourceItem) === getId(targetItem)) return;
+          sourceItem.classList.add('yawf-img-reorder');
+          targetItem.classList.add('yawf-img-reorder');
+        });
+        // 最后把他们显示出来
+        if (sourceImg) renderImages(sourceImg);
+        if (targetImg) renderImages(targetImg);
+      };
+      const renderDiff = function (container, version1, version2) {
+        const [source, target] = [version1, version2].sort((v1, v2) => v1.index - v2.index);
+        const text = container.querySelector('.WB_text');
+        renderTextDiff(text, source.text, target.text);
+        renderImageDiff(text, source.dom, target.dom);
+      };
+      const showContent = function (container, version, diff) {
+        container.innerHTML = '';
+        container.appendChild(version.dom.cloneNode(true));
+        if (!diff || diff === version) return;
+        renderDiff(container, version, diff);
+      };
+      const dialogRender = async function (container, feedHistoryPromise) {
+        container.classList.add('yawf-feed-edit-dialog-content');
+        container.innerHTML = `<div class="yawf-feed-edit-select S_bg1 S_line1"><div class="yawf-feed-edit-select-title S_line1"></div><ol class="yawf-feed-edit-list yawf-feed-edit-select-list S_line1"></ol></div><div class="yawf-feed-edit-view"><div class="yawf-feed-edit-view-content"><div class="yawf-feed-edit-loading"><div class="WB_empty"><div class="WB_innerwrap"><div class="empty_con clearfix"><p class="icon_bed"><i class="W_icon icon_warnB"></i></p><p class="text"></p></div></div></div></div></div></div><div class="yawf-feed-edit-diff S_bg1 S_line1"><div class="yawf-feed-edit-diff-title S_line1"></div><ol class="yawf-feed-edit-list yawf-feed-edit-diff-list S_line1"></ol></div>`;
+        const loadingText = container.querySelector('.yawf-feed-edit-loading .text');
+        loadingText.textContent = i18n.viewEditLoading;
+        const selectTitle = container.querySelector('.yawf-feed-edit-select-title');
+        const diffTitle = container.querySelector('.yawf-feed-edit-diff-title');
+        const selectList = container.querySelector('.yawf-feed-edit-select-list');
+        const diffList = container.querySelector('.yawf-feed-edit-diff-list');
+        const content = container.querySelector('.yawf-feed-edit-view-content');
+        selectTitle.textContent = i18n.selectFeedVersion;
+        diffTitle.textContent = i18n.diffFeedVersion;
+        const versions = await feedHistoryPromise;
+        const selectVersions = new WeakMap();
+        const diffVersions = new WeakMap();
+        let currentVersion = null;
+        const highlightVersion = function (version, list) {
+          const current = list.querySelector('.current');
+          if (current) current.classList.remove('current', 'S_bg2');
+          if (version) {
+            version.classList.add('current', 'S_bg2');
+            version.scrollIntoView({ block: 'nearest' });
+          }
+        };
+        const setSelectVersion = function (version) {
+          currentVersion = version;
+          highlightVersion(selectVersions.get(version), selectList);
+          highlightVersion(diffVersions.get(version), diffList);
+          showContent(content, version, null);
+        };
+        const setDiffVersion = function (version) {
+          highlightVersion(diffVersions.get(version), diffList);
+          showContent(content, currentVersion, version);
+        };
+        [
+          { timeList: selectList, onClick: setSelectVersion, versionMap: selectVersions },
+          { timeList: diffList, onClick: setDiffVersion, versionMap: diffVersions },
+        ].forEach(({ timeList, onClick, versionMap }) => {
+          versions.forEach(version => {
+            const li = document.createElement('li');
+            li.classList.add('S_line1');
+            li.innerHTML = '<a href="javascript:;" class="S_txt1"></a>';
+            const a = li.firstChild;
+            a.textContent = util.time.format(version.date, 'month');
+            a.addEventListener('click', function (event) {
+              if (!event.isTrusted) return;
+              onClick(version);
+            });
+            timeList.appendChild(li);
+            versionMap.set(version, li);
+          });
+        });
+        setSelectVersion(versions[0]);
+        setDiffVersion(versions[versions.length - 1]);
+      };
+      const showEditInfo = function (mid) {
+        const feedHistoryPromise = request.feedHistory(mid);
+        const historyDialog = ui.dialog({
+          id: 'yawf-feed-edit',
+          title: i18n.viewEditTitle,
+          render(container) {
+            dialogRender(container, feedHistoryPromise);
+          },
+        });
+        historyDialog.show();
+      };
+      observer.feed.onAfter(function (feed) {
+        const edited = feed.querySelector('.WB_feed_detail .WB_from span[title]');
+        if (!edited) return;
+        const feedNode = feedParser.feedNode(edited);
+        const isForward = edited.closest('.WB_feed_expand');
+        const mid = feedNode.getAttribute(isForward ? 'omid' : 'mid');
+        const button = document.createElement('a');
+        button.href = 'javascript:;';
+        button.textContent = i18n.viewEditInfoEdited;
+        button.classList.add('yawf-edited', 'S_txt2');
+        edited.replaceWith(button);
+        button.addEventListener('click', function () {
+          showEditInfo(mid);
+        });
+      });
+
+      css.append(`
+.yawf-feed-edit-dialog-content { width: 860px; height: 480px; display: flex; }
+.yawf-feed-edit-select, .yawf-feed-edit-diff { width: 180px; text-align: center; padding-top: 40px; position: relative;}
+.yawf-feed-edit-view { width: 500px; border: 0 solid; }
+.yawf-feed-edit-select-list { direction: rtl; }
+.yawf-feed-edit-select-title, .yawf-feed-edit-diff-title { font-weight: bold; padding: 10px 0; line-height: 19px; position: absolute; top: 0; width: calc(100% - 1px); border-bottom: 1px solid; }
+.yawf-feed-edit-select-title, .yawf-feed-edit-select li { border-right: 1px solid; }
+.yawf-feed-edit-diff-title, .yawf-feed-edit-diff li { border-left: 1px solid; }
+.yawf-feed-edit-list { height: 100%; overflow: auto; }
+.yawf-feed-edit-list::before { content: " "; border-right: 1px solid; border-right-color: inherit; position: absolute; top: 0; bottom: 0; }
+.yawf-diff-same.yawf-diff-line-break::before { display: none; }
+.yawf-feed-edit-select-list::before { right: 0; }
+.yawf-feed-edit-diff-list::before { left: 0; }
+.yawf-feed-edit-list li { line-height: 29px; direction: ltr; border-bottom: 1px solid; position: relative; }
+.yawf-feed-edit-list li a { display: block; }
+.yawf-feed-edit-list li a:hover, .yawf-feed-edit-list li.current a { font-weight: bold; }
+.yawf-feed-edit-select-list li.current { border-right: 0; }
+.yawf-feed-edit-diff-list li.current { border-left: 0; }
+.yawf-feed-edit-view { overflow: auto; }
+.yawf-feed-edit-view .WB_text { white-space: pre-wrap; }
+.yawf-feed-edit-view .WB_media_wrap { margin-top: 10px; }
+.yawf-diff-insert { text-decoration: underline; background: linear-gradient(to bottom, rgba(0, 255, 0, 0.15) 0, rgba(0, 255, 0, 0.15) calc(94% - 1px), currentColor 94%, currentColor 100%) }
+.yawf-diff-delete { text-decoration: line-through; background: linear-gradient(to bottom, rgba(255, 0, 0, 0.15) 0, rgba(255, 0, 0, 0.15) calc(53% - 1px), currentColor 53%, currentColor 59%, rgba(255, 0, 0, 0.15) calc(59% + 1px), rgba(255, 0, 0, 0.15) 100%); }
+.yawf-diff-line-break::before { content: "↵"; user-select: none; }
+.yawf-img-insert { outline: 3px solid #3c3; }
+.yawf-img-delete { outline: 3px dashed #c33; }
+.yawf-img-reorder { outline: 3px dotted #36f; }
+`);
+    },
+  });
+
 
 }());

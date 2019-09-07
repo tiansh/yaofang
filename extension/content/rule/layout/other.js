@@ -14,6 +14,7 @@
 
   const i18n = util.i18n;
   const css = util.css;
+  const time = util.time;
 
   const details = layout.details = {};
 
@@ -404,10 +405,6 @@
         tw: '使用本機時區',
         en: 'Use locale timezone',
       },
-      timeToday: { cn: '今天', tw: '今天', en: 'Today' },
-      timeSecondBefore: { cn: '秒前', tw: '秒前', en: ' secs ago' },
-      timeMinuteBefore: { cn: '分钟前', tw: '分鐘前', en: ' mins ago' },
-      timeMonthDay: { cn: '{1}月{2}日 {3}:{4}', en: '{1}-{2} {3}:{4}' },
       feedsRead: { cn: '你看到这里', tw: '你看到這裡', en: 'you got here' },
     });
 
@@ -418,60 +415,14 @@
       parent: details.details,
       template: () => i18n.useLocaleTimezone,
       ainit() {
-        // $CONFIG.timeDiff 保存了本机时间与服务器时间的差，减去这个差值可得到服务器时间的近似值
-        const now = () => new Date(Date.now() - ((init.page.$CONFIG || {}).timeDiff || 0));
-
-        /**
-         * @param {Date|number} time
-         * @param {boolean?} locale
-         * @returns {[string, string, string, string, string, string, string]}
-         */
-        const timeToParts = (time, locale = true) => (
-          new Date(time - new Date(time).getTimezoneOffset() * 6e4 * locale)
-            .toISOString().match(/\d+/g)
-        );
-
-        const formatTime = function (time) {
-          const ref = now();
-          const [iy, im, id, ih, iu] = timeToParts(time);
-          const [ny, nm, nd, nh, nu] = timeToParts(ref);
-          const diff = (ref - time) / 1e3;
-          if (iy !== ny) {
-            return `${iy}-${im}-${id} ${ih}:${iu}`;
-          } else if (im !== nm || id !== nd) {
-            return i18n.timeMonthDay.replace(/\{\d\}/g, n => [im, id, ih, iu][n[1] - 1]);
-          } else if (ih !== nh && diff > 3600) {
-            return `${i18n.timeToday} ${ih}:${iu}`;
-          } else if (diff > 50) {
-            return Math.ceil(diff / 60) + i18n.timeMinuteBefore;
-          } else {
-            return Math.max(Math.ceil(diff / 10), 1) * 10 + i18n.timeSecondBefore;
-          }
-        };
-
-        const formatter = Intl.DateTimeFormat(
-          { cn: 'zh-CN', hk: 'zh-HK', tw: 'zh-TW', en: 'en-US' }[util.language],
-          {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            weekday: 'long',
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZoneName: 'long',
-          }
-        );
-        const formatTimeDetail = function (date) {
-          return formatter.format(date);
-        };
 
         const updateDate = function (element) {
           const date = parseInt(element.getAttribute('yawf-date'), 10);
-          const formatTimeResult = formatTime(date);
+          const formatTimeResult = util.time.format(date);
           if (element.textContent !== formatTimeResult) {
             element.textContent = formatTimeResult;
           }
-          const formatTimeDetailResult = formatTimeDetail(date);
+          const formatTimeDetailResult = util.time.format(date, 'full');
           if (element.title !== formatTimeDetailResult) {
             element.title = formatTimeDetailResult;
           }
@@ -513,28 +464,6 @@
         observer.dom.add(handleDateElements);
         setInterval(updateAllDate, 1e3);
 
-        const parseTextTime = function (text) {
-          let parseDate = null;
-          const now = Date.now();
-          const [cy, cm, cd] = timeToParts(now);
-          if (/^\d+-\d+-\d+ \d+:\d+$/.test(text)) {
-            const [y, m, d, h, u] = text.match(/\d+/g);
-            parseDate = Date.UTC(y, m - 1, d, h, u) - 288e5;
-          } else if (/^(?:\d+-\d+|\d+月\d+日) \d+:\d+$/.test(text)) {
-            const [m, d, h, u] = text.match(/\d+/g);
-            parseDate = Date.UTC(cy, m - 1, d, h, u) - 288e5;
-          } else if (/^(?:今天|today)\s*\d+:\d+$/i.test(text)) {
-            const [h, u] = text.match(/\d+/g);
-            parseDate = Date.UTC(cy, cm - 1, cd, h, u) - 288e5;
-          } else if (/^\s*\d+\s*(?:分钟前|分鐘前|mins ago)/.test(text)) {
-            const min = text.match(/\d+/g);
-            parseDate = now - min * 6e4;
-          } else if (/^\s*\d+\s*(?:秒前|secs ago)/.test(text)) {
-            const sec = text.match(/\d+/g);
-            parseDate = now - sec * 1e3;
-          }
-          return parseDate ? new Date(parseDate) : null;
-        };
 
         // 处理文本显示的时间
         const handleTextDateElements = function changeDateText() {
@@ -554,7 +483,7 @@
             const text = textNode.textContent.trim();
             if (text === '') return;
             const [_full, match, tail] = text.match(/^(.*?)\s*(来自|來自|come from|)$/);
-            const time = parseTextTime(match);
+            const time = util.time.parse(match);
             if (!time) return;
             util.debug('parse time %o(%s) to %o(%s)', textNode, text, time, time);
             textNode.textContent = tail ? ` ${tail} ` : '';

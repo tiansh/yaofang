@@ -14,6 +14,7 @@
     const $CONFIG = init.page.$CONFIG;
     await config.init($CONFIG.uid);
     util.i18n = $CONFIG.lang;
+    util.time.setDiff($CONFIG.timeDiff || 0);
   }, { priority: priority.FIRST });
 
   util.debug('yawf loading, hide all');

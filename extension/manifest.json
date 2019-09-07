@@ -76,6 +76,7 @@
         "content/util/keyboard.js",
         "content/util/ui.js",
         "content/util/dom.js",
+        "content/util/time.js",
 
         "common/network/network.js",
         "common/network/fetch.js",
@@ -89,6 +90,7 @@
         "content/request/votedetail.js",
         "content/request/feedfavorite.js",
         "content/request/image.js",
+        "content/request/feedhistory.js",
 
         "content/storage/storage.js",
         "content/storage/config.js",
