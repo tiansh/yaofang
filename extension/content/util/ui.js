@@ -56,10 +56,14 @@
     const contentNode = dialog.querySelector('.yawf-dialog-content');
     // 填入内容
     titleNode.textContent = title;
-    render(contentNode);
     okButton.textContent = i18n.okButtonTitle;
     cancelButton.textContent = i18n.cancelButtonTitle;
     closeButton.title = i18n.closeButtonTitle;
+    render(contentNode, Object.assign(...[
+      { close: closeButton },
+      button && button.ok ? { ok: okButton } : {},
+      button && button.cancel ? { cancel: cancelButton } : {},
+    ]));
     // 定位对话框的位置
     const lastPos = { x: 0, y: 0 };
     const setPos = function ({ x, y }) {

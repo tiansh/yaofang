@@ -288,14 +288,14 @@
     autoCheckFollowingRunning: { cn: '（正在更新）', en: '(Updating)' },
     autoCheckFollowingDialogTitle: { cn: '关注列表变化 - 药方 (YAWF)', tw: '關注清單變化 - 藥方 (YAWF)', en: 'Following List Changes - YAWF' },
     autoCheckFollowingTip: {
-      cn: '您的关注列表自从上次检查并确认至今发生了如下变化，请您复查：',
-      hk: '您的關注清單自從上次檢查並確認至今發生了如下變化，請您複查：',
-      tw: '您的關注清單自從上次檢查並確認至今發生了如下變化，請您複查：',
-      en: 'Your following list had been changed since last checking, please review: ',
+      cn: '您的关注列表自从上次检查并确认至今发生了如下变化，请您复查并确认：',
+      tw: '您的關注清單自從上次檢查並確認至今發生了如下變化，請您複查並確認：',
+      en: 'Your following list had been changed since last checking, please review and confirm: ',
     },
     autoCheckFollowingAdd: { cn: '新增如下关注', tw: '新增如下關注', en: 'Recent Following' },
     autoCheckFollowingLost: { cn: '减少如下关注', tw: '減少如下關注', en: 'Recent Unfollowed' },
     autoCheckFollowingRename: { cn: '如下关注修改了昵称', tw: '如下關注修改了暱稱', en: 'Recent Renamed' },
+    autoCheckFollowingConfirmed: { cn: '已确认', tw: '已確認', en: 'Confirmed' },
   });
 
   /**
@@ -309,7 +309,8 @@
       id: 'yawf-follow-change',
       title: i18n.autoCheckFollowingDialogTitle,
       /** @param {Element} container */
-      render(container) {
+      render(container, { ok: okButton }) {
+        okButton.textContent = i18n.autoCheckFollowingConfirmed;
         container.innerHTML = '<div class="yawf-following-notice-header"></div><div class="yawf-following-notice-body"><div class="yawf-following-add" style="display: none;"><div class="yawf-following-add-title"></div><div class="yawf-following-add-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div><div class="yawf-following-lost" style="display: none;"><div class="yawf-following-lost-title"></div><div class="yawf-following-lost-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div><div class="yawf-following-rename" style="display: none;"><div class="yawf-following-rename-title"></div><div class="yawf-following-rename-items"><ul class="yawf-config-collection-list yawf-config-collection-user-id"></ul></div></div></div><div class="yawf-following-notice-footer"><span class="yawf-following-notice-last-time-text"></span><span class="yawf-following-notice-last-time"></span></div>';
         container.querySelector('.yawf-following-notice-header').textContent = i18n.autoCheckFollowingTip;
         container.querySelector('.yawf-following-add-title').textContent = i18n.autoCheckFollowingAdd;
@@ -344,7 +345,7 @@
       },
       button: {
         ok() { resolve(true); followChangeDialog.hide(); },
-        close() { resolve(null); followChangeDialog.hide(); },
+        cancel() { resolve(null); followChangeDialog.hide(); },
       },
     });
     followChangeDialog.show();
