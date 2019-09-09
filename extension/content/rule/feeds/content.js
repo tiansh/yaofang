@@ -63,6 +63,7 @@
 .WB_feed_expand .WB_text .W_btn_b, .WB_text .W_btn_c, .WB_empty .W_btn_c { height: ${h2}px !important; line-height: ${h2}px !important; }
 .WB_feed_expand .WB_text .W_btn_b, .WB_feed_expand .WB_text .W_btn_b *, .WB_text .W_btn_c *, .WB_empty .W_btn_c * { line-height: ${h2}px !important; font-size: ${fs3}px !important; }
 .W_icon_feedpin, .W_icon_feedhot { height: 16px !important; line-height: 16px !important; }
+.WB_info { margin-bottom: 2px !important; padding-top: 0 !important; line-height: ${fs <= 28 ? 28 : 50}px !important; }
 `;
       css.append(style);
     },
@@ -354,7 +355,7 @@
     viewEditInfo: {
       cn: '点击“已编辑”字样查看编辑历史',
       tw: '點擊「已編輯」字樣查閱編輯歷史',
-      en: 'Click "Edited" ',
+      en: 'View edit history by clicking "Edited"',
     },
     viewEditInfoDetail: {
       cn: '查看编辑历史的弹框和原版不同，点击微博右上角菜单看到的微博编辑记录仍是原版。点左侧列表可以查看指定的版本，点右侧列表可以和当前显示的版本对比。',
@@ -427,6 +428,7 @@
             }
           }
         }
+        /** @type {{ type: 'same'|'delete'|'insert', chars: string }[]} */
         const output = [];
         for (let si = sl - 1, ti = tl - 1; si >= 0 || ti >= 0;) {
           const [fs, ft] = si >= 0 && ti >= 0 ? from[si][ti] : [-1, -1];
@@ -439,8 +441,9 @@
           }
           [si, ti] = [fs, ft];
         }
+        /** @type {{ type: 'same'|'delete'|'insert', str: string }} */
         let last = { type: 'same', str: '' };
-        const result = [last, ...output.reverse().map(({ type, chars }) => {
+        const connected = [last, ...output.reverse().map(({ type, chars }) => {
           const str = chars.join('');
           if (type === last.type) {
             last.str += str;
@@ -449,6 +452,29 @@
           last = { type, str };
           return last;
         })].filter(content => content && content.str);
+        /** @type {{ delete: { type: 'delete', str: string }, insert: { type: 'insert', str: string } }} */
+        let prevPart = { delete: null, insert: null, same: null };
+        const result = connected.filter(part => {
+          const { str, type } = part;
+          if (['delete', 'insert'].includes(type)) {
+            if (prevPart[type]) {
+              prevPart[type].str += str;
+              return false;
+            } else {
+              prevPart[type] = part;
+              return true;
+            }
+          } else {
+            if (str.length < 4 && prevPart.delete && prevPart.insert) {
+              prevPart.delete.str += str;
+              prevPart.insert.str += str;
+              return false;
+            } else {
+              prevPart.delete = prevPart.insert = null;
+              return true;
+            }
+          }
+        });
         return result;
       };
       const renderTextDiff = function (container, source, target) {
@@ -458,12 +484,15 @@
           str.split(/(\n)/g).forEach(part => {
             const span = document.createElement('span');
             span.classList.add('yawf-diff-' + type);
+            span.textContent = part;
             fragement.appendChild(span);
             if (part === '\n') {
-              span.classList.add('S_txt2', 'yawf-diff-line-break');
-              fragement.appendChild(document.createElement('br'));
-            } else {
-              span.textContent = part;
+              const breakToken = document.createElement('span');
+              breakToken.classList.add('yawf-diff-' + type);
+              const breakChar = document.createElement('span');
+              breakChar.classList.add('S_txt2', 'yawf-diff-line-break');
+              breakToken.appendChild(breakChar);
+              fragement.insertBefore(breakToken, span);
             }
           });
         });
@@ -626,7 +655,7 @@
 .yawf-feed-edit-diff-title, .yawf-feed-edit-diff li { border-left: 1px solid; }
 .yawf-feed-edit-list { height: 100%; overflow: auto; }
 .yawf-feed-edit-list::before { content: " "; border-right: 1px solid; border-right-color: inherit; position: absolute; top: 0; bottom: 0; }
-.yawf-diff-same.yawf-diff-line-break::before { display: none; }
+.yawf-diff-same .yawf-diff-line-break { display: none; }
 .yawf-feed-edit-select-list::before { right: 0; }
 .yawf-feed-edit-diff-list::before { left: 0; }
 .yawf-feed-edit-list li { line-height: 29px; direction: ltr; border-bottom: 1px solid; position: relative; }
