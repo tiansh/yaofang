@@ -105,7 +105,10 @@
 .WB_feed_detail .WB_from a[date],
 .WB_feed_detail .WB_from a[yawf-date],
 .WB_feed_detail .WB_from span[title],
-.WB_feed_detail .WB_from .yawf-edited { float: left; position: relative; top: -30px; }`,
+.WB_feed_detail .WB_from .yawf-edited { float: left; position: relative; top: -30px; }
+.WB_feed_detail .WB_from a[date]::after,
+.WB_feed_detail .WB_from a[yawf-date]::after { content: " "; }
+`,
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanFeedSourceDetail } },
   });
   clean.CleanRule('pop', () => i18n.cleanFeedPop, 1, `

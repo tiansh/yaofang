@@ -45,13 +45,16 @@
 .WB_feed .WB_feed_handle { height: 20px; margin-top: 20px; display: block; position: relative; }
 .WB_feed.WB_feed_v3 .WB_expand { margin-bottom: 0; }
 .WB_feed .WB_feed_handle .WB_handle { float: right; margin-right: 10px; height: 20px; padding: 0; position: relative; top: -20px; }
-.WB_feed .WB_feed_handle .WB_row_line { border: none; overflow: hidden; }
+.WB_feed .WB_feed_handle .WB_row_line { border: none; overflow: hidden; line-height: 26px; }
 .WB_feed .WB_feed_handle .WB_row_line::after { content: " "; display: block; margin-left: -1px; flex: 0 0 0; order: 10; }
 .WB_feed .WB_feed_handle .WB_row_line li { padding: 0 11px 0 10px; height: auto; margin-right: -1px; }
 .WB_feed .WB_row_line .line { display: inline; border-width: 0; position: relative; }
 .WB_feed .WB_row_line .line::before { content: " "; display: block; width: 0; height: 100%; position: absolute; right: -10px; top: 0; border-right: 1px solid; border-color: inherit; }
 .WB_feed_handle .WB_row_line .arrow { display: none; }
 .WB_feed_repeat { margin-top: -10px; }
+.WB_feed_comment .WB_feed_detail { position: relative; padding-bottom: 4px; }
+.WB_feed_comment .WB_feed_detail::after { display: none; }
+.WB_feed_comment .WB_expand { margin-bottom: 0; }
 `,
   });
 
@@ -67,19 +70,23 @@
     parent: layout.layout,
     template: () => i18n.sourceAtBottom,
     ainit() {
-      observer.feed.onBefore(function (feed) {
-        const from = feed.querySelector('.WB_detail > .WB_info + .WB_from');
-        if (!from) return;
-        from.parentNode.appendChild(from);
-        from.classList.add('yawf-bottom-WB_from');
+      observer.dom.add(function () {
+        const fromList = Array.from(document.querySelectorAll('.WB_detail > .WB_info + .WB_from'));
+        if (!fromList.length) return;
+        fromList.forEach(from => {
+          from.parentNode.appendChild(from);
+          from.classList.add('yawf-bottom-WB_from');
+        });
       });
       const foldSpace = layout.foldSpace.getConfig();
       if (foldSpace) {
-        css.append('.WB_feed_v3 .WB_from.yawf-bottom-WB_from { position: absolute; bottom: -6px; transform: translate(0, 100%); }');
+        css.append(`
+.WB_from.WB_from.yawf-bottom-WB_from { position: absolute; bottom: 0; margin: 0; transform: translate(0, 100%); line-height: 26px; }
+`);
       } else {
-        css.append('.WB_feed_v3 .WB_from.yawf-bottom-WB_from { margin: 10px 0 7px; }');
+        css.append('.WB_from.WB_from.yawf-bottom-WB_from { margin: 10px 0 7px; }');
       }
-      css.append('.WB_feed.WB_feed_v3 .WB_expand_media_box { margin-bottom: 10px; }');
+      css.append('.WB_feed.WB_feed .WB_expand_media_box { margin-bottom: 10px; }');
     },
   });
 
