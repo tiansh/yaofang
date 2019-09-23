@@ -193,123 +193,110 @@
 
   Object.assign(i18n, {
     showVoteResult: {
-      cn: '投票微博显示投票情况{{i}}',
-      tw: '投票微博顯示投票情況{{i}}',
-      en: 'Show votes for feeds with voting {{i}}',
+      cn: '未参与的投票显示得票数{{i}}',
+      tw: '未參與的投票展示得票數{{i}}',
+      en: 'Show voting results in without voting needed {{i}}',
     },
     showVoteResultDetail: {
-      cn: '在当前页面展示投票结果而无需打开新页。展示仅供查看，如需投票仍需要在新页面打开。另请注意，无论是否开启本功能，微博投票会导致您自动点赞该微博。',
-      tw: '在當前頁面展示投票結果而無需打開新頁。展示僅供查看，如需投票仍需要在新頁面打開。另請注意，無論是否開啟本功能，微博投票會導致您自動點贊該微博。',
-      en: "View other's votes without open a new page. You are still required to open the new page to vote. Please be noticed that, voting will automatically like the feed regardless whether this option is enabled or not.",
+      cn: '由于微博投票会自动点赞对应微博，开启该功能后，扩展会在您没有手动点赞前阻止您参与投票。无论是否开启本功能，微博投票都会导致您自动点赞该微博。',
+      tw: '由於微博投票會自動點贊對應微博，開啟該功能後，擴充套件會在您沒有手動點贊前阻止您參與投票。無論是否開啟本功能，微博投票都會導致您自動點贊該微博。',
+      en: 'Voting will automatically mark the feed liked. Extension will block your voting when you vote without mark the feed liked manually. Voting will automatically like the feed regardless whether this option is enabled or not.',
     },
-    followVoteLink: {
-      cn: '点赞微博并参与投票',
-      tw: '點贊微博並參與投票',
-      en: 'Like this feed and vote',
+    voteTitle: {
+      cn: '参与投票',
+      tw: '參與投票',
+      en: 'Voting',
+    },
+    voteText: {
+      cn: '如需参与投票请先点赞微博。',
+      tw: '如需參與投票請先點贊微博。',
+      en: 'You have to like the feed first before voting.',
     },
   });
 
   content.showVoteResult = rule.Rule({
     id: 'show_vote_result',
-    version: 33,
+    version: 46,
     parent: content.content,
     template: () => i18n.showVoteResult,
     ref: {
       i: { type: 'bubble', icon: 'warn', template: () => i18n.showVoteResultDetail },
     },
     ainit() {
-      observer.feed.onAfter(async function (/** @type {Element} */feed) {
-        const voteCard = feed.querySelector('.WB_feed_spec[action-type="fl_jumpurl"][action-data*="vote.weibo.com"]');
-        if (!voteCard) return;
-        const url = new URL(new URLSearchParams(voteCard.getAttribute('action-data')).get('url'));
-        if (!url.href.startsWith('https://vote.weibo.com/h5/index/index?')) return;
-        const voteId = url.searchParams.get('vote_id');
-        if (!voteId) return;
-        const placeholder = document.createElement('div');
-        voteCard.parentNode.parentNode.replaceChild(placeholder, voteCard.parentNode);
-        const voteResult = await request.voteDetail(voteId);
-        const template = document.createElement('div');
-        template.innerHTML = '<div class="yawf-vote-detail S_txt1 S_bg2 "><div class="yawf-vote-title"></div><div class="yawf-vote-subtitle S_txt2"></div><div class="yawf-vote-option-list"></div><div class="yawf-vote-footer"></div></div>';
-
-        const container = template.firstChild;
-        const title = container.querySelector('.yawf-vote-title');
-        const subtitle = container.querySelector('.yawf-vote-subtitle');
-        const optionList = container.querySelector('.yawf-vote-option-list');
-        const footer = container.querySelector('.yawf-vote-footer');
-        const voteInfo = voteResult.vote_info;
-        const withImage = voteInfo.option_list.some(option => option.pic);
-        if (withImage) {
-          optionList.classList.add('yawf-vote-with-image');
-        }
-
-        title.textContent = voteInfo.title;
-        // 未截至的投票会出现形如“截止日期 x年x月x日 xx::xx”格式的字串
-        // 此时识别后面的日期以方便“使用本机时区”功能将其修正为本机时间
-        if (/^.*\d+年\d+月\d+日 \d+:\d+$/.test(voteInfo.show_str)) {
-          const [_i, text, dateStr] = voteInfo.show_str.match(/^(.*?)(\d+年\d+月\d+日 \d+:\d+)$/);
-          const [_j, year, month, date, hour, min] = dateStr.match(/(\d+)年(\d+)月(\d+)日 (\d+):(\d+)/);
-          const timestamp = Date.UTC(year, month - 1, date, hour - 8, min);
-          subtitle.appendChild(document.createTextNode(text));
-          const dateText = subtitle.appendChild(document.createElement('span'));
-          dateText.textContent = dateStr;
-          dateText.setAttribute('date', timestamp);
-        } else {
-          subtitle.textContent = voteInfo.show_str;
-        }
-        voteInfo.option_list.forEach(option => {
-          const wrap = document.createElement('div');
-          wrap.innerHTML = '<div class="yawf-vote-option-item"><div class="yawf-vote-option-text"><span class="yawf-vote-option-title"></span><span class="yawf-vote-option-count"></span></div><div class="yawf-vote-option-bar S_bg1"></div></div>';
-          const container = wrap.firstChild;
-          const text = container.firstChild.firstChild;
-          text.textContent = option.title;
-          const count = text.nextSibling;
-          count.textContent = option.part_num;
-          container.style.setProperty('--yawf-vote-ratio', option.part_ratio / 100);
-          if (withImage) {
-            const wrap = document.createElement('div');
-            wrap.innerHTML = '<div class="yawf-vote-option-image"><img /></div>';
-            const img = wrap.firstChild.firstChild;
-            img.src = option.pic;
-            img.alt = option.text;
-            container.insertBefore(wrap.firstChild, container.firstChild);
-          }
-          if (option.selected === '1') {
-            container.classList.add('yawf-vote-selected');
-          }
-          optionList.appendChild(container);
+      const updateVoteByLike = function (feedlike) {
+        const like = feedlike.querySelector('[action-type="fl_like"]');
+        const liked = like.querySelector('[node-type="like_status"]').matches('.UI_ani_praised');
+        const items = feedlike.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]')
+        Array.from(items).forEach(item => {
+          item.setAttribute('action-type', liked ? 'feed_list_vote' : 'yawf-feed_list_vote');
         });
-        if (voteInfo.status === '1') {
-          const link = document.createElement('div');
-          link.classList.add('yawf-vote-link');
-          link.setAttribute('action-type', voteCard.getAttribute('action-type'));
-          link.setAttribute('action-data', voteCard.getAttribute('action-data'));
-          link.textContent = i18n.followVoteLink;
-          footer.appendChild(link);
-        }
-        placeholder.replaceWith(container);
+      };
+      const showVoteResult = async function (vote) {
+        const voteButtons = Array.from(vote.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]'));
+        if (!voteButtons.length) return;
+        const voteId = new URLSearchParams(voteButtons[0].getAttribute('action-data')).get('vote_id');
+        if (!voteId) return;
+        const voteResult = await request.voteDetail(voteId);
+        voteButtons.forEach(button => {
+          const actionData = new URLSearchParams(button.getAttribute('action-data'));
+          const id = actionData.get('vote_items');
+          const item = voteResult.vote_info.option_list.find(item => item.id === id);
+          button.dataset.partNum = item.part_num.replace('票', '人');
+          button.dataset.partRatio = item.part_ratio;
+          button.style.setProperty('--part-ratio', item.part_ratio / 100);
+        });
+        const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
+        updateVoteByLike(feedlike);
+      };
+      const watchLike = function (/** @type {HTMLElement} */vote) {
+        const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
+        const like = feedlike.querySelector('[action-type="fl_like"]');
+        const observer = new MutationObserver(() => { updateVoteByLike(feedlike); });
+        observer.observe(like, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        updateVoteByLike(feedlike);
+      };
+      observer.dom.add(function updateVoteResult() {
+        const voteList = document.querySelectorAll('.WB_card_vote:not([yawf-card-vote])');
+        if (!voteList.length) return;
+        Array.from(voteList).forEach(vote => {
+          vote.setAttribute('yawf-card-vote', 'yawf-card-vote');
+          showVoteResult(vote);
+          watchLike(vote);
+        });
       });
-
-      const fontRatio = content.fontSize.isEnabled() ? content.fontSize.ref.ratio.getConfig() : 100;
-      const fontSize = { 120: 14, 150: 14, 200: 16, 300: 20 }[fontRatio] || 12;
-      const smallImage = yawf.rules.feeds.layout.smallImage.isEnabled();
+      document.addEventListener('click', event => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const vote = target.closest('[action-type="yawf-feed_list_vote"]');
+        if (!vote) return;
+        ui.alert({
+          id: 'yawf-vote-block',
+          icon: 'warn',
+          title: i18n.voteTitle,
+          text: i18n.voteText,
+        });
+      });
       css.append(`
-.yawf-vote-detail { font-size: ${fontSize}px; }
-.yawf-vote-detail { margin-left: 10px; padding: 10px; box-shadow: 0 0 2px #777; border-radius: 3px; }
-.yawf-vote-title { font-weight: bold; line-height: 1.5; }
-.yawf-vote-option-item { border: 1px solid #ebebeb; margin: 5px 0; line-height: 2; padding: 0 5px; position: relative; }
-.yawf-vote-option-text { overflow: hidden; position: relative; z-index: 1; }
-.yawf-vote-option-count { float: right; }
-.yawf-vote-option-count::before { content: "("; }
-.yawf-vote-option-count::after { content: ")"; }
-.yawf-vote-option-bar { content: " "; width: calc(100% * var(--yawf-vote-ratio)); height:100%; position: absolute; top: 0; left: 0; z-index: 0; }
-.yawf-vote-selected { font-weight: bold; }
-.yawf-vote-with-image { display: grid; grid-template-columns: 1fr 1fr; grid-template-columns: repeat(auto-fill, ${smallImage ? '120px' : '225px'}); grid-gap: 10px; }
-.yawf-vote-option-image { position: relative; z-index: 2; margin: 0 -5px -5px;}
-.yawf-vote-option-image img { max-width: 100%; max-height: 225px; }
-.yawf-vote-footer:empty { display: none; }
-.yawf-vote-footer { margin-top: 10px; cursor: pointer; }
-.yawf-vote-link { display: inline-block; }
+.WB_card_vote.WB_card_vote .vote_con1 .item { position: relative; z-index: 1; overflow: hidden; text-align: left; }
+.WB_card_vote.WB_card_vote .vote_con1 .item::after { content: attr(data-part-num) ; float: right; }
+.WB_card_vote.WB_card_vote .vote_con1 .item::before { content: " "; width: calc(var(--part-ratio) * 100%); background: #f2f2f5; top: 0; left: 0; bottom: 0; margin: 0; position: absolute; z-index: -1; }
+.WB_card_vote.WB_card_vote .vote_con2 .vote_btn { position: relative; font-size: 14px; }
+.WB_card_vote.WB_card_vote .vote_con2 .vote_btn a { background: currentColor; border-radius: 0; }
+.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn a { margin-right: -2px; }
+.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn a { margin-left: -2px; }
+.WB_card_vote.WB_card_vote .vote_con2 .vote_btn::after { content: attr(data-part-num); position: absolute; top: 0; bottom: 0; color: white; line-height: 24px; }
+.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn::after { left: 26px; right: auto; }
+.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn::after { left: auto; right: 26px; }
 `);
+      const smallImage = feeds.layout.smallImage;
+      if (smallImage.isEnabled()) {
+        css.append(`
+.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn a { margin-right: -1px; }
+.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn a { margin-left: -1px; }
+.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn::after { left: 10px; }
+.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn::after { right: 10px; }
+`);
+      }
     },
   });
 
@@ -630,18 +617,19 @@
         historyDialog.show();
       };
       observer.feed.onAfter(function (feed) {
-        const edited = feed.querySelector('.WB_feed_detail .WB_from span[title]');
-        if (!edited) return;
-        const feedNode = feedParser.feedNode(edited);
-        const isForward = edited.closest('.WB_feed_expand');
-        const mid = feedNode.getAttribute(isForward ? 'omid' : 'mid');
-        const button = document.createElement('a');
-        button.href = 'javascript:;';
-        button.textContent = i18n.viewEditInfoEdited;
-        button.classList.add('yawf-edited', 'S_txt2');
-        edited.replaceWith(button);
-        button.addEventListener('click', function () {
-          showEditInfo(mid);
+        const editedList = Array.from(feed.querySelectorAll('.WB_feed_detail .WB_from span[title]'));
+        editedList.forEach(edited => {
+          const feedNode = feedParser.feedNode(edited);
+          const isForward = edited.closest('.WB_feed_expand');
+          const mid = feedNode.getAttribute(isForward ? 'omid' : 'mid');
+          const button = document.createElement('a');
+          button.href = 'javascript:;';
+          button.textContent = i18n.viewEditInfoEdited;
+          button.classList.add('yawf-edited', 'S_txt2');
+          edited.replaceWith(button);
+          button.addEventListener('click', function () {
+            showEditInfo(mid);
+          });
         });
       });
 

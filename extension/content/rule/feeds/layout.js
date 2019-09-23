@@ -178,6 +178,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_feed.WB_feed_v3 .WB_feed_spec_b .WB_feed_spec_info, .WB_feed.WB_feed_v3 .WB_feed_spec_c .WB_feed_spec_info, .WB_feed.WB_feed_v3 .WB_feed_spec2 .WB_feed_spec_info { float: none; height: auto; width: auto; padding: 10px 5px 0; }
 .WB_feed.WB_feed_v3 .WB_feed_spec_b .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_tit, .WB_feed.WB_feed_v3 .WB_feed_spec_c .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_tit, .WB_feed.WB_feed_v3 .WB_feed_spec2 .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_tit { font-size: inherit; font-weight: 700; margin: 0 0 6px; }
 .WB_feed.WB_feed_v3 .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_brieftxt { line-height: 15px; height: 30px; }
+.WB_feed.WB_feed_v3 .WB_feed_spec_user .W_fl { width: 240px; }
 
 .layer_feedimgshow .WB_feed.WB_feed_v3 .WB_media_a { margin: 0; width: auto; }
 .layer_feedimgshow .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic { max-width: none; max-height: none; min-width: auto; }
@@ -193,9 +194,20 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_h5video.hv-s3.hv-s3-5:hover .con-6,
 .WB_h5video.hv-s3.hv-s3-5 .con-3 .box-2 em,
 .WB_h5video .con-3.hv-s3-3 .box-3 { opacity: 0; z-index: 0; }
+.WB_video .wbv-error-display h4 { bottom: 0; }
 
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) { width: 120px; height: 80px; min-width: 36px; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) .wbv-control-bar { display: none !important; }
+
+.WB_card_vote.WB_card_vote .vote_con1 .item { font-size: inherit; line-height: 14px; margin-top: -5px; text-align: left; }
+.WB_card_vote.WB_card_vote .vote_con1 .item_rt { font-size: inherit; line-height: 24px; height: 24px; margin-top: -5px; }
+.WB_card_vote.WB_card_vote .vote_con2 .vote_pic { width: 120px; height: 90px; }
+.WB_card_vote.WB_card_vote .vote_con2 { width: 242px; margin: 0; }
+.WB_card_vote.WB_card_vote .vote_con2 table { margin: 5px 0; }
+.WB_card_vote.WB_card_vote .vote_con2 .vote_pic .bg { font-size: inherit; text-shadow: 0 0 2px black; }
+.WB_card_vote.WB_card_vote .vote_con2 .vote_btn a { margin: 5px 0; }
+.WB_card_vote.WB_card_vote .vote_tit { font-size: inherit; }
+.WB_card_vote.WB_card_vote .vote_share a { line-height: 24px; height: 24px; margin-top: -5px; }
 `);
       observer.dom.add(function smallVideo() {
         const videos = Array.from(document.querySelectorAll('.WB_video_h5_v2 .WB_h5video_v2:not([yawf-watch-pouse])'));
