@@ -226,7 +226,7 @@
       const updateVoteByLike = function (feedlike) {
         const like = feedlike.querySelector('[action-type="fl_like"]');
         const liked = like.querySelector('[node-type="like_status"]').matches('.UI_ani_praised');
-        const items = feedlike.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]')
+        const items = feedlike.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]');
         Array.from(items).forEach(item => {
           item.setAttribute('action-type', liked ? 'feed_list_vote' : 'yawf-feed_list_vote');
         });
