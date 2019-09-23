@@ -9,7 +9,7 @@
 
   const pageSize = 10;
   const feedHistoryPage = async function (mid, page) {
-    const host = location.hostname === 'www.weibo.com' ? 'www.weibo.com' : 'weibo.com';
+    const host = location.hostname;
     const url = new URL(`https://${host}/p/aj/v6/history?ajwvr=6&domain=100505`);
     url.searchParams.set('mid', mid);
     url.searchParams.set('page', page);
