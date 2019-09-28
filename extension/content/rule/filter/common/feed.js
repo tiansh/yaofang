@@ -292,12 +292,14 @@
       dragIndex++;
       if (!dropArea) return;
       dropArea.classList.add('yawf-drag');
+      dropArea.parentNode.classList.add('yawf-drop-area-active');
     };
     const hideDropArea = function () {
       dragIndex++;
       inArea = false;
       if (!dropArea) return;
       dropArea.classList.remove('yawf-drag', 'yawf-drag-in');
+      dropArea.parentNode.classList.remove('yawf-drop-area-active');
     };
     const enterDropArea = function () {
       inArea = true;
@@ -385,6 +387,7 @@
 .WB_global_nav .gn_topmenulist.yawf-drop-area .W_layer_arrow .W_arrow_bor_t { right: 122px; }
 .yawf-drop-content { margin: 20px; border: 5px dashed #666; border-radius: 20px; text-align: center; white-space: wrap; width: 134px; height: 134px; padding: 20px; margin: 20px; line-height: 1.5; }
 .yawf-drop-title { font-size: 16px; font-weight: bold; white-space: pre-wrap; margin: 0 0 20px; -moz-user-select: none; -webkit-user-select: none; user-select: none; }
+.yawf-drop-area-active .gn_topmenulist_yawf { display: none; }
 `);
 
 }());

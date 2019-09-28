@@ -101,6 +101,7 @@
   clean.CleanRule('source', () => i18n.cleanFeedSource, 1, {
     acss: `
 .WB_feed_detail .WB_from { height: 26px; overflow: hidden; }
+.WB_feed_detail .WB_feed_expand .WB_from { height: 16px; }
 .WB_feed_detail .WB_from::before { content: " "; display: block; float: left; width: 100%; height: 30px; }
 .WB_feed_detail .WB_from a[date],
 .WB_feed_detail .WB_from a[yawf-date],

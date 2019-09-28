@@ -11,7 +11,7 @@
   const i18n = util.i18n;
   const css = util.css;
 
-  i18n.feedsManuallyGroupTitle = {
+  i18n.feedsPauseGroupTitle = {
     cn: '暂停过滤',
     tw: '暫停篩選',
     en: 'Pause Filter',
@@ -20,7 +20,7 @@
   const pause = filter.pause = {};
   pause.pause = rule.Group({
     parent: filter.filter,
-    template: () => i18n.feedsManuallyGroupTitle,
+    template: () => i18n.feedsPauseGroupTitle,
   });
 
   Object.assign(i18n, {

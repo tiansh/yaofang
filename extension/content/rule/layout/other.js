@@ -504,11 +504,18 @@
 
   if (env.config.chatInPageSupported) {
 
-    i18n.chatInPage = {
-      cn: '在微博页面内整合聊天窗口',
-      tw: '在微博頁面內整合聊天窗口',
-      en: 'Use chat in pages of feeds',
-    };
+    Object.assign(i18n, {
+      chatInPage: {
+        cn: '在微博页面内整合聊天窗口',
+        tw: '在微博頁面內整合聊天窗口',
+        en: 'Use chat in pages of feeds',
+      },
+      chatButtonText: {
+        // 这个条目没有翻译，因为这个只是在微博的初始化之前用的
+        // 微博初始化之后会用微博自己的，那个就没有翻译
+        cn: '微博聊天',
+      },
+    });
 
     details.chatFrame = rule.Rule({
       id: 'layout_chat_in_page',
@@ -525,7 +532,7 @@
 #WB_webchat { bottom: -100px !important; display: block !important; }
 #yawf-webchat { position: fixed; bottom: 0px; right: 0px; z-index: 1024; display: block !important; background: #d3d6df; }
 #yawf-webchat .webim_fold { top: -40px; right: 0px; visibility: visible; }
-#yawf-webchat .fold_cont em { background: -moz-element(#WB_webim_num) no-repeat; width: 200px; display: inline-block; height: 40px; }
+#yawf-webchat .fold_cont em { width: 200px; display: inline-block; height: 40px; }
 .yawf-webim-main { position: fixed; bottom: 0; right: 0; z-index: 10000; box-shadow: 0 0 10px black; border-radius: 3px 0 0 0; overflow: hidden; }
 .yawf-webim-main iframe { width: 100%; height: 100%; border: 0 none; }
 .yawf-webim-resizer { position: absolute; width: 12px; height: 12px; left: 0; top: 0; margin: 0; cursor: nwse-resize; opacity: 0.8; }
@@ -538,9 +545,9 @@
         let frameContentResolve;
         /** @type {Promise<Window>} */
         let frameContent = new Promise(resolve => { frameContentResolve = resolve; });
-        const initChatArea = function () {
+        const initChatArea = function (ori) {
           const container = document.createElement('div');
-          container.innerHTML = '<div class="WB_webim" id="yawf-webchat" style=""><div class="webim_fold webim_fold_v2 clearfix"><div class="fold_bg"></div><p class="fold_cont clearfix"><span class="fold_icon W_fl" data-target="minichat"></span><em></em></p></div><div class="yawf-webim-main" style="width: 640px; height: 480px;"><iframe src="https://chat.221edc3f-9e16-4973-a522-4ca21e7c8540.invalid/"></iframe><div class="yawf-webim-resizer"><i></i></div></div></div>';
+          container.innerHTML = '<div class="WB_webim" id="yawf-webchat" style=""><div class="webim_fold webim_fold_v2 clearfix"><div class="fold_bg"></div><p class="fold_cont clearfix"><span class="fold_icon W_fl" data-target="minichat"></span><em class="fold_font W_fl W_f14"></em></p></div><div class="yawf-webim-main" style="width: 640px; height: 480px;"><iframe src="https://chat.221edc3f-9e16-4973-a522-4ca21e7c8540.invalid/"></iframe><div class="yawf-webim-resizer"><i></i></div></div></div>';
           const webim = container.firstElementChild;
           const fold = webim.querySelector('.webim_fold');
           const main = webim.querySelector('.yawf-webim-main');
@@ -571,6 +578,15 @@
             const contentWindow = frame.contentWindow;
             frameContentResolve(contentWindow);
           });
+
+          // 未读消息数量在原版的聊天按钮上的展示，我们把它拷贝过来
+          const foldText = webim.querySelector('.fold_cont em');
+          const oriText = ori.querySelector('.fold_cont em');
+          const updateText = function () {
+            foldText.textContent = oriText.textContent;
+          };
+          (new MutationObserver(updateText)).observe(oriText, { childList: true });
+          foldText.textContent = i18n.chatButtonText;
 
           /*
            * 接下来允许聊天框缩放
@@ -637,7 +653,7 @@
           const webim = document.querySelector('#WB_webchat:not([yawf-web-chat])');
           if (!webim) return;
           webim.setAttribute('yawf-web-chat', '');
-          initChatArea();
+          initChatArea(webim);
         });
 
         /*
@@ -654,15 +670,26 @@
           if (!showChatWindow) return;
           const target = event.target;
           if (!(target instanceof Element)) return;
-          const chatTo = target.closest('a[href*="api.weibo.com/chat"]');
-          if (!chatTo) return;
-          const data = new URL(chatTo.hash.slice(1), location.href);
-          const uid = Number(data.searchParams.get('to_uid'));
+          const uid = (function () {
+            const chatTo = target.closest('a[href*="api.weibo.com/chat"]');
+            if (!chatTo) return null;
+            const data = new URL(chatTo.hash.slice(1), location.href);
+            const uid = Number(data.searchParams.get('to_uid'));
+            if (!uid) return null;
+            return uid;
+          }()) || (function () {
+            const toDialog = target.closest('[action-type="to_dialog"]');
+            if (!toDialog) return null;
+            const data = new URLSearchParams(toDialog.getAttribute('action-data'));
+            const uid = Number(data.get('uid'));
+            if (!uid) return null;
+            return uid;
+          }());
           if (!uid) return;
-          showChatWindow();
-          chatToUid(uid);
           event.stopPropagation();
           event.preventDefault();
+          showChatWindow();
+          chatToUid(uid);
         }, true);
 
       },
