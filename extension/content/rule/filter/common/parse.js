@@ -632,6 +632,10 @@
           'a.a_topic',
         ].join(','));
         domList.push(...topics);
+        const sources = source.dom(feed);
+        sources.forEach(source => {
+          if (/^https:\/\/huati.weibo.com\/k\/[^/?#]+$/.test(source.href)) domList.push(source);
+        });
       } else {
         const links = Array.from(content.querySelectorAll('a'));
         links.forEach(link => {
@@ -651,6 +655,11 @@
   topic.text = (feed, { short = false, long = true } = {}) => {
     const domList = topic.dom(feed, { short, long });
     return domList.map(dom => {
+      if (dom instanceof HTMLAnchorElement) {
+        if (/^https:\/\/huati.weibo.com\/k\/[^/?#]+$/.test(dom.href)) {
+          return decodeURIComponent(dom.href.split('/').pop()).trim();
+        }
+      }
       const text = dom.title || dom.textContent;
       return text.replace(/[#\ue627]|\[超话\]$/g, '').trim();
     });

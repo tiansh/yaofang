@@ -42,7 +42,7 @@
         template: () => i18n.feedWithLink.replace('{}', name),
         init() {
           const rule = this;
-          observer.feed.filter(function feedWithPlaceFilter(feed) {
+          observer.feed.filter(function feedWithSpecialLinkFilter(feed) {
             if (!rule.isEnabled()) return null;
             if (init.page.type() === type) return null;
             if (feed.querySelector(`a[suda-uatrack*="1022-${type}"]`)) return 'hide';
@@ -70,7 +70,7 @@
       type: 'topic',
       name: () => i18n.feedWithLinkTopic,
       recognizer: feed => {
-        const source = feed.querySelector('a[action-type="app_source"][href^="https://weibo.com/p/100808"]');
+        const source = feed.querySelector('.WB_from a[href^="https://huati.weibo.com/k/"]');
         if (source) return true;
         return false;
       },

@@ -164,6 +164,11 @@
     if (!topic && target.matches('.hot_topic a[title][suda-uatrack*="key=hottopic_r2"]')) {
       topic = target.title.replace(/^[\s#]+|[\s#]+$/g, '');
     }
+    if (!topic && target.matches('.WB_from a[href^="https://huati.weibo.com/k/"]')) {
+      if (/^https:\/\/huati.weibo.com\/k\/[^/?#]+$/.test(target.href)) {
+        topic = decodeURIComponent(target.href.split('/').pop()).trim();
+      }
+    }
     if (!topic) return [];
     const text = topic.replace(/^\ue627|\[超话\]$|超话$/g, '');
     const template = i18n.topicContextTitle;
