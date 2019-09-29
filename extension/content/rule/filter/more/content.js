@@ -150,6 +150,43 @@
     },
   });
 
+  i18n.imageTagFeedFilter = {
+    cn: '配图带有标签的微博{{i}}',
+    tw: '配圖帶有標記的微博{{i}}',
+    en: 'Feeds with tags on images {{i}}',
+  };
+  i18n.imageTagFeedFilterDetail = {
+    cn: '微博允许给配图添加标签，标签可以是文本、话题、用户以及商品链接。选择这条规则后将不会看到对应的微博，另外您可以只隐藏[[clean_feed_pic_tag]]。',
+  };
+  content.imageTag = rule.Rule({
+    id: 'filter_image_tag',
+    version: 47,
+    parent: content.content,
+    template: () => i18n.imageTagFeedFilter,
+    ref: {
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.imageTagFeedFilterDetail },
+    },
+    init() {
+      const rule = this;
+      observer.feed.filter(function imageTagFeedFilter(feed) {
+        if (!rule.isEnabled()) return null;
+        const list = feed.querySelector('.WB_media_a[action-data*="photo_tag_pids"]');
+        if (!list) return null;
+        const tagPidsStr = new URLSearchParams(list.getAttribute('action-data')).get('photo_tag_pids');
+        if (!tagPidsStr) return null;
+        const tagPids = tagPidsStr.split(',');
+        const items = feed.querySelectorAll('[action-type="fl_pics"][action-data*="pic_id"]');
+        const hasTag = Array.from(items).some(item => {
+          const id = new URLSearchParams(item.getAttribute('action-data')).get('pic_id');
+          return tagPids.includes(id);
+        });
+        if (!hasTag) return null;
+        return 'hide';
+      });
+      this.addConfigListener(() => { observer.feed.rerun(); });
+    },
+  });
+
   i18n.koiForwardFeedFilter = {
     cn: '转发图标是锦鲤的微博（转发抽奖的微博？）',
     tw: '轉發圖示是錦鯉的微博（轉發抽獎的微博？）',
