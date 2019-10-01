@@ -466,6 +466,7 @@
       if (shouldUpdate) setTimeout(updateFollowList, 10e3);
       const change = lastChange.getConfig();
       if (change && change.timestamp) {
+        if (init.page.type() === 'search') return;
         showChangeList(change).then(confirm => confirm && lastChange.setConfig(null));
       }
     },
