@@ -60,7 +60,9 @@
       "exclude_matches": [
         "*://weibo.com/nguide/*",
         "*://weibo.com/a/bind/*",
-        "https://api.weibo.com/chat*"
+        "*://security.weibo.com/*",
+        "*://account.weibo.com/*",
+        "*://api.weibo.com/chat*"
       ],
       "js": [
         "common/global/env.js",
