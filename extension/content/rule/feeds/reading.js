@@ -98,7 +98,7 @@ body[yawf-feed-only] #WB_webchat,
 body[yawf-feed-only] [i-am-music-player],
 body[yawf-feed-only] .WB_frame>*:not(#plc_main),
 body[yawf-feed-only] #plc_main>*:not(.WB_main_c):not(.WB_frame_c):not(.WB_main_r):not(.WB_frame_b),
-body[yawf-feed-only] .WB_main_c>*:not(#v6_pl_content_homefeed, #v6_pl_content_commentlist),
+body[yawf-feed-only] .WB_main_c>*:not([id^="v6_pl_content_"]),
 body[yawf-feed-only] #plc_bot .WB_footer,
 body[yawf-feed-only] #plc_bot .W_fold,
 body[yawf-feed-only] .WB_footer { display: none !important; }
