@@ -311,7 +311,7 @@
   });
 
   Object.assign(i18n, {
-    allImagesAvailable: { cn: '支持查看超过 9 张的配图', tw: '支援查閱超過 9 張的配圖', en: 'Support feeds with more than 9 images' },
+    allImagesAvailable: { cn: '支持查看超过 9 张的配图{{i}}', tw: '支援查閱超過 9 張的配圖{{i}}', en: 'Support feeds with more than 9 images {{i}}' },
     allImagesAvailableDetail: { cn: '由于目前网页的支持情况，脚本需要为每个有 9 张或更多图片的微博发送请求检查是否有更多的图片。' },
   });
 
@@ -321,7 +321,7 @@
     parent: media.media,
     template: () => i18n.allImagesAvailable,
     ref: {
-      i: { type: 'bubble', icon: 'warn', template: () => i18n.allImagesAvailable },
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.allImagesAvailableDetail },
     },
     init() {
       this.addConfigListener(config => {
@@ -402,6 +402,10 @@
 .yawf-WB_pic_more.yawf-WB_pic_more { display: none; }
 .WB_feed_v3 .WB_media_a_mn.yawf-WB_media_a_more { width: 456px; }
 `);
+      const smallImage = feeds.layout.smallImage.isEnabled();
+      if (smallImage) {
+        css.append('.WB_feed_v3 .WB_media_a.yawf-WB_media_a_more { width: 345px; }');
+      }
     },
   });
 
