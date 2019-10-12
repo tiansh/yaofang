@@ -673,7 +673,7 @@
     const domList = [].concat(...contents.map(content => {
       if (!content) return [];
       if (!isSearch) {
-        return content.querySelectorAll('a[action-type="feed_list_url"]');
+        return Array.from(content.querySelectorAll('a[action-type="feed_list_url"]'));
       } else {
         const links = Array.from(content.querySelectorAll('a'));
         return links.filter(link => (
