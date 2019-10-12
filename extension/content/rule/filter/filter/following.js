@@ -517,12 +517,12 @@
     template: () => i18n.showArticleWithoutFollow,
     initial: true,
     ainit() {
-      const showArticalCss = `
+      const showArticleCss = `
 .WB_editor_iframe, .WB_editor_iframe_new { height: auto !important; }
 .artical_add_box [node-type="maskContent"] { display: none; }
 `;
-      css.append(showArticalCss);
-      observer.dom.add(function articalFrameStyle() {
+      css.append(showArticleCss);
+      observer.dom.add(function articleFrameStyle() {
         /** @type{NodeListOf<HTMLIFrameElement>} */
         const frames = document.querySelectorAll('iframe[src*="ttarticle/p/show"]');
         if (!frames.length) return;
@@ -531,7 +531,7 @@
           if (!document) setTimeout(injectStyle, 10, frame);
           const target = document.head || document.body || document.documentElement;
           const style = document.createElement('style');
-          style.textContent = showArticalCss;
+          style.textContent = showArticleCss;
           target.appendChild(style);
         });
       });
