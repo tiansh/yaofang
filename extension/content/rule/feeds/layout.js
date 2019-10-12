@@ -50,11 +50,12 @@
 .WB_feed .WB_feed_handle .WB_row_line li { padding: 0 11px 0 10px; height: auto; margin-right: -1px; }
 .WB_feed .WB_row_line .line { display: inline; border-width: 0; position: relative; }
 .WB_feed .WB_row_line .line::before { content: " "; display: block; width: 0; height: 100%; position: absolute; right: -10px; top: 0; border-right: 1px solid; border-color: inherit; }
+.WB_feed .WB_row_line .line span .W_ficon { vertical-align: middle; }
 .WB_feed_handle .WB_row_line .arrow { display: none; }
 .WB_feed_repeat { margin-top: -10px; }
 .WB_feed_comment .WB_feed_detail { position: relative; padding-bottom: 4px; }
 .WB_feed_comment .WB_feed_detail::after { display: none; }
-.WB_feed_comment .WB_expand { margin-bottom: 0; }
+.WB_feed_v3 .WB_expand .WB_empty .WB_innerwrap, .WB_feed_comment .WB_expand { margin-bottom: 0; }
 `,
   });
 
