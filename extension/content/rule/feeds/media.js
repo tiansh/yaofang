@@ -9,6 +9,7 @@
   const download = yawf.download;
   const contextmenu = yawf.contextmenu;
   const imageViewer = yawf.imageViewer;
+  const feedParser = yawf.feed;
 
   const feeds = yawf.rules.feeds;
 
@@ -309,6 +310,100 @@
     },
   });
 
+  Object.assign(i18n, {
+    allImagesAvailable: { cn: '支持查看超过 9 张的配图', tw: '支援查閱超過 9 張的配圖', en: 'Support feeds with more than 9 images' },
+    allImagesAvailableDetail: { cn: '由于目前网页的支持情况，脚本需要为每个有 9 张或更多图片的微博发送请求检查是否有更多的图片。' },
+  });
+
+  media.allImagesAvailable = rule.Rule({
+    id: 'all_image_available',
+    version: 48,
+    parent: media.media,
+    template: () => i18n.allImagesAvailable,
+    ref: {
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.allImagesAvailable },
+    },
+    init() {
+      this.addConfigListener(config => {
+        if (!config) media.imagePreviewAll.setConfig(false);
+      });
+    },
+    ainit() {
+      observer.feed.onAfter(async function (/** @type {HTMLElement} */feed) {
+        const ul = feed.querySelector('ul[node-type="fl_pic_list"]');
+        if (!ul) return;
+        const image9 = ul.querySelector('.li_9');
+        if (!image9) return; // 有九张图就说明可能有更多
+        const mid = (feedParser.isForward(feed) ? feedParser.omid : feedParser.mid)(feed);
+        const [author] = feedParser.author.id(feed);
+        /** @type {string[]} */
+        const allImages = await request.getAllImages(mid);
+        if (allImages.length < 10) return;
+        const pids = allImages.map(img => img.replace(/^.*\/(.*)\..*$/, '$1'));
+        const imgType = type => img => img.replace(/^(.*\/).*(\/.*)$/, (_, d, n) => d + type + n);
+        allImages.forEach((image, index) => {
+          if (index < 9) return;
+          const pid = pids[index];
+          const li = document.createElement('li');
+          li.className = `WB_pic li_${index + 1} S_bg1 S_line2 bigcursor li_focus yawf-li_more`;
+          li.setAttribute('action-data', `isPrivate=0&relation=0&pic_id=${pid}`)
+          li.setAttribute('action-type', 'fl_pics');
+          // 这个对我没用，所以略
+          li.setAttribute('suda-uatrack', `key=tblog_newimage_feed&value=image_feed_unfold:${mid}:${pid}:${author}:0`);
+          const img = li.appendChild(document.createElement('img'));
+          // 因为不知道总宽比的时候不太方便处理 orj360，所以用 thumb300 代替一下
+          img.src = imgType('thumb300')(image);
+          img.style = 'height:110px;width:110px;top:0;left:0;';
+          ul.appendChild(li);
+        });
+        // 同时保留 WB_media_a_m9
+        ul.classList.add('WB_media_a_m' + allImages.length, 'yawf-WB_media_a_more');
+        const moreNotice = image9.appendChild(document.createElement('span'));
+        moreNotice.classList.add('yawf-WB_pic_more');
+        moreNotice.textContent = (allImages.length - 9) + '+';
+        image9.appendChild(moreNotice);
+        // 不能用 URLSearchParams 来处理 actionData，因为它需要项目间的逗号不被转义才能正常工作
+        const actionData = ul.getAttribute('action-data').split('&');
+        const setActionData = (key, value) => {
+          const newValue = key + '=' + value.map(encodeURIComponent).join(',');
+          const item = actionData.findIndex(item => item.startsWith(key + '='));
+          if (item !== -1) actionData[item] = newValue;
+          else actionData.push(newValue);
+        };
+        setActionData('clear_picSrc', allImages.map(imgType('mw690')));
+        setActionData('thumb_picSrc', allImages.map(imgType('orj360')));
+        setActionData('pic_ids', pids);
+        setActionData('object_ids', pids.map(pid => '1042018:' + pid));
+        ul.setAttribute('action-data', actionData.join('&'));
+      });
+      css.append(`
+.li_9 ~ .WB_pic { display: none; }
+.yawf-WB_pic_more { position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: rgba(0, 0, 0, 0.4); font-size: 24px; color: white; text-align: center; line-height: 110px; }
+`);
+    }
+  });
+
+  Object.assign(i18n, {
+    imagePreviewAll: { cn: '超过 9 张配图的微博显示全部缩略图', tw: '超過 9 張配圖的微博顯示全部縮略圖', en: 'Show all thumbnails for feeds with more than 9 images' }
+  });
+  media.imagePreviewAll = rule.Rule({
+    id: 'image_preview_all',
+    version: 48,
+    parent: media.media,
+    template: () => i18n.imagePreviewAll,
+    init() {
+      this.addConfigListener(config => {
+        if (config) media.allImagesAvailable.setConfig(true);
+      });
+    },
+    ainit() {
+      css.append(`
+.li_9.li_9 ~ .WB_pic { display: block; }
+.yawf-WB_pic_more.yawf-WB_pic_more { display: none; }
+.WB_feed_v3 .WB_media_a_mn.yawf-WB_media_a_more { width: 456px; }
+`);
+    },
+  });
 
   Object.assign(i18n, {
     pauseAnimatedImage: { cn: '动画图像(GIF)在缩略图显示时保持静止{{i}}', hk: '動畫圖像(GIF)在所圖顯示時保持靜止{{i}}', tw: '動畫圖像(GIF)在所圖顯示時保持靜止{{i}}', en: 'Pause animated thumbnail (GIF) {{i}}' },
