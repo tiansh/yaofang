@@ -60,8 +60,12 @@
       "exclude_matches": [
         "*://weibo.com/nguide/*",
         "*://weibo.com/a/bind/*",
-        "*://security.weibo.com/*",
         "*://account.weibo.com/*",
+        "*://kefu.weibo.com/*",
+        "*://photo.weibo.com/*",
+        "*://security.weibo.com/*",
+        "*://verified.weibo.com/*",
+        "*://vip.weibo.com/*",
         "*://api.weibo.com/chat*"
       ],
       "js": [
