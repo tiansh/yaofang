@@ -40,12 +40,14 @@
 #app .message .message-wrapper { top: 40px; }
 #app .message .tips.unfollowtips + .message-wrapper { top: 74px; }
 #app .message .message-wrapper .chat-content { width: calc(100vw - calc(1px + var(--yawf-left-width))); }
+#app .atwho-wrap .atwho-panel { transform: translateY(calc(-100% - 20px)); z-index: 1; }
 #app .text { height: var(--yawf-text-height); }
 #app .atwho-wrap .editor { height: 70px; }
 #app .text .sendbox_prompt { display: none; }
 #app .login { display: none; }
-#app .modal1 { max-height: calc(100vh - 10px); }
+#app .modal1, #app .modal2 { max-height: calc(100vh - 10px); }
 #app .modal1.members .modal1-left .userlist { max-height: calc(100vh - 160px); }
+#app .modal2 .scroll-container { max-height: calc(100% - 100px); }
 `;
   const style = document.createElement('style');
   style.textContent = css;
