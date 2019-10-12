@@ -44,6 +44,11 @@
       tw: '轉發自 @{1}',
       en: 'forwarded from @{1}',
     },
+    accountOriginalDiscoverReason: {
+      cn: '作者 @{1}',
+      tw: '作者 @{1}',
+      en: 'author @{1}',
+    },
     accountOriginalFollower: {
       cn: '隐藏转发自|粉丝数量超过{{count}}万的博主的微博{{i}}||例外帐号{{account}}',
       tw: '隱藏轉發自|粉絲數量超過{{count}}萬的博主的微博{{i}}||例外帐号{{account}}',
@@ -70,15 +75,25 @@
     init() {
       const rule = this;
       observer.feed.filter(function originalFilterFeedFilter(/** @type {Element} */feed) {
-        const original = new Set(feedParser.original.id(feed));
-        if (rules.original.id.discover.isEnabled() && init.page.type() === 'discover') {
-          feedParser.author.id(feed).forEach(id => original.add(id));
-        }
         const accounts = rule.ref.items.getConfig();
-        const contain = accounts.find(account => original.has(account.id));
-        if (!contain) return null;
-        const reason = i18n.accountOriginalReason.replace('{1}', () => feedParser.original.name(feed));
-        return { result: rule.feedAction, reason };
+
+        const original = new Set(feedParser.original.id(feed));
+        if (accounts.find(account => original.has(account.id))) {
+          const name = feedParser.original.name(feed);
+          const reason = i18n.accountOriginalReason.replace('{1}', () => name);
+          return { result: rule.feedAction, reason };
+        }
+
+        if (rules.original.id.discover.isEnabled() && init.page.type() === 'discover') {
+          const [author] = feedParser.author.id(feed);
+          if (accounts.find(account => author === account.id)) {
+            const name = feedParser.author.name(feed);
+            const reason = i18n.accountOriginalDiscoverReason.replace('{1}', () => name);
+            return { result: rule.feedAction, reason };
+          }
+        }
+
+        return null;
       }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }

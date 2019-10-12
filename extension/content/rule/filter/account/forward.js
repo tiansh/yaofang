@@ -43,13 +43,14 @@
     init() {
       const rule = this;
       observer.feed.filter(function authorFilterFeedFilter(/** @type {Element} */feed) {
-        if (!feedParser.isForward(feed)) return null;
+        const isForward = feedParser.isForward(feed);
+        if (!isForward) return null;
         const [author] = feedParser.author.id(feed);
         const accounts = rule.ref.items.getConfig();
         const contain = accounts.find(account => account.id === author);
+        if (!contain) return null;
         const reason = i18n.accountAuthorForwardReason.replace('{1}', () => feedParser.author.name(feed));
-        if (contain) return { result: rule.feedAction, reason };
-        return null;
+        return { result: rule.feedAction, reason };
       }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
     }
