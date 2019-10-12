@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
   /** @type {HTMLDivElement} */
   const preview = document.getElementById('preview');
 
+  const placeholder = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
+
   const images = new URL(location.href).searchParams.getAll('i').map(image => {
     if (!/https?:/.test(image)) throw Error('Invalid url');
     return new URL(image);
@@ -21,15 +23,18 @@ document.addEventListener('DOMContentLoaded', function () {
       document.body.classList.add('single');
       return;
     }
+    const list = preview.querySelector('ul');
     images.forEach((image, index) => {
-      const previewItem = document.createElement('a');
+      const previewItem = document.createElement('li');
       previewItem.className = 'preview-item';
+      const previewLink = document.createElement('a');
       const previewImage = document.createElement('img');
       previewImage.src = String(image).replace(/\/large\//, '/square/');
       previewItem.dataset.index = index;
-      previewItem.href = '#' + (index + 1);
-      previewItem.append(previewImage);
-      preview.append(previewItem);
+      previewLink.href = '#' + (index + 1);
+      previewItem.append(previewLink);
+      previewLink.append(previewImage);
+      list.append(previewItem);
     });
   };
 
@@ -39,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const modeStringX = ['x-auto', 'x-fit', 'x-center'];
   const modeStringY = ['y-auto', 'y-fit', 'y-center'];
-  const cursor = ['cur-zoom-out', 'cur-zoom-in', 'cur-zoom-in', 'cur-default'];
+  const cursor = ['cur-zoom-out', 'cur-zoom-in', 'cur-zoom-in', null, 'cur-default'];
   // 0: image larger than container, use scroll bar to view image
   // 1: image larger than container, shrink to fit container
   // 2: image smaller than container, put at center
@@ -109,10 +114,16 @@ document.addEventListener('DOMContentLoaded', function () {
     updateViewMode(true);
   };
 
+  const setLoading = function () {
+    const loading = viewer.src === placeholder;
+    if (loading) container.classList.add('loading');
+    else container.classList.remove('loading');
+    return loading;
+  };
+
   const showImage = function (index) {
     const url = images[index];
     if (viewer.src === url) return;
-    const placeholder = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
     viewer.src = placeholder;
     window.requestAnimationFrame(() => { viewer.src = url; });
     container.scrollTop = 0;
@@ -154,6 +165,12 @@ document.addEventListener('DOMContentLoaded', function () {
     else if (index >= images.length) setCurrentImage(0);
     else location.hash = '#' + (index + 1);
   };
+  const focusImage = function (index) {
+    if (images.length === 1) return;
+    if (index < 1 || index > images.length) return;
+    const items = Array.from(document.querySelectorAll('.preview-item'));
+    items[index - 1].querySelector('a').focus();
+  };
 
   const prevImage = function () { setCurrentImage(getCurrentImage() - 1); };
   const nextImage = function () { setCurrentImage(getCurrentImage() + 1); };
@@ -165,24 +182,35 @@ document.addEventListener('DOMContentLoaded', function () {
     if (pos === 'mid') toggleViewMode();
   };
 
+  const keyBuffer = [];
+  const numKeyClear = function () {
+    keyBuffer.splice(0, keyBuffer.length);
+  };
+  const numKey = function (num) {
+    keyBuffer.push(num);
+    while (keyBuffer.join('') > images.length) keyBuffer.shift();
+    const index = Number(keyBuffer.join(''));
+    if (index * 10 > images.length) {
+      setCurrentImage(index - 1);
+      numKeyClear();
+    } else {
+      focusImage(index);
+    }
+  };
+
   const onKeyDown = function (key) {
-    switch (true) {
-    case key === 33:
-      prevImage();
-      break;
-    case key === 34:
-      nextImage();
-      break;
-    case key > 48 && key <= 48 + images.length:
-      setCurrentImage(key - 49);
-      break;
-    default:
-      return true;
+    if (key >= 48 && key < 58) {
+      numKey(key - 48);
+    } else {
+      numKeyClear();
+      if (key === 33) prevImage();
+      else if (key === 34) nextImage();
+      else return true;
     }
     return false;
   };
 
-  viewer.addEventListener('load', () => { updateViewMode(false); });
+  viewer.addEventListener('load', () => { if (!setLoading()) updateViewMode(false); });
   container.addEventListener('mousemove', event => { updateMouseStyle(event.clientX); });
   container.addEventListener('click', event => { onContainerClick(event.clientX); });
   document.addEventListener('keydown', event => { onKeyDown(event.keyCode) || event.preventDefault(); });
@@ -207,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     const contentHeight = window.innerHeight - previewHeight - 20;
     const contentWidth = window.innerWidth - 20;
-    document.body.style.setProperty('--preview-height', previewHeight + 'px');
+    document.body.style.setProperty('--preview-size', previewHeight + 'px');
     document.body.style.setProperty('--content-height', contentHeight + 'px');
     document.body.style.setProperty('--content-width', contentWidth + 'px');
   };

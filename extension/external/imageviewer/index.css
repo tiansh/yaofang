@@ -8,7 +8,7 @@ body {
   -moz-user-select: none;
   user-select: none;
 
-  --preview-height: 100px;
+  --preview-size: 100px;
 
   background-image: url("chrome://global/skin/media/imagedoc-darknoise.png");
 }
@@ -21,7 +21,7 @@ body {
 #container {
   position: absolute;
   top: 0;
-  bottom: var(--preview-height);
+  bottom: var(--preview-size);
   left: 0;
   right: 0;
   overflow: auto;
@@ -40,6 +40,9 @@ body {
 #container.right {
   cursor: url("./right.svg") 24 24, pointer;
 }
+#container.loading {
+  cursor: wait;
+}
 
 #viewarea {
   display: table-cell;
@@ -47,7 +50,7 @@ body {
   vertical-align: middle;
   text-align: center;
   width: 100vw;
-  height: calc(100vh - var(--preview-height));
+  height: calc(100vh - var(--preview-size));
 }
 
 #container.x-auto #viewer {
@@ -64,13 +67,13 @@ body {
 }
 
 #container.y-fit #viewer {
-  max-height: calc(100vh - calc(40px + var(--preview-height)));
+  max-height: calc(100vh - calc(40px + var(--preview-size)));
 }
 
 #resize_bar {
   position: absolute;
   left: 0;
-  bottom: var(--preview-height);
+  bottom: var(--preview-size);
   width: 100vw;
   height: 8px;
   transform: translate(0, 50%);
@@ -94,28 +97,91 @@ body {
   left: 0;
   bottom: 0;
   width: 100vw;
-  height: var(--preview-height);
+  height: var(--preview-size);
   z-index: 0;
   overflow: hidden;
 }
 
-#preview a {
-  float: left;
-  margin: 10px;
-  height: calc(var(--preview-height) - 20px);
-  width: calc(var(--preview-height) - 20px);
+.preview-wrap {
+  height: auto;
+  width: 100%;
+  margin: 0;
+  position: relative;
   overflow: hidden;
+  padding: 0 10px;
+}
+
+.preview-height, .preview-width {
+  overflow: scroll;
+  visibility: hidden;
+}
+
+.preview-height::before, .preview-width::before {
+  content: " ";
+  display: block;
+  width: var(--preview-size);
+  height: var(--preview-size);
+}
+
+.preview-square {
+  width: 100%;
+  height: 0;
+  padding: 0 0 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.preview-list {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  transform: rotate(90deg) scaleY(-1);
+  transform-origin: left top;
+  position: absolute;
+  overflow: hidden auto;
+}
+
+.preview-list-inner {
+  display: block;
+  transform: rotate(-90deg) scaleX(-1);
+  transform-origin: left top;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px 30px 10px 10px;
+}
+
+.preview-list ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.preview-list li:not(:last-child) {
+  margin-right: 10px;
+}
+
+.preview-list a {
+  display: flow-root;
+}
+
+.preview-list a:focus {
+  outline: 4px solid #f337;
+}
+
+.preview-list img {
+  width: calc(var(--preview-size) - 20px);
+  height: calc(var(--preview-size) - 20px);
+  float: left;
+  object-fit: cover;
 }
 
 #preview .current {
-  outline: 4px solid #ff3333aa;
+  outline: 4px solid #f33a;
   outline-offset: 1px;
-}
-
-#preview img {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
 }
 
 #viewer {
