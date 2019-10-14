@@ -64,6 +64,8 @@
 .WB_feed_expand .WB_text .W_btn_b, .WB_feed_expand .WB_text .W_btn_b *, .WB_text .W_btn_c *, .WB_empty .W_btn_c * { line-height: ${h2}px !important; font-size: ${fs3}px !important; }
 .W_icon_feedpin, .W_icon_feedhot { height: 16px !important; line-height: 16px !important; }
 .WB_info { margin-bottom: 2px !important; padding-top: 0 !important; line-height: ${fs <= 28 ? 28 : 50}px !important; }
+.yawf-WB_text_size_main, .yawf-WB_text_size { font-size: ${fs}px; }
+.yawf-WB_text_size_expand, .WB_feed_expand .yawf-WB_text_size { font-size: ${fs2}px; }
 `;
       css.append(style);
     },
@@ -500,6 +502,7 @@
           const wrap = dom.querySelector('.WB_media_wrap');
           if (!wrap) return [null, '', [], new Set()];
           const container = wrap.cloneNode(true);
+          container.classList.add('S_line1');
           const html = container.innerHTML;
           const items = Array.from(container.querySelectorAll('li'));
           const actionDatas = new Set(items.map(getId));
@@ -660,6 +663,7 @@
 .yawf-img-insert { outline: 3px solid #3c3; }
 .yawf-img-delete { outline: 3px dashed #c33; }
 .yawf-img-reorder { outline: 3px dotted #36f; }
+.yawf-feed-edit-view-content .WB_media_wrap ~ .WB_media_wrap { border-top-width: 1px; border-top-style: solid; padding-top: 10px; }
 `);
     },
   });
