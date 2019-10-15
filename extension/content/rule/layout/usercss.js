@@ -77,7 +77,10 @@
       ainit() {
         const style = document.createElement('style');
         style.textContent = this.ref.css.getConfig();
-        document.body.appendChild(style);
+        setTimeout(function addStyle() {
+          if (!document.body) setTimeout(addStyle, 0);
+          else document.body.appendChild(style);
+        }, 0);
         // 我们添加一个可以禁用这个功能的方式以防有用户把设置对话框给隐藏了或者弄乱了改不回去
         externalMenu.add({
           title: i18n.disableUserCss,
