@@ -22,9 +22,9 @@
 
   Object.assign(i18n, {
     aboutText: {
-      cn: '{{logo}}药方 (Yet Another Weibo Filter) {{version}}{{br}}作者{{author}}，您可以关注 {{scriptWeibo}} 了解扩展的最新变化。{{br}}如果您在使用过程中遇到任何扩展的错误，或对扩展有任何建议，欢迎到 {{issuePage}} 反馈，或私信 {{scriptWeibo}}。{{br}}扩展使用 MPL-2.0 协议开放源代码，您可以在 {{github}} 上查阅。欢迎贡献代码。',
-      tw: '{{logo}}藥方 (Yet Another Weibo Filter) {{version}}{{br}}作者{{author}}，您可以關注 {{scriptWeibo}} 了解擴充套件的最新變化。{{br}}如果您在使用過程中遇到任何擴充套件的錯誤，或對其有任何建議，歡迎到 {{issuePage}} 回饋，或聯繫 {{scriptWeibo}}。{{br}}擴充套件以 MPL-2.0 協定開放原始碼，您可以在 {{github}} 上查阅。欢迎贡献代码。',
-      en: '{{logo}}Yet Another Weibo Filter (YAWF) {{version}}{{br}}Created by {{author}}. You may follow {{scriptWeibo}} for last updates info.{{br}}You may report errors and give suggestions on {{issuePage}}, or send private message to {{scriptWeibo}}.{{br}}This extension is released under MPL-2.0 license. You may get its source from {{github}}. Contributions are welcomed.',
+      cn: '{{logo}}药方 (Yet Another Weibo Filter) {{version}}{{br}}作者{{author}}，您可以关注 {{scriptWeibo}} 了解扩展的最新变化。{{br}}如果您在使用过程中遇到任何扩展的错误，或对扩展有任何建议，欢迎到 {{issuePage}} 反馈，或私信 {{scriptWeibo}}。{{br}}本扩展为第三方工具。扩展作者也从未要求付费或寻求捐赠。{{br}}扩展使用 MPL-2.0 协议开放源代码，您可以在 {{github}} 上查阅。欢迎贡献代码。{{br}}',
+      tw: '{{logo}}藥方 (Yet Another Weibo Filter) {{version}}{{br}}作者{{author}}，您可以關注 {{scriptWeibo}} 了解擴充套件的最新變化。{{br}}如果您在使用過程中遇到任何擴充套件的錯誤，或對其有任何建議，歡迎到 {{issuePage}} 回饋，或聯繫 {{scriptWeibo}}。{{br}}本擴充套件為第三方工具。作者也從未要求付費或尋求捐贈。{{br}}擴充套件以 MPL-2.0 協定開放原始碼，您可以在 {{github}} 上查阅。欢迎贡献代码。',
+      en: '{{logo}}Yet Another Weibo Filter (YAWF) {{version}}{{br}}Created by {{author}}. You may follow {{scriptWeibo}} for last updates info.{{br}}You may report errors and give suggestions on {{issuePage}}, or send private message to {{scriptWeibo}}.{{br}}This extension is a third-party tool. Extension author had never asked for payment or donation.{{br}}This extension is released under MPL-2.0 license. You may get its source from {{github}}. Contributions are welcomed.',
     },
     aboutIssueTracker: {
       cn: '问题跟踪器',
