@@ -374,6 +374,8 @@
         const paidOnly = +searchParams.get('vplus') || searchParams.get('is_vclub');
         if (paidOnly) return null;
         if (feed.querySelector('.icon_vplus')) return 'hide';
+        if (feed.querySelector('.WB_media_a:not([action-data*="isPrivate=0"])')) return 'hide';
+        if (feed.querySelector('[action-type="fl_pics"]:not([action-data*="isPrivate=0"])')) return 'hide';
         return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
