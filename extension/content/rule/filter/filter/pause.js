@@ -137,6 +137,7 @@
       observer.feed.onBefore(function (feed) {
         if (!rule.isEnabled()) return;
         const list = feed.closest('.WB_feed');
+        if (!list) return; // 搜索页面
         const container = list.parentNode;
         const sibling = container.previousSibling;
         if (sibling && sibling.nodeType === Node.ELEMENT_NODE) {
