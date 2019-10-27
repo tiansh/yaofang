@@ -395,7 +395,7 @@
           const pid = pids[index];
           const li = document.createElement('li');
           li.className = `WB_pic li_${index + 1} S_bg1 S_line2 bigcursor li_focus yawf-li_more`;
-          li.setAttribute('action-data', `isPrivate=0&relation=0&pic_id=${pid}`)
+          li.setAttribute('action-data', `isPrivate=0&relation=0&pic_id=${pid}`);
           li.setAttribute('action-type', 'fl_pics');
           li.setAttribute('suda-uatrack', `key=tblog_newimage_feed&value=image_feed_unfold:${mid}:${pid}:${author}:0`);
           const img = li.appendChild(document.createElement('img'));
