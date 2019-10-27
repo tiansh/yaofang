@@ -58,7 +58,7 @@
     layer.querySelector('.text').textContent = text;
   };
 
-  const renderSearch = (layer, input) => {
+  const renderSearch = (layer, input, filter) => {
     const searchTexts = (input.match(/\S+/g) || []).filter(x => !x.includes(':')).map(t => t.toUpperCase());
     const [_verMatch, verOp, verNum] = input.match(/\bver(?:sion)?:([><]?=?)(\d+)\b/) || [];
     const versionTest = {
@@ -75,9 +75,10 @@
       return;
     }
     const items = rule.query({
-      filter(item) {
+      filter: function (item) {
         if (!item.version) return false;
         if (!versionTest(item.version)) return false;
+        if (typeof filter === 'function' && !filter(item)) return false;
         const text = item.text().toUpperCase();
         if (searchTexts.some(t => !text.includes(t))) return false;
         return true;
@@ -94,7 +95,7 @@
    * @param {Element} inner
    * @param {Array<Tab>} tabs
    */
-  const renderTabs = function (inner, tabs, { initial = null } = {}) {
+  const renderTabs = function (inner, tabs, { initial = null, filter = null } = {}) {
     inner.classList.add('yawf-config-inner');
     const left = inner.appendChild(configDom.left());
     const right = inner.appendChild(configDom.right());
@@ -122,7 +123,7 @@
       tabInit.set(tabLeft, () => {
         hideAllLayer();
         layer.innerHTML = '';
-        render(layer, rule.query({ base: [tab] }));
+        render(layer, rule.query({ base: [tab], filter }));
         layer.style.display = 'block';
       });
       return tabLeft;
@@ -132,7 +133,7 @@
     tabInit.set(search, () => {
       hideAllLayer();
       searchLayer.innerHTML = '';
-      renderSearch(searchLayer, searchInput.value);
+      renderSearch(searchLayer, searchInput.value, filter);
       searchLayer.style.display = 'block';
     });
     const setCurrent = tabLeft => {
@@ -185,13 +186,13 @@
   };
   rule.render = render;
 
-  rule.dialog = function (tab) {
+  rule.dialog = function (tab = null, filter = null) {
     try {
       ui.dialog({
         id: 'yawf-config',
         title: i18n.configDialogTitle,
         render: inner => {
-          renderTabs(inner, tabs, { initial: tab });
+          renderTabs(inner, tabs, { initial: tab, filter });
         },
       }).show();
     } catch (e) { util.debug('Error while showing rule dialog %o', e); }

@@ -1493,11 +1493,10 @@
   /**
    * 从所有设置项中根据条件筛选出一些设置项
    * 之后可用于展示对话框等操作
-   * @param {{ base: Tab[], filter: (rule: Rule) => boolean, includeDisabled: boolean }} base 描述搜索范围
+   * @param {{ base: Tab[], filter: (rule: Rule) => boolean }} base 描述搜索范围
    */
   rule.query = function ({
     base = tabs,
-    includeDisabled = false,
     filter = null,
   } = {}) {
     const result = new Set();
@@ -1507,7 +1506,7 @@
           query(item.children);
         }
         if (!(item instanceof Rule)) return;
-        if (!includeDisabled && item.disabled) return;
+        if (item.disabled) return;
         if (filter && !filter(item)) return;
         result.add(item);
       });
