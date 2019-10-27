@@ -116,8 +116,13 @@ body[yawf-feed-only] .WB_frame { padding-left: 0; }
 `);
 
       const updateEnable = function updateEnable() {
-        if (!document || !document.body) setTimeout(updateEnable, 1000);
+        if (!document || !document.body) {
+          setTimeout(updateEnable, 1000);
+          return;
+        }
         const enabled = rule.ref._enabled.getConfig();
+        const configured = document.body.hasAttribute('yawf-feed-only');
+        if (enabled === configured) return;
         if (enabled) {
           document.body.setAttribute('yawf-feed-only', 'yawf-feed-only');
         } else {
