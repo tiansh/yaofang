@@ -42,7 +42,9 @@
     acss: `
 .WB_feed.WB_feed { border-radius: 3px; box-shadow: 0 0 2px rgba(0, 0, 0, 0.2); }
 .WB_feed.WB_feed .WB_cardwrap { border-radius: 0; box-shadow: none; border-top: 1px solid rgba(0, 0, 0, 0.3); margin: -1px 0 1px; }
-.WB_feed .WB_feed_handle { height: 20px; margin-top: 20px; display: block; position: relative; }
+.WB_feed .WB_detail { margin-bottom: 40px; }
+.WB_feed .WB_feed_handle { height: 20px; margin-top: -20px; display: block; position: relative; }
+.WB_feed .WB_feed_expand { margin-top: 5px; }
 .WB_feed.WB_feed_v3 .WB_expand { margin-bottom: 0; }
 .WB_feed .WB_feed_handle .WB_handle { float: right; margin-right: 10px; height: 20px; padding: 0; position: relative; top: -20px; }
 .WB_feed .WB_feed_handle .WB_row_line { border: none; overflow: hidden; line-height: 26px; }
@@ -82,7 +84,7 @@
       const foldSpace = layout.foldSpace.getConfig();
       if (foldSpace) {
         css.append(`
-.WB_from.WB_from.yawf-bottom-WB_from { position: absolute; bottom: 0; margin: 0; transform: translate(0, 100%); line-height: 26px; }
+.WB_from.WB_from.yawf-bottom-WB_from { position: absolute; bottom: 40px; margin: 0; transform: translate(0, 100%); line-height: 28px; }
 `);
       } else {
         css.append('.WB_from.WB_from.yawf-bottom-WB_from { margin: 10px 0 7px; }');
