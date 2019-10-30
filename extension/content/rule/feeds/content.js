@@ -471,12 +471,14 @@
         const fragement = document.createDocumentFragment();
         diff.forEach(function ({ type, str }) {
           str.split(/(\n)/g).forEach(part => {
-            const span = document.createElement('span');
+            /** @type {'del'|'ins'|'span'} */
+            const tagName = { delete: 'del', insert: 'ins', same: 'span' }[type];
+            const span = document.createElement(tagName);
             span.classList.add('yawf-diff-' + type);
             span.textContent = part;
             fragement.appendChild(span);
             if (part === '\n') {
-              const breakToken = document.createElement('span');
+              const breakToken = document.createElement(tagName);
               breakToken.classList.add('yawf-diff-' + type);
               const breakChar = document.createElement('span');
               breakChar.classList.add('S_txt2', 'yawf-diff-line-break');
