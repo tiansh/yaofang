@@ -83,6 +83,7 @@
         "content/util/ui.js",
         "content/util/dom.js",
         "content/util/time.js",
+        "content/util/mid.js",
 
         "common/network/network.js",
         "common/network/fetch.js",

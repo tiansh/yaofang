@@ -380,14 +380,15 @@
         if (!ul || ul.querySelector('.li_10')) return;
         const mid = (feedParser.isForward(feed) ? feedParser.omid : feedParser.mid)(feed);
         const [author] = feedParser.author.id(feed);
+        const original = feedParser.isForward(feed) ? feedParser.original.id(feed) : author;
         ul.classList.add('yawf-WB_media_a_m9p_loading');
         /** @type {string[]} */
-        const allImages = await request.getAllImages(mid);
+        const allImages = await request.getAllImages(original, mid);
+        ul.classList.remove('yawf-WB_media_a_m9p_loading');
+        if (!allImages || !allImages.length) return;
         const imageCount = allImages.length;
-        if (imageCount < 10) return;
         const pids = allImages.map(img => img.replace(/^.*\/(.*)\..*$/, '$1'));
         const imgType = type => img => img.replace(/^(.*\/).*(\/.*)$/, (_, d, n) => d + type + n);
-        ul.classList.remove('yawf-WB_media_a_m9p_loading');
         // 最后一个图片的格式和别人不一样，如果我们要显示的不是9个，就会很奇怪，所以我们删掉再自己加一遍
         ul.removeChild(ul.querySelector('.li_9'));
         allImages.forEach((image, index) => {
@@ -410,6 +411,8 @@
             li.appendChild(tip);
           }
         });
+
+        if (imageCount < 10) return;
         // 同时保留 WB_media_a_m9
         ul.classList.add('yawf-WB_media_a_m' + imageCount, 'yawf-WB_media_a_m9p');
         // 不能用 URLSearchParams 来处理 actionData，因为它需要项目间的逗号不被转义才能正常工作
