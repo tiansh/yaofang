@@ -2,6 +2,7 @@
 
   const yawf = window.yawf;
   const env = yawf.env;
+  const init = yawf.init;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
@@ -146,6 +147,10 @@
           viewOriginalLink.href = images[current - 1];
         };
         viewOriginalLink.addEventListener('click', event => {
+          if (viewOriginalLink.classList.contains('S_ficon_dis')) {
+            event.preventDefault();
+            return;
+          }
           if (viewType === 'page') {
             showOriginalPage({ images, current });
             event.preventDefault();
@@ -184,11 +189,20 @@
         downloadLinkContainer.querySelector('i').after(i18n.downloadImageText);
         const downloadLink = downloadLinkContainer.querySelector('a');
         downloadLink.addEventListener('click', event => {
-          const { images } = getImagesInfo(viewLargeLink);
-          downloadImages(images, downloadLink);
+          if (!downloadLink.classList.contains('S_ficon_dis')) {
+            const { images } = getImagesInfo(viewLargeLink);
+            downloadImages(images, downloadLink);
+          }
           event.preventDefault();
         });
         return downloadLinkContainer.firstChild;
+      };
+
+      const disableButton = button => {
+        const link = button.querySelector('a');
+        link.className = 'S_ficon_dis';
+        const icon = link.querySelector('i');
+        icon.classList.add('S_ficon_dis');
       };
 
       // 检查展开的图片，添加查看原图和下载的链接
@@ -201,12 +215,17 @@
         ].join(',')));
         viewLargeLinks.forEach(viewLargeLink => {
           viewLargeLink.setAttribute('yawf-view-ori', '');
+          const disabled = viewLargeLink.classList.contains('S_ficon_dis');
           const li = viewLargeLink.closest('li');
           if (downloadEnabled) {
-            li.after(downloadButton(viewLargeLink));
+            const button = downloadButton(viewLargeLink);
+            if (disabled) disableButton(button);
+            li.after(button);
           }
           if (viewEnabled) {
-            li.after(viewOriginalButton(viewLargeLink));
+            const button = viewOriginalButton(viewLargeLink);
+            if (disabled) disableButton(button);
+            li.after(button);
           }
         });
       };
@@ -373,11 +392,17 @@
       const lastImageMask = this.ref.more.getConfig() === 'mask';
 
       observer.feed.onAfter(async function (/** @type {HTMLElement} */feed) {
+        // 收藏页面目前原生不支持，原因不明
+        const officialNotSupport = init.page.type() === 'fav';
         // 单条微博页面已经预先展开了，所以不能再继续操作了
         if (document.querySelector('[id^="Pl_Official_WeiboDetail__"]')) return;
-        const ul = feed.querySelector('ul[node-type="fl_pic_list"][action-data*="over9pic=1"]');
+        const ul = feed.querySelector('ul[node-type="fl_pic_list"]');
         // 如果没有图片，或者已经有第十张图片了，那我们应该不工作
         if (!ul || ul.querySelector('.li_10')) return;
+        // 首页等官方支持的页面，会标记 over9pic，我们用这个属性来判断
+        if (!officialNotSupport && !ul.getAttribute('action-data').includes('over9pic=1')) return;
+        // 目前部分页面没有支持，我们只能看到满 9 张图，就去检查是不是有第十张
+        if (officialNotSupport && !ul.querySelector('.li_9')) return;
         const mid = (feedParser.isForward(feed) ? feedParser.omid : feedParser.mid)(feed);
         const [author] = feedParser.author.id(feed);
         const original = feedParser.isForward(feed) ? feedParser.original.id(feed) : author;
@@ -387,6 +412,7 @@
         ul.classList.remove('yawf-WB_media_a_m9p_loading');
         if (!allImages || !allImages.length) return;
         const imageCount = allImages.length;
+        if (imageCount === 9 && officialNotSupport) return;
         const pids = allImages.map(img => img.replace(/^.*\/(.*)\..*$/, '$1'));
         const imgType = type => img => img.replace(/^(.*\/).*(\/.*)$/, (_, d, n) => d + type + n);
         // 最后一个图片的格式和别人不一样，如果我们要显示的不是9个，就会很奇怪，所以我们删掉再自己加一遍
