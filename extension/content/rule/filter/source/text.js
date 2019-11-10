@@ -47,7 +47,7 @@
         const sources = rule.ref.items.getConfig();
         const contain = sources.some(source => text.includes(source));
         if (!contain) return null;
-        const reason = i18n.sourceReason.replace('{1}', () => contain);
+        const reason = i18n.sourceReason.replace('{1}', () => text);
         return { result: rule.feedAction, reason };
       }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });
