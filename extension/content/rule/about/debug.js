@@ -50,11 +50,12 @@
     parent: debug.debug,
     template: () => i18n.debugRegex,
     ainit: function () {
-      observer.feed.onBefore(function (feed) {
+      observer.feed.filter(function regexDebugger(feed) {
         const text = feedParser.text.detail(feed);
         const json = JSON.stringify(text).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
         console.log('%o\n%o', feed, json);
-      });
+        return null;
+      }, { priority: 1e7 });
     },
   });
 
