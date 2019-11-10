@@ -328,7 +328,7 @@
           const ul = area.querySelector('ul');
           list.forEach(item => {
             const wrap = document.createElement('ul');
-            wrap.innerHTML = '<li class="yawf-config-collection-item W_btn_b W_btn_tag"><div class="yawf-config-collection-item-content"><div class="yawf-config-user-item"><div class="yawf-config-user-avatar"><img /></div><div><a class="yawf-config-user-name" target="_blank"></a></div><div><span class="yawf-config-user-detail S_txt2"></span></div></div></div></li>';
+            wrap.innerHTML = '<li class="yawf-config-collection-item W_btn_b W_btn_tag"><div class="yawf-config-collection-item-content"><div class="yawf-config-user-item"><div class="yawf-config-user-avatar"><img class="yawf-config-user-avatar-img" /></div><div><a class="yawf-config-user-name" target="_blank"></a></div><div><span class="yawf-config-user-detail S_txt2"></span></div></div></div></li>';
             if (item.type === 'user') wrap.querySelector('.yawf-config-user-item').setAttribute('usercard', `id=${item.user}`);
             wrap.querySelector('img').setAttribute('src', item.avatar);
             const name = wrap.querySelector('.yawf-config-user-name');
@@ -479,6 +479,7 @@
 .yawf-following-notice-footer { padding: 20px; } 
 .yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
 .yawf-following-rename .yawf-config-user-name, .yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
+.yawf-config-user-avatar-img { max-width: 50px; max-height: 50px; }
 `);
 
   i18n.uncheckFollowPresenter = {
