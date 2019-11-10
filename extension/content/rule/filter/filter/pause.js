@@ -1,6 +1,7 @@
 ; (function () {
 
   const yawf = window.yawf;
+  const init = yawf.init;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
@@ -136,6 +137,8 @@
       // 在消息流顶端，再放上这个
       observer.feed.onBefore(function (feed) {
         if (!rule.isEnabled()) return;
+        const type = init.page.type();
+        if (type === 'fav' || type === 'like') return;
         const list = feed.closest('.WB_feed');
         if (!list) return; // 搜索页面
         const container = list.parentNode;

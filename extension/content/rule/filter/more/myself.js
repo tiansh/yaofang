@@ -95,4 +95,10 @@
     },
   });
 
+  observer.feed.filter(function showMyFavOrLike(feed) {
+    const type = init.page.type();
+    if (type === 'fav' || type === 'like') return 'showfav';
+    return null;
+  }, { priority: 1e7 });
+
 }());

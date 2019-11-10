@@ -15,11 +15,6 @@
     if (location.host === 's.weibo.com') return 'search';
     // 发现页面
     if (location.host === 'd.weibo.com') return 'discover';
-    // 首页
-    if (/\/home$/.test(location.pathname)) {
-      if (search.get('gid') > 0) return 'group';
-      return 'home';
-    }
     // 头条文章
     if (/\/ttarticle\//.test(location.pathname)) return 'ttarticle';
     const $CONFIG = page.$CONFIG; if (!$CONFIG) return null;
@@ -38,6 +33,19 @@
       if ($CONFIG.domain === '101515') return 'music';
       // 股票
       if ($CONFIG.domain === '230677') return 'stock';
+    }
+    if ($CONFIG.bpType === 'main') {
+      // 赞
+      if (location.pathname.startsWith('/like/outbox')) return 'like';
+      // 收藏
+      if (location.pathname.startsWith('/fav')) return 'fav';
+      // 首页
+      if (/\/home$/.test(location.pathname)) {
+        if (search.get('gid') > 0) return 'group';
+        return 'home';
+      }
+      // 好友圈
+      if (location.pathname.startsWith('/friends')) return 'friends';
     }
     // Unknown
     return null;
