@@ -777,7 +777,8 @@
   // 评论用户
   const commentUser = commentParser.user = {};
   commentUser.dom = comment => {
-    return Array.from(comment.querySelectorAll('a[usercard]'));
+    const content = commentContentElements(comment);
+    return [].concat(...content.map(element => [...element.querySelectorAll('a[usercard]')]));
   };
   commentUser.name = comment => {
     const domList = commentUser.dom(comment);
