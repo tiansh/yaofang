@@ -310,7 +310,7 @@
       };
       // 监视新的表情框
       observer.dom.add(function faceFastObserver() {
-        const tab = document.querySelector('.layer_faces .WB_minitab:first-child');
+        const tab = document.querySelector('.layer_faces:not([node-type="huati_tabs"]) .WB_minitab:first-child');
         if (!tab) return;
         const container = tab.parentNode;
         const wrap = document.createElement('div');

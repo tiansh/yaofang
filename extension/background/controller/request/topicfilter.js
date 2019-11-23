@@ -33,21 +33,18 @@
         const response = buffer.slice(0, size);
         const decoder = new TextDecoder();
         const responseJson = JSON.parse(decoder.decode(response));
-        if (responseJson.code === '100000' && Array.isArray(responseJson.data)) {
-          responseJson.data = responseJson.data.filter(({ topic }) => {
-            const match = topic.match(/\[(..)\]$/);
-            if (!match) return true;
-            const typeText = match[1];
-            // 这个地方就是没有本地化
-            const type = {
-              地点: 'place',
-              电影: 'movie',
-              图书: 'book',
-              超话: 'topic',
-              音乐: 'music',
-              股票: 'stock',
-            }[typeText];
-            if (hideItems.includes(type)) return false;
+        if (responseJson.code === '100000' && Array.isArray(responseJson.data.detail)) {
+          responseJson.data.detail = responseJson.data.detail.filter(({ display_name, keyword, icon }) => {
+            const type = [
+              { test: () => icon.includes('ficon_cd_place'), type: 'place' },
+              { test: () => icon.includes('ficon_cd_music'), type: 'music' },
+              { test: () => icon.includes('ficon_supertopic'), type: 'topic' },
+              { test: () => icon.includes('ficon_cd_book'), type: 'book' },
+              { test: () => icon.includes('ficon_movie'), type: 'movie' },
+              { test: () => display_name === `$${keyword}$`, type: 'stock' },
+              { test: () => true, type: null },
+            ].find(({ test }) => test()).type;
+            if (type && hideItems.includes(type)) return false;
             return true;
           });
         }

@@ -34,8 +34,7 @@
     id: 'topic',
     filter: {
       urls: [
-        '*://weibo.com/aj/mblog/topic*',
-        '*://*.weibo.com/aj/mblog/topic*',
+        'https://*.weibo.com/aj/topic/suggest?*',
       ],
     },
   }];
