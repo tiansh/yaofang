@@ -6,8 +6,10 @@
   const observer = yawf.observer;
   const request = yawf.request;
   const feedParser = yawf.feed;
+  const network = yawf.network;
 
   const feeds = yawf.rules.feeds;
+  const layout = yawf.rules.layout;
 
   const i18n = util.i18n;
   const css = util.css;
@@ -64,7 +66,7 @@
 .WB_feed_expand .WB_text .W_btn_b, .WB_feed_expand .WB_text .W_btn_b *, .WB_text .W_btn_c *, .WB_empty .W_btn_c * { line-height: ${h2}px !important; font-size: ${fs3}px !important; }
 .W_icon_feedpin, .W_icon_feedhot { height: 16px !important; line-height: 16px !important; }
 .WB_info { margin-bottom: 2px !important; padding-top: 0 !important; line-height: ${fs <= 28 ? 28 : 50}px !important; }
-.yawf-WB_text_size_main, .yawf-WB_text_size { font-size: ${fs}px; }
+.yawf-WB_text_size_main, .yawf-WB_text_size { font-size: ${fs}px; line-height: ${lh}px; }
 .yawf-WB_text_size_expand, .WB_feed_expand .yawf-WB_text_size { font-size: ${fs2}px; }
 `;
       css.append(style);
@@ -670,5 +672,398 @@
     },
   });
 
+  Object.assign(i18n, {
+    viewArticleInline: {
+      cn: '内嵌展示头条文章 {{i}}',
+      tw: '內嵌展示頭條文章 {{i}}',
+      en: 'Show articles inline {{i}}',
+    },
+    viewArticleInlineDetail: {
+      cn: '付费内容可能无法在内嵌模式中正常查看，需要打开文章页浏览。',
+    },
+    foldArticle: { cn: '收起', en: 'View Less' },
+    viewArticle: { cn: '查看文章', en: 'View Article' },
+    feedArticle: { cn: '查看原微博', en: 'View Original Feed' },
+    viewArticleSource: { cn: '查看源网址', tw: '查看源網址', en: 'View Source' },
+    articleLoading: { cn: '正在加载……', tw: '正在載入……', en: 'Loading ...' },
+    articleFail: { cn: '加载失败', tw: '载入失败', en: 'Failed to load article' },
+  });
+
+  // 直接在微博内显示头条文章
+  content.viewArticleInline = rule.Rule({
+    id: 'view_article_inline',
+    version: 55,
+    parent: content.content,
+    template: () => i18n.viewArticleInline,
+    ref: {
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.viewArticleInlineDetail },
+    },
+    ainit() {
+      // 当 iframe 内容的尺寸发生变化时，我们要将变化反馈给上层
+      const resizeSensor = function (target, callback, /** @type {Document} */document, /** @type {Window} */window) {
+        const container = document.createElement('div');
+        container.innerHTML = '<div class="resize-sensor"><div class="resize-sensor-expand"><div class="resize-sensor-child"></div></div><div class="resize-sensor-shrink"><div class="resize-sensor-child"></div></div></div>';
+        /** @type {HTMLDivElement} */
+        const sensor = container.firstChild;
+        /** @type {HTMLDivElement} */
+        const expand = sensor.firstChild;
+        /** @type {HTMLDivElement} */
+        const shrink = expand.nextSibling;
+        target.appendChild(sensor);
+
+        let lastWidth = target.offsetWidth;
+        let lastHeight = target.offsetHeight;
+        let newWidth, newHeight, dirty;
+        const reset = function () {
+          expand.scrollTop = 1e8;
+          expand.scrollLeft = 1e8;
+          shrink.scrollTop = 1e8;
+          shrink.scrollLeft = 1e8;
+        };
+        const onResized = function () {
+          if (lastWidth === newWidth && lastHeight === newHeight) return false;
+          lastWidth = newWidth;
+          lastHeight = newHeight;
+          callback();
+          reset();
+          return true;
+        };
+        const onScroll = function (event) {
+          newWidth = target.offsetWidth;
+          newHeight = target.offsetHeight;
+          if (dirty) return; dirty = true;
+          requestAnimationFrame(function () {
+            dirty = false;
+            if (onResized()) onScroll();
+          });
+        };
+        reset();
+        onScroll();
+        expand.addEventListener('scroll', onScroll);
+        shrink.addEventListener('scroll', onScroll);
+      };
+
+      // 要注入到卡片内的样式
+      const injectStyle = `
+.WB_editor_iframe_new .WB_feed_v3 { max-width: 100%; }
+`;
+
+      // 要注入到文章页的样式
+      const contentStyle = `
+html { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; line-height: 1.5; color: var(--text-color); font-family: var(--font-family); background: transparent; font-size: 16px; line-height: 1.5; word-wrap: break-word; }
+body { margin: 0; overflow: hidden; }
+* { box-sizing: border-box; }
+> *:first-child { margin-top: 0 !important; }
+> *:last-child { margin-bottom: 0 !important; }
+a { background-color: transparent; color: var(--link-color); text-decoration: underline; }
+blockquote { margin: 0 0 10px; padding: 0 1em; background: #80808022; border-left: 0.25em solid #80808044; padding: 20px; }
+blockquote > :first-child { margin-top: 0; }
+blockquote > :last-child { margin-bottom: 0; }
+figure { margin: 0 0 10px; padding: 0 1em; text-align: center; }
+figcaption { text-align: center; }
+h1, h2, h3, h4, h5, h6 { margin-top: 24px; margin-bottom: 16px; font-weight: 600; line-height: 1.25; }
+h1 { margin: 0.67em 0; padding-bottom: 0.3em; font-size: 2em; border-bottom: 1px solid #80808022; }
+h2 { padding-bottom: 0.3em; font-size: 1.5em; border-bottom: 1px solid #80808022; }
+h3 { font-size: 1.25em; }
+h4 { font-size: 1em; }
+h5 { font-size: 0.875em; }
+h6 { font-size: 0.85em; }
+hr { box-sizing: content-box; overflow: hidden; height: 2px; padding: 0; margin: 24px 0; background-color: #80808011; border: 0; }
+hr::after { display: table; clear: both; content: ""; }
+hr::before { display: table; content: ""; }
+img { border-style: none; max-width: 100%; box-sizing: content-box; background-color: var(--background-color); }
+li + li { margin-top: 0.25em; }
+li > p { margin-top: 16px; }
+p { margin-top: 0; margin-bottom: 10px; }
+p, blockquote, ul, ol, table { margin-top: 0; margin-bottom: 16px; }
+table { border-spacing: 0; border-collapse: collapse; }
+table th { font-weight: bold; }
+table th, table td { padding: 6px 13px; border: 1px solid #80808044; }
+table tr { border-top: 1px solid #ccc; }
+table tr:nth-child(2n) { background-color: #80808011; }
+td, th { padding: 0; }
+ul, ol { padding-left: 2em; margin-top: 0; margin-bottom: 0; }
+ul { list-style: outside; }
+ul ul ol, ul ol ol, ol ul ol, ol ol ol { list-style-type: lower-alpha; }
+ul ul, ul ol, ol ol, ol ul { margin-top: 0; margin-bottom: 0; }
+iframe { width: 100%; border: 0 none; max-width: 600px; }
+video { max-width: 100%; max-height: 100vh; }
+
+body { position: relative; }
+.resize-sensor, .resize-sensor-expand, .resize-sensor-shrink { position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; z-index: -1; visibility: hidden; }
+.resize-sensor-expand .resize-sensor-child { width: 100000px; height: 100000px; }
+.resize-sensor-shrink .resize-sensor-child { width: 200%; height: 200%; }
+.resize-sensor-child { position: absolute; top: 0; left: 0; transition: 0s; }
+`;
+
+      // 渲染文章
+      const renderArticle = function (article, style, inForward) {
+        const container = document.createElement('div');
+        container.innerHTML = `
+<div class="WB_expand_media_box clearfix">
+<div class="WB_expand_media">
+<div class="yawf-article S_bg2 S_line1">
+<div class="tab_feed_a clearfix yawf-article-handle S_bg2"><div class="tab"><ul class="clearfix">
+<li><span class="line S_line1"><a class="S_txt1 yawf-article-fold" href="javascript:;"><i class="W_ficon ficon_arrow_fold S_ficon">k</i></a></span></li>
+<li><span class="line S_line1"><a class="S_txt1 yawf-article-view" href="" target="_blank"><i class="W_ficon ficon_search S_ficon">°</i></a></span></li>
+<li><span class="line S_line1"><a class="S_txt1 yawf-article-feed" href="" target="_blank"><i class="W_ficon ficon_search S_ficon">\ue604</i></a></span></li>
+<li><span class="line S_line1"><a class="S_txt1 yawf-article-source" href="" target="_blank" rel="no-referrer"><i class="W_ficon ficon_search S_ficon">l</i></a></span></li>
+</ul></div></div>
+<div class="yawf-article-body">
+<div class="yawf-article-title"></div>
+<div class="yawf-article-meta">
+<span class="yawf-article-author"><a target="_blank"><img class="W_face_radius" /></a></span>
+<span class="yawf-article-author-inner"></span>
+<span class="yawf-article-time"></span>
+</div>
+<div class="yawf-article-lead"></div>
+<div class="yawf-article-cover"><img /></div>
+<div class="yawf-article-loading"><i class="W_loading"></i> </div>
+<div class="yawf-article-content"><iframe title="" style="visibility: hidden; height: 1px;" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"></iframe></div>
+</div>
+</div>
+</div>
+</div>
+`;
+        if (!article.content) {
+          const body = container.querySelector('.yawf-article-body');
+          body.textContent = i18n.articleFail;
+          return container;
+        }
+        // 标题
+        const title = container.querySelector('.yawf-article-title');
+        title.textContent = article.title || '';
+        // 作者
+        const author = container.querySelector('.yawf-article-author');
+        if (article.author) {
+          author.querySelector('img').src = article.author.avatar;
+          const link = author.querySelector('a');
+          link.appendChild(document.createTextNode(article.author.name));
+          link.href = `https://weibo.com/u/${article.author.uid}`;
+          link.setAttribute('usercard', `id=${article.author.uid}`);
+        } else author.remove();
+        const authorInner = container.querySelector('.yawf-article-author-inner');
+        if (article.author && article.author.inner) {
+          const inner = article.author.inner;
+          if (inner.uid) {
+            const link = document.createElement('a');
+            link.textContent = inner.name;
+            link.href = `https://weibo.com/u/${inner.uid}`;
+            link.setAttribute('usercard', `id=${inner.uid}`);
+            authorInner.appendChild(link);
+          } else {
+            authorInner.appendChild(document.createTextNode(inner.name));
+          }
+        } else authorInner.remove();
+        const time = container.querySelector('.yawf-article-time');
+        if (article.time) {
+          time.textContent = article.time.replace(/\d\d-\d\d \d\d:\d\d/, str => {
+            const year = new Date(Date.now() + 288e5).getUTCFullYear();
+            const date = new Date(Date.UTC(year, ...str.split(/[- :]/).map(x => +x)) - 288e5);
+            return [
+              (date.getMonth() + '').padStart(2, 0), '-', (date.getDate() + '').padStart(2, 0), ' ',
+              (date.getHours() + '').padStart(2, 0), ':', (date.getMinutes() + '').padStart(2, 0),
+            ].join('');
+          });
+        } else time.remove();
+        // 导语
+        const lead = container.querySelector('.yawf-article-lead');
+        if (article.lead) lead.textContent = article.lead;
+        else lead.remove();
+        // 封面图
+        const cover = container.querySelector('.yawf-article-cover');
+        if (article.cover) cover.firstChild.src = article.cover;
+        else cover.remove();
+        // 正在加载
+        const loading = container.querySelector('.yawf-article-loading');
+        loading.appendChild(document.createTextNode(i18n.articleLoading));
+        // 内容
+        /** @type {HTMLIFrameElement} */
+        const iframe = container.querySelector('.yawf-article-content iframe');
+        const html = `<!doctype html><html><head><meta charset="utf-8" /><meta name="referrer" content="no-referrer" /><title></title><style>${style}</style><style>${contentStyle}</style></head><body class="yawf-article-page">${article.content}</body></html>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        iframe.src = url;
+        iframe.addEventListener('load', function () {
+          URL.revokeObjectURL(url);
+          loading.remove();
+          const document = iframe.contentDocument;
+          const window = iframe.contentWindow;
+          const resizeIframe = function () {
+            iframe.style.height = document.body.clientHeight + 'px';
+          };
+          // 处理内容中的卡片
+          Array.from(document.querySelectorAll('x-iframe')).forEach(async xiframe => {
+            const oriUrl = xiframe.getAttribute('src');
+            const html = await request.getArticleCard(oriUrl);
+            const iframe = document.createElement('iframe');
+            const blob = new Blob([html], { type: 'text/html' });
+            const id = new URL(oriUrl).searchParams.get('id');
+            const url = URL.createObjectURL(blob);
+            iframe.src = url;
+            iframe.dataset.cardId = id;
+            iframe.addEventListener('load', () => {
+              URL.revokeObjectURL(url);
+              const document = iframe.contentDocument;
+              const window = iframe.contentWindow;
+              const style = document.body.appendChild(document.createElement('style'));
+              style.textContent = injectStyle;
+              const updateOuterSize = function () {
+                iframe.style.height = document.body.clientHeight + 'px';
+              };
+              resizeSensor(document.body, updateOuterSize, document, window);
+              setTimeout(updateOuterSize, 0);
+            });
+            xiframe.parentElement.replaceChild(iframe, xiframe);
+          });
+          resizeSensor(document.body, resizeIframe, document, window);
+          setTimeout(function () {
+            resizeIframe();
+            iframe.style.visibility = 'visible';
+          }, 0);
+          // 添加自定义样式
+          const userCss = layout.userCss.css;
+          if (userCss.isEnabled()) {
+            const style = document.createElement('style');
+            style.textContent = userCss.ref.css.getConfig();
+            document.body.appendChild(style);
+          }
+        });
+        iframe.addEventListener('error', function () {
+          loading.textContent = i18n.articleFail;
+          iframe.remove();
+        });
+        return container;
+      };
+
+      // 隐藏图片或文章卡片
+      const hideMedia = function (feed) {
+        const mediaList = Array.from(feed.querySelectorAll('.WB_media_wrap, .WB_expand_media_box'));
+        const rollback = [...mediaList].map(media => {
+          if (!(media.clientHeight > 0)) return null;
+          const display = window.getComputedStyle(media).display;
+          media.style.display = 'none';
+          return () => { media.style.display = display; };
+        }).filter(x => x);
+        return function () { rollback.forEach(f => f()); };
+      };
+
+      // 让文章内容适配周围的配色
+      const computeStyle = function (reference) {
+        const text = document.createElement('div');
+        text.style = 'position: fixed; top: -1000px;';
+        text.innerHTML = '<div class="WB_text W_f14">T<a>a</a><span class="S_bg2">B</span></div>';
+        reference.appendChild(text);
+        const link = getComputedStyle(text.querySelector('a'));
+        const bg2 = getComputedStyle(text.querySelector('.S_bg2'));
+        const selection = (function () {
+          try {
+            return getComputedStyle(text, '::selection');
+          } catch (e) {
+            try {
+              return getComputedStyle(text, '::-moz-selection');
+            } catch (e2) {
+              return null;
+            }
+          }
+        }());
+        const css = `
+:root {
+--text-color: ${bg2.color};
+--background-color: ${bg2.backgroundColor};
+--link-color: ${link.color};
+
+--font-family: ${bg2.fontFamily};
+}
+
+${selection ? `
+::selection { background-color: ${selection.backgroundColor}; color: ${selection.color}; }
+::-moz-selection { background-color: ${selection.backgroundColor}; color: ${selection.color}; }
+` : ''}
+`;
+        text.remove();
+        return css;
+      };
+
+      const renderArticleControls = function (article, articleData, { id, feed, text, showMedia }) {
+        const fold = article.querySelector('.yawf-article-fold');
+        fold.addEventListener('click', function () {
+          article.remove();
+          showMedia();
+          feed.removeAttribute('yawf-article-shown');
+          feed.scrollIntoView({ block: 'nearest' });
+        });
+        fold.appendChild(document.createTextNode(i18n.foldArticle));
+
+        const view = article.querySelector('.yawf-article-view');
+        view.href = `https://weibo.com/ttarticle/p/show?id=${id}`;
+        view.appendChild(document.createTextNode(i18n.viewArticle));
+
+        const oriFeed = article.querySelector('.yawf-article-feed');
+        if (articleData.feed && new URL(articleData.feed).pathname !== location.pathname) {
+          oriFeed.href = articleData.feed;
+          oriFeed.appendChild(document.createTextNode(i18n.feedArticle));
+        } else oriFeed.remove();
+
+        const source = article.querySelector('.yawf-article-source');
+        if (articleData.source) source.href = articleData.source;
+        else source.closest('li').remove();
+        source.appendChild(document.createTextNode(i18n.viewArticleSource));
+      };
+
+      // 点击文章链接时触发
+      document.addEventListener('click', async function (event) {
+        if (event.shiftKey || event.ctrlKey || event.metaKey) return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const feed = target.closest('[mid]');
+        if (!feed) return;
+        const link = target.closest('[suda-uatrack*="1022-article"]');
+        if (!link) return;
+        const id = link.getAttribute('suda-uatrack').replace(/^.*1022%3A(\d+):.*$/, '$1');
+        if (!id) return;
+        const text = Array.from((/** @returns {Element} */function findText(target) {
+          return target ? target.querySelector('.WB_text') ? target : findText(target.parentElement) : null;
+        }(target)).querySelectorAll('.WB_text')).pop();
+        if (!text) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (feed.hasAttribute('yawf-article-shown')) return;
+
+        const loading = document.createElement('div');
+        loading.className = 'yawf-article-loading';
+        loading.innerHTML = '<i class="W_loading"></i> ';
+        loading.appendChild(document.createTextNode(i18n.articleLoading));
+        feed.setAttribute('yawf-article-shown', '');
+        text.parentElement.insertBefore(loading, text.nextSibling);
+
+        const showMedia = hideMedia(feed);
+        const articleData = await request.getArticle(id);
+        const article = renderArticle(articleData, computeStyle(text), text.matches('.WB_expand *'));
+        renderArticleControls(article, articleData, { id, feed, text, showMedia });
+
+        loading.parentElement.replaceChild(article, loading);
+      }, true);
+
+      css.append(`
+.yawf-article-loading { padding: 10px; text-align: center; }
+.yawf-article-handle { position: sticky; top: 50px; padding: 10px 0; z-index: 1; font-size: 12px; line-height: 15px; }
+.yawf-article { border-width: 1px; border-style: solid; padding: 10px; position: relative; font-size: 16px; line-height: 1.5; }
+.yawf-article-title { margin: 10px 0; font-weight: bold; font-size: 130%; }
+.yawf-article-meta { margin: 10px -10px; display: flex; }
+.yawf-article-meta > span { padding: 0 10px; }
+.yawf-article-meta > span:not(:first-child) { border-left: 1px solid #80808022; }
+.yawf-article-author img { width: 20px; height: 20px; vertical-align: middle; margin: 0.2em; }
+.yawf-article-lead { background: #80808022; padding: 20px; }
+.yawf-article-cover { text-align: center; line-height: 0; }
+.yawf-article-cover img { max-width: 100%; margin: 10px 0; vertical-align: top; }
+.yawf-article-content iframe { border: 0 none; width: 100%; margin: 10px 0; }
+`);
+      if (layout.navbar.autoHide.isEnabled()) {
+        css.append('.yawf-article-handle { top: 0; }');
+      }
+    },
+
+  });
 
 }());

@@ -99,6 +99,7 @@
         "content/request/image.js",
         "content/request/feedhistory.js",
         "content/request/allimage.js",
+        "content/request/article.js",
 
         "content/storage/storage.js",
         "content/storage/config.js",
