@@ -42,6 +42,9 @@
 #app .message .message-wrapper .chat-content { width: calc(100vw - calc(1px + var(--yawf-left-width))); }
 #app .atwho-wrap .atwho-panel { transform: translateY(calc(-100% - 20px)); z-index: 1; }
 #app .text { height: var(--yawf-text-height); }
+#app .message .message-wrapper .chat-content .message-item { padding-top: 4px; padding-bottom: 4px; }
+#app .card1, #app .card2 { padding: 6px 11px; }
+#app .card2 .img-mod { width: 40px; height: 40px; }
 #app .atwho-wrap .editor { height: 70px; }
 #app .text .sendbox_prompt { display: none; }
 #app .login { display: none; }

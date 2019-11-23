@@ -53,6 +53,7 @@
 .WB_global_nav:not([${attr}]), .WB_global_nav[${attr}] { margin-top: -50px; top: 50px; box-shadow: none; }
 .WB_global_nav[${attr}] { top: 0; transition: top ease-in-out 0.1s 0.33s; }
 .WB_global_nav[${attr}]:hover { top: 50px; transition: top ease-in-out 0.1s 0s; }
+.WB_global_nav[${attr}]:focus-within { top: 50px; transition: top ease-in-out 0.1s 0s; }
 .WB_global_nav[${attr}]::after { content: " "; width: 100%; height: 8px; clear: both; float: left; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, transparent 75%, transparent 100%); }
 /* 固定小黄签位置 */
 .WB_global_nav[${attr}] .gn_topmenulist_tips { padding-top: 52px; transition: padding-top ease-in-out 0.1s 0.33s; }

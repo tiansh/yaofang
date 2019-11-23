@@ -4,6 +4,7 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
+  const init = yawf.init;
 
   const layout = yawf.rules.layout;
 
@@ -87,6 +88,8 @@
         (coverStyle || (coverStyle = document.head.appendChild(document.createElement('style')))).textContent = coverCss;
       };
       const setSkin = function setSkin() {
+        // 头条文章页面设置模板会导致界面混乱
+        if (init.page.type() === 'ttarticle') return;
         if (!skinStyle) {
           const skinCss = document.querySelector('link[href*="//img.t.sinajs.cn/t6/skin/"][href*="/skin.css?"]');
           if (!skinCss) return;

@@ -55,8 +55,8 @@
 .WB_feed .WB_row_line .line span .W_ficon { vertical-align: middle; }
 .WB_feed_handle .WB_row_line .arrow { display: none; }
 .WB_feed_repeat { margin-top: -10px; }
-.WB_feed_comment .WB_feed_detail { position: relative; padding-bottom: 4px; }
-.WB_feed_comment .WB_feed_detail::after { display: none; }
+.WB_feed_comment.WB_feed_comment .WB_feed_detail { position: relative; padding-bottom: 4px; }
+.WB_feed_comment.WB_feed_comment .WB_feed_detail::after { display: none; }
 .WB_feed_v3 .WB_expand .WB_empty .WB_innerwrap, .WB_feed_comment .WB_expand { margin-bottom: 0; }
 `,
   });
