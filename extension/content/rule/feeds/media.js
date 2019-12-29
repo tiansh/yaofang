@@ -608,13 +608,24 @@
           const video = container.querySelector('video');
           if (video) video.src = 'data:text/plain,42';
           const videoSourceData = new URLSearchParams(container.getAttribute('video-sources'));
-          const videoSource = videoSourceData.get(videoSourceData.get('qType'));
+          let videoSource = videoSourceData.get(videoSourceData.get('qType'));
+          if (!videoSource) {
+            videoSource = Array.from(videoSourceData)
+              .filter(([key, value]) => /^https?(?::|%3A)/i.test(value))
+              .reduce((s1, s2) => +s1[0] > +s2[0] ? s1 : s2)[1];
+          }
+          // 有时候会被转义两次，所以要再额外处理一次，原因不明
+          if (/^https?%3A/i.test(videoSource)) {
+            videoSource = decodeURIComponent(videoSource);
+          }
+          // http 会直接被浏览器拦掉，但是有的历史数据是 http
+          videoSource = videoSource.replace(/^http:/, 'https:');
           const newContainer = document.createElement('li');
           newContainer.className = container.className;
           newContainer.classList.add('yawf-WB_video');
           const newVideo = document.createElement('video');
           newVideo.poster = cover.src;
-          newVideo.src = videoSource.replace(/^http:/, 'https:');
+          newVideo.src = videoSource;
           newVideo.preload = 'none';
           newVideo.controls = !smallImage;
           newVideo.autoplay = false;
