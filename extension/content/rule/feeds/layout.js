@@ -205,6 +205,8 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) { width: 120px; height: 80px; min-width: 36px; }
 .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) .wbv-control-bar { display: none !important; }
+.WB_feed.WB_feed_v3 .WB_media_a_m1 .html5-video:not([yawf-video-play]) { max-width: 120px; max-height: 80px; }
+.WB_feed.WB_feed_v3 .WB_media_a_m1 .html5-video:not([yawf-video-play]) .box-3 { display: none !important; }
 
 .WB_card_vote.WB_card_vote .vote_con1 .item { font-size: inherit; line-height: 14px; margin-top: -5px; text-align: left; }
 .WB_card_vote.WB_card_vote .vote_con1 .item_rt { font-size: inherit; line-height: 24px; height: 24px; margin-top: -5px; }
@@ -217,23 +219,33 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_card_vote.WB_card_vote .vote_share a { line-height: 24px; height: 24px; margin-top: -5px; }
 `);
       observer.dom.add(function smallVideo() {
-        const videos = Array.from(document.querySelectorAll('.WB_video_h5_v2 .WB_h5video_v2:not([yawf-watch-pouse])'));
-        videos.forEach(video => {
-          video.setAttribute('yawf-watch-pause', '');
-          const container = video.closest('.WB_video_h5_v2');
-          let videoObserver;
-          const setPlayAttribute = function setPlayAttribute() {
-            const playing = video.classList.contains('wbv-playing');
-            if (playing) {
-              container.setAttribute('yawf-video-play', '');
-              if (videoObserver) videoObserver.disconnect();
-              return true;
-            }
-            return false;
-          };
-          if (setPlayAttribute()) return;
-          videoObserver = new MutationObserver(setPlayAttribute);
-          videoObserver.observe(video, { attributes: true, attributeFilter: ['class'], childList: false, characterData: false });
+        [{
+          videoSelector: '.WB_video_h5_v2 .WB_h5video_v2:not([yawf-watch-pause])',
+          containerSelector: '.WB_video_h5_v2',
+          isPlaying: video => video.classList.contains('wbv-playing'),
+        }, {
+          videoSelector: '.html5-video .hv-icon:not([yawf-watch-pause])',
+          containerSelector: '.html5-video',
+          isPlaying: video => video.classList.contains('hv-icon-pause'),
+        }].forEach(function ({ videoSelector, containerSelector, isPlaying }) {
+          const videos = Array.from(document.querySelectorAll(videoSelector));
+          videos.forEach(video => {
+            video.setAttribute('yawf-watch-pause', '');
+            const container = video.closest(containerSelector);
+            let videoObserver;
+            const setPlayAttribute = function setPlayAttribute() {
+              const playing = isPlaying(video);
+              if (playing) {
+                container.setAttribute('yawf-video-play', '');
+                if (videoObserver) videoObserver.disconnect();
+                return true;
+              }
+              return false;
+            };
+            if (setPlayAttribute()) return;
+            videoObserver = new MutationObserver(setPlayAttribute);
+            videoObserver.observe(video, { attributes: true, attributeFilter: ['class'], childList: false, characterData: false });
+          });
         });
       });
       const repost = this.ref.repost.getConfig();
@@ -257,7 +269,6 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_h5video.hv-s1, .WB_h5video.hv-s3-2, .WB_h5video.hv-s3-5 { margin-left: 0; }
 .yawf-WB_video[yawf-video-play] { margin-left: -22px; }
 `);
-      // FIXME 八图或九图时，展开后图片列表显示不完整
     },
   });
 
