@@ -25,6 +25,7 @@
     en: 'Close',
   };
 
+  const dialogStack = [];
   /**
    * 显示一个对话框
    * @param {{ id: string, title: string, render: Function, button: { [type: string]: Function? }? }}
@@ -133,6 +134,7 @@
     // 响应按键
     const keys = event => {
       if (!event.isTrusted) return;
+      if (dialogStack[dialogStack.length - 1] !== dialog) return;
       const code = keyboard.event(event);
       if (code === keyboard.code.ENTER && button && button.ok) button.ok(event);
       else if (code === keyboard.code.ESC) {
@@ -149,6 +151,7 @@
       window.removeEventListener('resize', resetPos);
       document.body.removeChild(cover);
       setTimeout(function () { document.body.removeChild(dialog); }, 200);
+      dialogStack.splice(dialogStack.indexOf(dialog), 1);
     };
     // 显示对话框
     const show = function ({ x, y } = {}) {
@@ -166,6 +169,7 @@
       setTimeout(function () {
         dialog.classList.remove('UI_animated', 'UI_speed_fast', 'UI_ani_bounceIn');
       }, 200);
+      dialogStack.push(dialog);
     };
     return { hide, show, dom: dialog };
   };
