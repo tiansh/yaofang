@@ -102,11 +102,12 @@
     const tablist = left.querySelector('ul');
     const search = tablist.appendChild(configDom.search());
     const searchInput = search.querySelector('input');
+    const renderTabs = tabs.filter(tab => tab.type === 'tab');
     /** @type {Element?} */
     let current = null;
     /** @type {WeakMap<Element, Function>} */
     const tabInit = new WeakMap();
-    const tabLayer = tabs.map(tab => {
+    const tabLayer = renderTabs.map(tab => {
       const layer = right.appendChild(configDom.layer());
       return layer;
     });
@@ -117,7 +118,7 @@
         }
       });
     };
-    const tabLeft = tabs.map((tab, index) => {
+    const tabLeft = renderTabs.map((tab, index) => {
       const layer = tabLayer[index];
       const tabLeft = tablist.appendChild(configDom.item(tab.getRenderResult()));
       tabInit.set(tabLeft, () => {
@@ -146,7 +147,7 @@
       right.scrollTo(0, 0);
     };
     // 自动选中目标选项卡，或第一个选项卡
-    setCurrent(tabLeft[(initial && tabs.indexOf(initial) + 1 || 1) - 1]);
+    setCurrent(tabLeft[(initial && renderTabs.indexOf(initial) + 1 || 1) - 1]);
     left.addEventListener('click', event => {
       const tabLeft = event.target.closest('.yawf-config-tab');
       if (!tabLeft) return;

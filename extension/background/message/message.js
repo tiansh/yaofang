@@ -10,11 +10,11 @@
     browser.runtime.onMessage.addListener(async (message, sender) => {
       const { method, params = [] } = message;
       const handler = exported.get(method);
-      return new Promise(async (resolve, reject) => {
-        try {
-          resolve(handler.apply(sender, params));
-        } catch (ex) { reject(ex); }
-      });
+      try {
+        return handler.apply(sender, params);
+      } catch (e) {
+        return (void 0);
+      }
     });
 
     return function (f) {

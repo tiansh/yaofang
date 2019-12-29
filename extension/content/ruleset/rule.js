@@ -917,6 +917,13 @@
           }
           input.disabled = false;
         });
+        label.addEventListener('keydown', event => {
+          if (!event.isTrusted) return;
+          const code = keyboard.event(event);
+          if (code === keyboard.code.ENTER) {
+            event.stopPropagation();
+          }
+        });
         if (typeof this.getSuggestionItems === 'function') {
           this.renderSuggestionItems(input);
         }
@@ -1121,6 +1128,17 @@
   rule.class.StringCollectionConfigItem = StringCollectionConfigItem;
 
   class RegExpCollectionConfigItem extends StringCollectionConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+      this.configCacheDirty = true;
+    }
+    initConfig() {
+      if (this.configInitialized) return;
+      super.initConfig();
+      this.addConfigListener(() => {
+        this.configCacheDirty = true;
+      });
+    }
     normalizeItem(value) {
       if (!value || typeof value !== 'object') return null;
       if (typeof value.source !== 'string') return null;
@@ -1178,24 +1196,15 @@
       const index = values.findIndex((item, index) => this.track(item, index) === track);
       if (index !== -1) {
         values.splice(index, 1);
-        if (!this.configCacheDirty && Array.isArray(this.configCache)) {
-          this.configCache.splice(index, 1);
-        }
       }
       values.push(value);
       super.setConfig(values);
-      if (!this.configCacheDirty) {
-        this.configCache.push(this.compileRegExp(value));
-      }
     }
     removeItem(track) {
       const values = this.getConfig();
       const index = values.findIndex((item, index) => this.track(item, index) === track);
       if (index !== -1) {
         values.splice(index, 1);
-        if (!this.configCacheDirty && Array.isArray(this.configCache)) {
-          this.configCache.splice(index, 1);
-        }
       }
       super.setConfig(values);
     }
@@ -1396,6 +1405,8 @@
     return new Tab(item);
   };
   rule.class.Tab = Tab;
+  // 这个标签页不会在设置窗口中显示，但是会出现在搜索结果里面
+  rule.vtab = rule.Tab({ type: 'vtab' });
 
   /**
    * 描述窗口的一组设置，一组设置有一个加粗文字显示的标题
