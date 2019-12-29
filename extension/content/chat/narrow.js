@@ -13,7 +13,7 @@
 #app .user .settings { top: 35px; right: 7px; }
 #app .user .settings li:last-child { display: none; }  
 #app .search { padding: 4px 0; height: 26px; line-height: 30px; }
-#app .search .search-wrapper { width: calc(100% - 80px); }
+#app .search .search-wrapper { width: calc(100% - 80px); left: 10px; }
 #app .searchlist { top: 35px; }
 #app .searchlist .searchlist-box { width: var(--yawf-left-width); }
 #app .searchlist .searchlist-box .contactslist .title { margin: 4px 0 2px 10px; }
