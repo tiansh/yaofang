@@ -10,8 +10,8 @@
 #app .user { height: 0px; }
 #app .user .left { display: none; }
 #app .user .right { position: absolute; top: 5px; left: calc(100% - 70px); }
-#app .user .settings { top: 35px; right: 7px; }
-#app .user .settings li:last-child { display: none; }  
+#app .settings { top: 35px; right: 7px; }
+#app .settings li:last-child { display: none; }  
 #app .search { padding: 4px 0; height: 26px; line-height: 30px; }
 #app .search .search-wrapper { width: calc(100% - 80px); left: 10px; }
 #app .searchlist { top: 35px; }
@@ -38,6 +38,7 @@
 #app .message .header .moresets { top: 40px; }
 #app .message .tips { top: 40px; }
 #app .message .message-wrapper { top: 40px; }
+#app .message .happy-scroll-container { overflow-x: hidden; }
 #app .message .tips.unfollowtips + .message-wrapper { top: 74px; }
 #app .message .message-wrapper .chat-content { width: calc(100vw - calc(1px + var(--yawf-left-width))); }
 #app .atwho-wrap .atwho-panel { transform: translateY(calc(-100% - 20px)); z-index: 1; }
