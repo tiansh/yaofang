@@ -176,6 +176,7 @@
         "content/rule/layout/navbar.js",
         "content/rule/layout/sidebar.js",
         "content/rule/layout/scroll.js",
+        "content/rule/layout/chat.js",
         "content/rule/layout/other.js",
         "content/rule/layout/theme.js",
         "content/rule/layout/usercss.js",
