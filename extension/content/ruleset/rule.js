@@ -101,6 +101,7 @@
 
   rules.all = new Map();
   rule.class = {};
+  rule.types = {};
 
   /**
    * 这里维护一个基本的设置项
@@ -431,6 +432,7 @@
     renderValue() { return null; }
   }
   rule.class.OffscreenConfigItem = OffscreenConfigItem;
+  rule.types.offscreen = OffscreenConfigItem;
 
   /**
    * 一个布尔设置项
@@ -478,6 +480,7 @@
     }
   }
   rule.class.BooleanConfigItem = BooleanConfigItem;
+  rule.types.boolean = BooleanConfigItem;
 
   /**
    * 一个多选一设置项
@@ -556,17 +559,74 @@
     }
   }
   rule.class.SelectConfigItem = SelectConfigItem;
+  rule.types.select = SelectConfigItem;
+
+  /**
+   * 一个输入框
+   * 不暴露给外面直接使用
+   */
+  class InputConfigItem extends ConfigItem {
+    constructor(item, parent) {
+      super(item, parent);
+    }
+    get initial() { return ''; }
+    get inputType() { return 'text'; }
+    normalize(value) { return '' + value; }
+    stringify(value) { return '' + value; }
+    render() {
+      const container = document.createElement('span');
+      container.setAttribute('yawf-config-item', this.configId);
+      container.classList.add('yawf-config-input');
+      const input = document.createElement('input');
+      input.type = this.inputType;
+      input.value = this.getConfig();
+      input.addEventListener('input', event => {
+        if (!event.isTrusted) {
+          this.renderValue(container);
+        } else {
+          const token = this.setConfigToken = {};
+          setTimeout(() => {
+            if (this.setConfigToken !== token) return;
+            this.setConfig(input.value);
+            if (document.activeElement !== input) {
+              this.renderValue(container);
+            }
+          }, 100);
+        }
+      });
+      input.addEventListener('blur', event => {
+        this.renderValue(container);
+      });
+      input.setAttribute('yawf-config-input', this.configId);
+      container.appendChild(input);
+      return container;
+    }
+    renderValue(container) {
+      container = super.renderValue(container);
+      const selector = `input[yawf-config-input="${this.configId}"]`;
+      const input = container.querySelector(selector);
+      const config = this.getConfig();
+      const hasFocus = input === document.activeElement;
+      if (input && !hasFocus && input.value !== this.stringify(config)) {
+        input.value = this.stringify(config);
+      }
+      return container;
+    }
+  }
+  rule.class.InputConfigItem = InputConfigItem;
+  rule.types.input = InputConfigItem;
 
   /**
    * 一个数字输入框
    * 允许定义 min, max, step 属性
    * 对应一个 number 输入框
    */
-  class NumberConfigItem extends ConfigItem {
+  class NumberConfigItem extends InputConfigItem {
     constructor(item, parent) {
       super(item, parent);
     }
-    get initial() { return this.min; }
+    get inputType() { return 'number'; }
+    get initial() { return Math.min(Math.max(this.min, 0), this.max); }
     get min() { return 0; }
     get max() { return Infinity; }
     get step() { return 1; }
@@ -581,46 +641,17 @@
       return number;
     }
     render() {
-      const container = document.createElement('span');
-      container.setAttribute('yawf-config-item', this.configId);
+      const container = super.render();
       container.classList.add('yawf-config-number');
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.value = this.getConfig();
+      const input = container.querySelector('input');
       if (+this.min === this.min && this.min !== -Infinity) input.min = this.min;
       if (+this.max === this.max && this.max !== Infinity) input.max = this.max;
       if (+this.step === this.step && Number.isFinite(this.step)) input.step = this.step;
-      input.addEventListener('input', event => {
-        if (!event.isTrusted) {
-          this.renderValue(container);
-        } else {
-          const token = this.setConfigToken = {};
-          setTimeout(() => {
-            if (this.setConfigToken !== token) return;
-            this.setConfig(+input.value);
-          }, 100);
-        }
-      });
-      input.addEventListener('blur', event => {
-        this.renderValue(container);
-      });
-      input.setAttribute('yawf-config-input', this.configId);
-      container.appendChild(input);
-      return container;
-    }
-    renderValue(container) {
-      container = super.renderValue(container);
-      const selector = `input[type="number"][yawf-config-input="${this.configId}"]`;
-      const number = container.querySelector(selector);
-      const config = this.getConfig();
-      const hasFocus = number === document.activeElement;
-      if (number && !hasFocus && +number.value !== config) {
-        number.value = config;
-      }
       return container;
     }
   }
   rule.class.NumberConfigItem = NumberConfigItem;
+  rule.types.number = NumberConfigItem;
 
   /**
    * 范围输入框
@@ -678,12 +709,13 @@
     }
   }
   rule.class.RangeConfigItem = RangeConfigItem;
+  rule.types.range = RangeConfigItem;
 
   /**
    * 一个颜色选择框
    * 对应一个 color 输入框
    */
-  class ColorConfigItem extends ConfigItem {
+  class ColorConfigItem extends InputConfigItem {
     constructor(item, parent) {
       super(item, parent);
     }
@@ -694,35 +726,15 @@
       return value;
     }
     render() {
-      const container = document.createElement('span');
-      container.setAttribute('yawf-config-item', this.configId);
+      const container = super.render();
       container.classList.add('yawf-config-color');
-      const input = document.createElement('input');
+      const input = container.querySelector('input');
       input.type = 'color';
-      input.value = this.getConfig();
-      input.addEventListener('input', event => {
-        if (!event.isTrusted) input.value = this.getConfig();
-        else this.setConfig(input.value);
-      });
-      input.addEventListener('blur', event => {
-        this.renderValue(container);
-      });
-      input.setAttribute('yawf-config-input', this.configId);
-      container.appendChild(input);
-      return container;
-    }
-    renderValue(container) {
-      container = super.renderValue(container);
-      const selector = `input[type="color"][yawf-config-input="${this.configId}"]`;
-      const color = container.querySelector(selector);
-      const config = this.getConfig();
-      if (color && color.value !== config) {
-        color.value = config;
-      }
       return container;
     }
   }
   rule.class.ColorConfigItem = ColorConfigItem;
+  rule.types.color = ColorConfigItem;
 
   i18n.keyboardDisabled = {
     cn: '（已禁用）',
@@ -781,6 +793,7 @@
     }
   }
   rule.class.KeyboardConfigItem = KeyboardConfigItem;
+  rule.types.key = KeyboardConfigItem;
 
   /**
    * 一个文本输入框
@@ -824,7 +837,8 @@
       return container;
     }
   }
-  rule.class.ColorConfigItem = ColorConfigItem;
+  rule.class.TextConfigItem = TextConfigItem;
+  rule.types.text = TextConfigItem;
 
   /**
    * 显示一个小图标，鼠标划上去可以显示弹出起泡
@@ -848,6 +862,7 @@
     }
   }
   rule.class.BubbleConfigItem = BubbleConfigItem;
+  rule.types.bubble = BubbleConfigItem;
 
   i18n.collectionAddButton = {
     cn: '添加',
@@ -1126,6 +1141,7 @@
     }
   }
   rule.class.StringCollectionConfigItem = StringCollectionConfigItem;
+  rule.types.strings = StringCollectionConfigItem;
 
   class RegExpCollectionConfigItem extends StringCollectionConfigItem {
     constructor(item, parent) {
@@ -1213,6 +1229,7 @@
     }
   }
   rule.class.RegExpCollectionConfigItem = RegExpCollectionConfigItem;
+  rule.types.regexen = RegExpCollectionConfigItem;
 
   class UserIdCollectionConfigItem extends CollectionConfigItem {
     normalizeItem(value) {
@@ -1267,6 +1284,7 @@
     }
   }
   rule.class.UserIdCollectionConfigItem = UserIdCollectionConfigItem;
+  rule.types.users = UserIdCollectionConfigItem;
 
   class UserNameCollectionConfigItem extends StringCollectionConfigItem {
     async getSuggestionItems(userInput) {
@@ -1286,6 +1304,8 @@
       return [value.name];
     }
   }
+  rule.class.UserNameCollectionConfigItem = UserNameCollectionConfigItem;
+  rule.types.usernames = UserNameCollectionConfigItem;
 
   class TopicCollectionConfigItem extends StringCollectionConfigItem {
     async getSuggestionItems(userInput) {
@@ -1305,6 +1325,8 @@
       return [value];
     }
   }
+  rule.class.TopicCollectionConfigItem = TopicCollectionConfigItem;
+  rule.types.topics = TopicCollectionConfigItem;
 
   class GroupIdCollectionConfigItem extends CollectionConfigItem {
     normalizeItem(value) {
@@ -1349,25 +1371,16 @@
     }
   }
   rule.class.GroupIdCollectionConfigItem = GroupIdCollectionConfigItem;
+  rule.types.groups = GroupIdCollectionConfigItem;
 
   const configItemBuilder = function (item, parent) {
     if (!item) return null;
-    if (item.type === 'boolean') return new BooleanConfigItem(item, parent);
-    if (item.type === 'select') return new SelectConfigItem(item, parent);
-    if (item.type === 'number') return new NumberConfigItem(item, parent);
-    if (item.type === 'range') return new RangeConfigItem(item, parent);
-    if (item.type === 'color') return new ColorConfigItem(item, parent);
-    if (item.type === 'text') return new TextConfigItem(item, parent);
-    if (item.type === 'bubble') return new BubbleConfigItem(item, parent);
-    if (item.type === 'strings') return new StringCollectionConfigItem(item, parent);
-    if (item.type === 'regexen') return new RegExpCollectionConfigItem(item, parent);
-    if (item.type === 'users') return new UserIdCollectionConfigItem(item, parent);
-    if (item.type === 'usernames') return new UserNameCollectionConfigItem(item, parent);
-    if (item.type === 'topics') return new TopicCollectionConfigItem(item, parent);
-    if (item.type === 'groups') return new GroupIdCollectionConfigItem(item, parent);
-    if (item.type === 'key') return new KeyboardConfigItem(item, parent);
-    if (item.type === 'offscreen') return new OffscreenConfigItem(item, parent);
-    return new ConfigItem(item, parent);
+    const constructor = rule.types[item.type];
+    if (!constructor) {
+      return new ConfigItem(item, parent);
+    } else {
+      return new constructor(item, parent);
+    }
   };
 
   /**
