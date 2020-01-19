@@ -19,7 +19,7 @@
     const encoder = new TextEncoder();
     return encoder.encode(str);
   };
-  
+
   /**
    * @param {Uint8Array|string} buffer
    * @param {number} crc
