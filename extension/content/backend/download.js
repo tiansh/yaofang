@@ -30,19 +30,31 @@
 
   download.filename = validFilename;
 
+  class Download {
+    constructor({ id, success }) {
+      this.id = id;
+      this.success = success;
+    }
+    show() {
+      return message.invoke.downloadShow(this.id);
+    }
+  }
+
   /**
    * @param {{ blob: Blob, filename: string }}
    */
   download.blob = async function ({ blob, filename }) {
     const dataUrl = await urls.blobToDataUrl(blob);
-    await message.invoke.downloadFile({ url: dataUrl, filename });
+    const result = await message.invoke.downloadFile({ url: dataUrl, filename });
+    return new Download(result);
   };
 
   /**
    * @param {{ url: string, filename: string }[]}
    */
   download.urls = async function (files) {
-    await message.invoke.downloadFiles(files);
+    const results = await message.invoke.downloadFiles(files);
+    return results.map(result => new Download(result));
   };
 
 }());

@@ -9,18 +9,24 @@
   const downloadByUrl = async function ({ url, filename }) {
     const downloadId = await browser.downloads.download({ url, filename });
     return new Promise(async resolve => {
-      const downloadFinish = function () {
+      const downloadFinish = function (error) {
         browser.downloads.onChanged.removeListener(downloadOnChanged);
-        resolve();
+        resolve({ id: downloadId, success: !error });
+      };
+      const stateUpdate = function (state) {
+        if (!state || state === 'in_progress') return;
+        if (state === 'complete') downloadFinish();
+        else downloadFinish(new Error('Download Failed'));
       };
       const downloadOnChanged = function ({ id, state }) {
         if (id !== downloadId) return;
-        if (!state || state.current !== 'complete') return;
-        downloadFinish();
+        if (state) stateUpdate(state.current);
       };
       browser.downloads.onChanged.addListener(downloadOnChanged);
-      const [downloadItem] = await browser.downloads.search({ id: downloadId });
-      if (downloadItem.state === 'complete') downloadFinish();
+      const downloadItemPromise = browser.downloads.search({ id: downloadId });
+      downloadItemPromise.then(([downloadItem]) => {
+        stateUpdate(downloadItem.state);
+      }, error => downloadFinish(new Error(error)));
     });
   };
 
@@ -31,10 +37,11 @@
     if (url.startsWith('data:')) {
       const blob = await fetch(url).then(resp => resp.blob());
       const blobUrl = URL.createObjectURL(blob);
-      await downloadByUrl({ url: blobUrl, filename });
+      const result = await downloadByUrl({ url: blobUrl, filename });
       URL.revokeObjectURL(blobUrl);
+      return result;
     } else {
-      await downloadByUrl({ url, filename });
+      return await downloadByUrl({ url, filename });
     }
   };
   message.export(downloadFile);
@@ -43,11 +50,19 @@
    * @param {{ url: string, filename: string }[]}
    */
   const downloadFiles = async function downloadFiles(files) {
+    const results = [];
     for (let i = 0, l = files.length; i < l; i++) {
-      await downloadFile(files[i]);
+      const result = await downloadFile(files[i]);
+      results.push(result);
     }
+    return results;
   };
   message.export(downloadFiles);
 
+  const downloadShow = async function downloadShow(id) {
+    await browser.downloads.show(id);
+  };
+  message.export(downloadShow);
 
 }());
+

@@ -140,6 +140,8 @@
         importData({ config, source });
       });
       exportButton.addEventListener('click', event => {
+        if (exportButton.classList.contains('yawf-export-busy')) return;
+        exportButton.classList.add('yawf-export-busy');
         const config = rule.configPool.export();
         const { name, version } = browser.runtime.getManifest();
         const [major, minor, micro] = version.split('.');
@@ -156,7 +158,19 @@
         const date = new Date();
         const dateStr = date.toISOString().replace(/-|T.*/g, '');
         const filename = download.filename(`${username}-${i18n.configFilename}-${dateStr}.json`);
-        download.blob({ blob, filename });
+        const finishDownload = function () {
+          exportButton.classList.remove('yawf-export-busy');
+        };
+        download.blob({ blob, filename }).then(download => {
+          if (!download || !download.show) {
+            finishDownload();
+          } else {
+            setTimeout(() => {
+              download.show();
+              finishDownload();
+            }, 500);
+          }
+        }, finishDownload);
       });
       resetButton.addEventListener('click', async event => {
         const confirmAnswer = await ui.confirm({
@@ -187,6 +201,7 @@
 
   css.append(`
 .yawf-export, .yawf-reset, .yawf-import-wbp { margin-left: 10px; }
+.yawf-export-busy { cursor: progress; }
 `);
 
   ; (function () {
