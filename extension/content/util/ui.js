@@ -138,7 +138,7 @@
       const code = keyboard.event(event);
       if (code === keyboard.code.ENTER && button && button.ok) button.ok(event);
       else if (code === keyboard.code.ESC) {
-        (button && (button.cancel || button.close) || (() => hide()))(event);
+        (button && (button.cancel || button.close) || hide)(event);
       } else return;
       event.stopPropagation();
       event.preventDefault();
@@ -153,13 +153,16 @@
       setTimeout(function () { document.body.removeChild(dialog); }, 200);
       dialogStack.splice(dialogStack.indexOf(dialog), 1);
     };
+    const resetPosition = function ({ x, y } = {}) {
+      if (x == null) x = (window.innerWidth - dialog.clientWidth) / 2;
+      if (y == null) y = (window.innerHeight - dialog.clientHeight) / 2;
+      setPos({ x, y: y + window.pageYOffset });
+    };
     // 显示对话框
     const show = function ({ x, y } = {}) {
       document.body.appendChild(cover);
       document.body.appendChild(dialog);
-      if (x == null) x = (window.innerWidth - dialog.clientWidth) / 2;
-      if (y == null) y = (window.innerHeight - dialog.clientHeight) / 2;
-      setPos({ x, y: y + window.pageYOffset });
+      resetPosition({ x, y });
       document.addEventListener('keydown', keys);
       document.addEventListener('scroll', resetPos);
       window.addEventListener('resize', resetPos);
@@ -171,7 +174,7 @@
       }, 200);
       dialogStack.push(dialog);
     };
-    return { hide, show, dom: dialog };
+    return { hide, show, resetPosition, dom: dialog };
   };
 
   const predefinedDialog = (buttons, { icon: defaultIcon }) => {
