@@ -26,6 +26,7 @@ body {
   right: 0;
   overflow: auto;
   z-index: 0;
+  scrollbar-color: #444 #333;
 }
 
 #container.cur-zoom-in {

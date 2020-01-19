@@ -17,6 +17,7 @@
   const i18n = util.i18n;
   const css = util.css;
   const urls = util.urls;
+  const crc = util.crc;
 
   const media = feeds.media = {};
 
@@ -53,6 +54,20 @@
     return url;
   };
 
+  const getUrlByPid = function (pid, size = 'large') {
+    if ('wy'.includes(pid[9])) {
+      const index = (crc.crc32(pid) & 3) + 1;
+      const extension = pid[21] === 'g' ? 'gif' : 'jpg';
+      if (pid[9] === 'w') {
+        return new URL(`//ww${index}.sinaimg.cn/${size}/${pid}.${extension}`, location);
+      } else {
+        return new URL(`//wx${index}.sinaimg.cn/${size}/${pid}.${extension}`, location);
+      }
+    } else {
+      return new URL(`//ss1.sinaimg.cn/${size}/${pid}&690`, location);
+    }
+  };
+
   const getImagesInfo = function (ref) {
     let container, imgs, img;
     if (ref.matches('.WB_detail .WB_expand_media *')) {
@@ -62,8 +77,8 @@
       img = container.querySelector('.media_show_box img') ||
         container.querySelector('.current img');
       if (ref.matches('[action-type="widget_photoview"]')) {
-        img = document.createElement('image');
-        img.src = 'https://wx1.sinaimg.cn/large/' + new URLSearchParams(ref.getAttribute('action-data')).get('pid') + '.jpg';
+        img = document.createElement('img');
+        img.src = getUrlByPid(new URLSearchParams(ref.getAttribute('action-data')).get('pid'));
       }
       // fallthrough
     } else if (ref.matches('.WB_expand_media .tab_feed_a *')) {
@@ -80,7 +95,7 @@
       // fallthrough
     } else if (ref.getAttribute('imagecard')) {
       const pid = new URLSearchParams(ref.getAttribute('imagecard')).get('pid');
-      return { images: ['https://wx1.sinaimg.cn/large/' + pid + '.jpg'], current: 1 };
+      return { images: [getUrlByPid(pid).href], current: 1 };
     } else if (ref.href && ref.href.indexOf('javascript:') === -1) {
       return { images: [ref.href], current: 1 };
     } else if (ref instanceof HTMLImageElement && ref.src) {
@@ -136,6 +151,7 @@
         }
       };
 
+      // 添加一个查看原图的按钮（在查看大图旁边）
       const viewOriginalButton = viewLargeLink => {
         const viewOriginalLinkContainer = document.createElement('ul');
         viewOriginalLinkContainer.innerHTML = '<li><span class="line S_line1"><a class="S_txt1" href="javascript:;" target="_blank"><i class="W_ficon ficon_search S_ficon">l</i></a></span></li>';
@@ -183,6 +199,7 @@
         download.urls(files);
       };
 
+      // 添加一个下载图片的按钮（在查看大图旁边）
       const downloadButton = viewLargeLink => {
         const downloadLinkContainer = document.createElement('ul');
         downloadLinkContainer.innerHTML = '<li><span class="line S_line1"><a class="S_txt1" href="javascript:;" target="_blank"><i class="W_ficon ficon_search S_ficon">|</i></a></span></li>';
@@ -198,6 +215,7 @@
         return downloadLinkContainer.firstChild;
       };
 
+      // 使按钮不可用
       const disableButton = button => {
         const link = button.querySelector('a');
         link.className = 'S_ficon_dis';
@@ -231,22 +249,50 @@
       };
       observer.dom.add(addImageHandlerLink);
 
-      // 处理点击时直接查看原图/下载的情况
-      if (directView || directDownload) {
-        document.addEventListener('click', function (event) {
-          const target = event.target;
-          if (event.button !== 0) return; // 只响应左键操作
-          if (event.shiftKey) return; // 按下 Shift 时不响应
-          if (target.closest('.yawf-W_icon_tag_9p')) return; // 展开过多被折叠的图片
-          const pic = target.closest('.WB_media_wrap .WB_pic') || target.closest('a[imagecard]');
-          if (!pic) return;
-          event.stopPropagation();
-          const { images, current } = getImagesInfo(pic);
-          if (directView) showOriginalPage({ images, current });
-          else downloadImages(images, target);
-        }, true);
-      }
+      // 让鼠标浮上显示图片卡片的链接指向图片
+      const imageCardAsLink = function () {
+        const imagecards = document.querySelectorAll('a[imagecard]:not([yawf-imagecard-link])');
+        if (!imagecards.length) return;
+        imagecards.forEach(imagecard => {
+          imagecard.setAttribute('yawf-imagecard-link', 'yawf-imagecard-link');
+          const pid = new URLSearchParams(imagecard.getAttribute('imagecard')).get('pid');
+          const url = getUrlByPid(pid);
+          imagecard.href = url;
+          imagecard.target = '_blank';
+          imagecard.addEventListener('click', event => {
+            event.preventDefault();
+          });
+        });
+      };
+      observer.dom.add(imageCardAsLink);
 
+      // 处理点击时直接查看原图/下载的情况
+      document.addEventListener('click', function (event) {
+        const target = event.target;
+        if (event.button !== 0) return; // 只响应左键操作
+        if (target.closest('.yawf-W_icon_tag_9p')) return; // 展开过多被折叠的图片按钮不响应
+        const pic = target.closest('.WB_media_wrap .WB_pic') || target.closest('a[imagecard]');
+        if (!pic) return;
+        const active = (function () {
+          const shift = event.shiftKey;
+          const ctrl = /mac/i.test(navigator.platform) ? event.metaKey : event.ctrlKey;
+          if (shift) return null;
+          if (!directView && viewEnabled && ctrl) return 'view';
+          if (!directDownload && downloadEnabled && ctrl) return 'download';
+          if (directView) return 'view';
+          if (directDownload) return 'download';
+          return null;
+        }());
+        if (!active) return;
+        event.stopPropagation();
+        event.preventDefault();
+        const { images, current } = getImagesInfo(pic);
+        const isView = directView || !directDownload && viewEnabled;
+        if (isView) showOriginalPage({ images, current });
+        else downloadImages(images, target);
+      }, true);
+
+      // 添加右键菜单支持
       if (env.config.contextMenuSupported && (contextMenuView || contextMenuDownload)) {
         contextmenu.addListener(function (/** @type {MouseEvent} */event) {
           /** @type {Element & EventTarget} */

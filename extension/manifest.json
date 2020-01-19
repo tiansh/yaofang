@@ -84,6 +84,7 @@
         "content/util/dom.js",
         "content/util/time.js",
         "content/util/mid.js",
+        "content/util/crc.js",
 
         "common/network/network.js",
         "common/network/fetch.js",
