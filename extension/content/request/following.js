@@ -18,8 +18,18 @@
     util.debug('Fetch Follow: fetch page %s', url);
     util.debug('fetch url %s', url);
     const resp = await network.fetchText(url);
-    const re = /<script>FM\.view\({"ns":"pl\.relation\.myFollow\.index".*"html":(?=.*member_box)(".*")}\)<\/script>\n/;
+    const re = /<script>FM\.view\({"ns":"pl\.relation\.myFollow\.index".*"html":(?=.*(?:member_box|WB_empty))(".*")}\)<\/script>\n/;
     const dom = util.dom.content(document.createElement('div'), JSON.parse(resp.match(re)[1]));
+
+    // 如果在获取过程中用户手动取消了一些关注，可能导致最后几页是空白的
+    // 其实看到这种情况就说明出问题了
+    const empty = dom.querySelector('.WB_empty');
+    if (empty) {
+      return {
+        allPages: [],
+        followInPage: [],
+      };
+    }
 
     const allPages = (function () {
       try {

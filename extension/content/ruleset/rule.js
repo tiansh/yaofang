@@ -368,8 +368,10 @@
     getConfig() {
       this.initConfig();
       const value = this.config.get();
+      const stringifyValue = value == null ? value : JSON.stringify(value);
       const normalize = this.normalize(value);
-      if (value && normalize && JSON.stringify(value) !== JSON.stringify(normalize)) {
+      const stringifyNormalize = normalize == null ? normalize : JSON.stringify(normalize);
+      if (stringifyValue !== stringifyNormalize) {
         this.config.set(normalize);
       }
       return normalize;

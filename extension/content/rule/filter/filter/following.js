@@ -26,6 +26,18 @@
         value.timestamp = Date.now();
         return super.setConfig(value);
       },
+      restart() {
+        const value = this.getConfig();
+        value.startTime = Date.now();
+        this.setConfig(value);
+        return value.startTime;
+      },
+      isOutDated() {
+        const value = this.getConfig();
+        if (!value.timestamp) return false;
+        return value.startTime < Date.now() - 864e5 * 3;
+      },
+      // 其实设置读写并不是同步的，但是也没什么更好的办法就是了
       getLock() {
         const value = this.getConfig();
         const lock = Date.now() + [...Array(100)].map(_ => Math.random() * 10 | 0).join('');
@@ -49,6 +61,9 @@
         if (!value.timestamp) return {};
         if (value.timestamp > Date.now() + 60e3) return {};
         if (value.timestamp < Date.now() - 86400e3 * 7) return {};
+        if (value.allPages && !value.startTime) {
+          value.startTime = Date.now();
+        }
         if (value.pendingPages) {
           if (!Array.isArray(value.list)) return {};
         }
@@ -92,6 +107,7 @@
   const fetchInitialize = async function () {
     const { fetchData } = followingContext;
     const lock = fetchData.touchTimestamp();
+    fetchData.restart();
     const { allPages, followInPage } = await request.getFollowingPage(init.page.$CONFIG.uid);
     fetchData.assertLock(lock);
     const fetchContext = fetchData.getConfig();
@@ -165,7 +181,7 @@
     const { fetchData, lastList, lastChange } = followingContext;
 
     // 如果连续 10 分钟没有更新，那么可能是之前负责更新的那个页面被关闭或者出错了
-    const { timestamp, lock, allPages } = fetchData.getConfig();
+    const { timestamp, lock } = fetchData.getConfig();
     if (timestamp > Date.now() - 600e3 && lock) {
       setTimeout(() => {
         if (fetchData.getConfig().timestamp === timestamp) updateFollowList();
@@ -174,10 +190,13 @@
     }
 
     try {
+      if (fetchData.isOutDated()) {
+        fetchData.setConfig({});
+      }
       const lock = fetchData.getLock();
       util.debug('Fetch Follow: start follow fetching');
       // 如果之前获取到一半，那么就继续之前的工作，否则开始新工作
-      if (!allPages) {
+      if (!fetchData.getConfig().allPages) {
         util.debug('Fetch Follow: fetch first page');
         fetchData.assertLock(lock);
         await fetchInitialize();
