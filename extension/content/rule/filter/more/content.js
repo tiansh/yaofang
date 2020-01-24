@@ -188,9 +188,9 @@
   });
 
   i18n.koiForwardFeedFilter = {
-    cn: '转发图标是锦鲤的微博（转发抽奖的微博？）',
-    tw: '轉發圖示是錦鯉的微博（轉發抽獎的微博？）',
-    en: 'Forward icon as a koi (forward this weibo for draw?)',
+    cn: '转发图标是锦鲤的微博（转发抽奖微博）',
+    tw: '轉發圖示是錦鯉的微博（轉發抽獎微博）',
+    en: 'Forward icon as a koi (forward this weibo for draw)',
   };
   i18n.koiForwardFeedFilterDetail = {
     cn: '微博会将转发抽奖的消息的转发按钮显示成一条鱼的图标。这项规则会根据这个图标作为判断依据隐藏对应的微博。',
