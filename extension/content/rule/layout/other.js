@@ -9,6 +9,7 @@
   const fontList = yawf.fontList;
   const chatframe = yawf.chatframe;
   const backend = yawf.backend;
+  const feedParser = yawf.feed;
 
   const layout = yawf.rules.layout;
 
@@ -393,48 +394,53 @@
     });
   }
 
-  if (!(function isCst() {
-    // 如果用户使用的是已经是和东八区一致的时区，那么我们就不提供这个功能了
-    const year = new Date().getFullYear();
-    return [...Array(366)].every((_, i) => new Date(year, 0, i).getTimezoneOffset() === -480);
-  }())) {
+  Object.assign(i18n, {
+    useLocaleTimezone: {
+      cn: '使用本机时区',
+      tw: '使用本機時區',
+      en: 'Use locale timezone',
+    },
+    feedsRead: { cn: '你看到这里', tw: '你看到這裡', en: 'you got here' },
+  });
 
-    Object.assign(i18n, {
-      useLocaleTimezone: {
-        cn: '使用本机时区',
-        tw: '使用本機時區',
-        en: 'Use locale timezone',
-      },
-      feedsRead: { cn: '你看到这里', tw: '你看到這裡', en: 'you got here' },
-    });
+  // 使用本地时区
+  details.timezone = rule.Rule({
+    id: 'layout_locale_timezone',
+    version: 1,
+    parent: details.details,
+    template: () => i18n.useLocaleTimezone,
+    hidden: time.isCstEquivalent(),
+    init() {
 
-    // 使用本地时区
-    details.timezone = rule.Rule({
-      id: 'layout_locale_timezone',
-      version: 1,
-      parent: details.details,
-      template: () => i18n.useLocaleTimezone,
-      ainit() {
+      const useLocale = this.isEnabled();
+      const feedUseYear = yawf.rules.feeds.details.feedAbsoluteTime.isEnabled();
 
-        const updateDate = function (element) {
-          const date = parseInt(element.getAttribute('yawf-date'), 10);
-          const formatTimeResult = util.time.format(date);
-          if (element.textContent !== formatTimeResult) {
-            element.textContent = formatTimeResult;
-          }
-          const formatTimeDetailResult = util.time.format(date, 'full');
+      if (!useLocale && !feedUseYear) return;
+
+      const updateDate = function (element) {
+        const date = parseInt(element.getAttribute('yawf-date'), 10);
+        const format = element.getAttribute('yawf-date-format') || null;
+        const locale = useLocale ? 'current' : 'cst';
+        const formatTimeResult = util.time.format(date, { format, locale });
+        if (element.textContent !== formatTimeResult) {
+          element.textContent = formatTimeResult;
+        }
+        if (useLocale) {
+          const formatTimeDetailResult = util.time.format(date, { format: 'full', locale: 'current' });
           if (element.title !== formatTimeDetailResult) {
             element.title = formatTimeDetailResult;
           }
-        };
+        }
+      };
 
-        const updateAllDate = function () {
-          const dates = document.querySelectorAll('[yawf-date]');
-          Array.from(dates).forEach(element => {
-            updateDate(element);
-          });
-        };
+      const updateAllDate = function () {
+        const dates = document.querySelectorAll('[yawf-date]');
+        Array.from(dates).forEach(element => {
+          updateDate(element);
+        });
+      };
 
+      if (useLocale) {
         const handleDateElements = function handleDateElements() {
           const [feedListTimeTip, ...moreFeedListTimeTip] = document.querySelectorAll('[node-type="feed_list_timeTip"][date]');
           moreFeedListTimeTip.forEach(element => element.remove());
@@ -462,8 +468,6 @@
         };
 
         observer.dom.add(handleDateElements);
-        setInterval(updateAllDate, 1e3);
-
 
         // 处理文本显示的时间
         const handleTextDateElements = function changeDateText() {
@@ -494,13 +498,31 @@
           });
         };
         observer.dom.add(handleTextDateElements);
-        css.append(`
+      }
+
+      if (feedUseYear) {
+        observer.feed.onAfter(function (feed) {
+          const dates = feedParser.date.dom(feed);
+          dates.forEach(element => {
+            if (element.getAttribute('date')) {
+              const date = parseInt(element.getAttribute('date'), 10);
+              element.setAttribute('yawf-date', date);
+              element.removeAttribute('date');
+            }
+            element.setAttribute('yawf-date-format', 'year');
+            updateDate(element);
+          });
+        });
+      }
+
+      setInterval(updateAllDate, 1e3);
+
+      css.append(`
 .WB_feed_v3 .WB_from span[yawf-date] { margin-left: 0; }
 [yawf-date]::after { content: " "; }
 `);
-      },
-    });
-  }
+    },
+  });
 
   if (env.config.chatInPageSupported) {
 
