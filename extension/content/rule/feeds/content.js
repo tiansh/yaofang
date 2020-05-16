@@ -389,6 +389,7 @@
       i: { type: 'bubble', icon: 'info', template: () => i18n.viewEditInfoDetail },
     },
     ainit() {
+      const timeLocale = layout.details.timezone.isEnabled() ? 'current' : 'cst';
       /**
        * @param {string} sourceStr
        * @param {string} targetStr
@@ -602,7 +603,7 @@
             li.classList.add('S_line1');
             li.innerHTML = '<a href="javascript:;" class="S_txt1"></a>';
             const a = li.firstChild;
-            a.textContent = util.time.format(version.date, 'month');
+            a.textContent = util.time.format(version.date, { format: 'month', locale: timeLocale });
             a.addEventListener('click', function (event) {
               if (!event.isTrusted) return;
               onClick(version);
