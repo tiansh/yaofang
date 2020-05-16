@@ -283,8 +283,10 @@
       if (!node.matches('.WB_detail > .WB_info > .W_fb[usercard]')) return null;
       if (!detail) return '';
       const name = '@' + node.textContent.trim();
+      const id = new URLSearchParams(node.getAttribute('usercard')).get('id');
+      const link = 'https://weibo.com/u/' + id;
       const icons = userIcons(node);
-      return [name, ...icons].join(' ');
+      return [name, link, ...icons].join(' ');
     };
     parsers.push(author);
     /**
@@ -295,8 +297,10 @@
       if (!node.matches('.WB_expand > .WB_info > .W_fb[usercard]')) return null;
       if (!detail) return '';
       const name = node.textContent.trim().replace(/^@?/, '@');
+      const id = new URLSearchParams(node.getAttribute('usercard')).get('id');
+      const link = 'https://weibo.com/u/' + id;
       const icons = userIcons(node);
-      return [name, ...icons].join(' ');
+      return [name, link, ...icons].join(' ');
     };
     parsers.push(original);
     /**
