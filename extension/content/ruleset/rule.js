@@ -357,8 +357,7 @@
     addConfigUiListener() {
       this.initConfig();
       this.config.addListener(newValue => {
-        const items = this.getRenderItems();
-        items.forEach(item => this.renderValue(item));
+        this.renderAllValues();
       });
     }
     /**
@@ -418,6 +417,13 @@
      */
     renderValue(container) {
       return container;
+    }
+    /**
+     * 更新渲染所有实例
+     */
+    renderAllValues() {
+      const items = this.getRenderItems();
+      items.forEach(item => this.renderValue(item));
     }
   }
   rule.class.ConfigItem = ConfigItem;
@@ -876,7 +882,7 @@
     get initial() { return []; }
     normalize(value) {
       if (!Array.isArray(value)) return [];
-      return value.map(item => this.normalizeItem(item));
+      return value.map(item => this.normalizeItem(item)).filter(item => item != null);
     }
     normalizeItem(item) { return item; }
     track(item, index = -1) { return '' + index; }
@@ -1083,7 +1089,9 @@
       input.addEventListener('blur', updateInputSuggestion);
       const choseSuggestionListItem = listitem => {
         const item = JSON.parse(listitem.dataset.yawfSuggestionData);
-        this.addItem(this.normalizeItem(this.parseSuggestionItem(item)));
+        const normalized = this.normalizeItem(this.parseSuggestionItem(item));
+        if (normalized === null) return;
+        this.addItem(normalized);
         input.value = '';
         updateInputSuggestion();
       };
@@ -1524,15 +1532,17 @@
   rule.query = function ({
     base = tabs,
     filter = null,
+    includeHidden = false,
   } = {}) {
     const result = new Set();
     ; (function query(items) {
       items.forEach(item => {
+        if (item.hidden && !includeHidden) return;
+        if (item.disabled) return;
         if (item instanceof Tab || item instanceof Group) {
           query(item.children);
         }
         if (!(item instanceof Rule)) return;
-        if (item.disabled) return;
         if (filter && !filter(item)) return;
         result.add(item);
       });
@@ -1544,7 +1554,7 @@
   rule.init = function () {
     rule.style = css.add('');
     rule.inited = true;
-    rule.query().forEach(rule => rule.execute());
+    rule.query({ includeHidden: true }).forEach(rule => rule.execute());
   };
 
   init.onReady(() => {
