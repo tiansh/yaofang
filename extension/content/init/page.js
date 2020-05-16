@@ -7,6 +7,7 @@
   const init = yawf.init = yawf.init || {};
   const page = init.page = init.page || {};
 
+  // eslint-disable-next-line complexity
   page.type = function () {
     const search = new URLSearchParams(location.search);
     // 导览页面
@@ -27,6 +28,8 @@
       if ($CONFIG.domain === '100202') return 'book';
       // 个人主页
       if ($CONFIG.domain === '100505') return 'profile';
+      // 个人主页（企业认证用户）
+      if ($CONFIG.domain === '100606') return 'profile';
       // 话题页（超话）
       if ($CONFIG.domain === '100808') return 'topic';
       // 音乐
