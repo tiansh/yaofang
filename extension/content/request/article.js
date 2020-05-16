@@ -108,13 +108,13 @@
   };
   const sanitizeAnchorElement = function (element) {
     let url;
-    try { url = element.href; } catch (e) { url = null; }
+    try { url = new URL(element.href); } catch (e) { url = null; }
     if (!url || !['http:', 'https:'].includes(url.protocol)) {
       const span = document.createElement('span');
       return span;
     }
     const anchor = document.createElement('a');
-    anchor.href = url;
+    anchor.href = url.href;
     anchor.referrerPolicy = 'no-referrer';
     anchor.target = '_blank';
     return anchor;
