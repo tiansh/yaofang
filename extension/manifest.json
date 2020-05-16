@@ -186,6 +186,7 @@
         "content/rule/feeds/layout.js",
         "content/rule/feeds/content.js",
         "content/rule/feeds/media.js",
+        "content/rule/feeds/other.js",
         "content/rule/feeds/reading.js",
 
         "content/rule/about/about.js",
