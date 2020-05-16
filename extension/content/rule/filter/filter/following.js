@@ -103,6 +103,26 @@
     followingContext = await getContext();
   }, { priority: util.priority.BEFORE });
 
+  /** @typedef {'inactive'|'waiting'|'starting'|'pending'|'running'|'running_fail'|'checking'|'checking_fail'} UpdateStatusStatus */
+  /** @type {{ status: UpdateStatusStatus, current: number, total: number, result: number }} */
+  const updateStatus = {
+    status: 'inactive',
+    current: 0,
+    total: 0,
+    result: 0,
+  };
+  const reportUpdateStatus = function (/** @type {UpdateStatusStatus} */status) {
+    const { fetchData } = followingContext;
+    const fetchContext = fetchData.getConfig();
+    Object.assign(updateStatus, {
+      status,
+      current: fetchContext.currentPage || 0,
+      total: (fetchContext.allPages || []).length,
+      result: (fetchContext.list || []).length,
+    });
+    following.autoCheckFollowing.ref.fetching.renderAllValues();
+  };
+
   // 获取第一页的数据
   const fetchInitialize = async function () {
     const { fetchData } = followingContext;
@@ -116,7 +136,7 @@
     fetchContext.currentPage = 1;
     fetchData.setConfig(fetchContext);
   };
-  // 获取最后一页的数据
+  // 获取后一页的数据
   const fetchNext = async function () {
     const { fetchData } = followingContext;
     const lock = fetchData.touchTimestamp();
@@ -178,6 +198,7 @@
 
   // 触发刷新流程，如果此时已经完成则强制重新开始
   const updateFollowList = async function () {
+    reportUpdateStatus('starting');
     const { fetchData, lastList, lastChange } = followingContext;
 
     // 如果连续 10 分钟没有更新，那么可能是之前负责更新的那个页面被关闭或者出错了
@@ -186,6 +207,7 @@
       setTimeout(() => {
         if (fetchData.getConfig().timestamp === timestamp) updateFollowList();
       }, 600e3);
+      reportUpdateStatus('pending');
       return;
     }
 
@@ -203,6 +225,7 @@
         util.debug('Fetch Follow: fetch first done');
       }
       while (hasNextPage()) {
+        reportUpdateStatus('running');
         await new Promise(resolve => setTimeout(resolve, 5e3));
         util.debug('Fetch Follow: fetch next page');
         fetchData.assertLock(lock);
@@ -214,10 +237,12 @@
     } catch (e) {
       util.debug(e);
       util.debug('Fetch Follow: fetching following failed');
+      reportUpdateStatus('running_fail');
       return;
     }
 
     try {
+      reportUpdateStatus('checking');
       const newList = removeDuplicate(fetchData.getConfig().list);
       const oldList = lastList.getConfig();
       const changeList = (lastChange.getConfig() || {});
@@ -234,7 +259,9 @@
     } catch (e) {
       util.debug('Fetch Follow: error while update result');
       util.debug(e);
+      reportUpdateStatus('checking_fail');
     }
+    reportUpdateStatus('inactive');
   };
 
   const clearFollowList = async function () {
@@ -304,7 +331,7 @@
     autoCheckFollowingDownload: { cn: '导出关注列表', tw: '匯出關注清單', en: 'Export Follow List' },
     autoCheckFollowingClean: { cn: '清除本地数据', tw: '清除本機資料', en: 'Clear Data' },
     autoCheckFollowingNow: { cn: '立即更新数据', tw: '立即更新資料', en: 'Update Now' },
-    autoCheckFollowingRunning: { cn: '（正在更新）', en: '(Updating)' },
+    autoCheckFollowingRunning: { cn: '（正在更新：{1}）', en: '(Updating: {1})' },
     autoCheckFollowingDialogTitle: { cn: '关注列表变化 - 药方 (YAWF)', tw: '關注清單變化 - 藥方 (YAWF)', en: 'Following List Changes - YAWF' },
     autoCheckFollowingTip: {
       cn: '您的关注列表自从上次检查并确认至今发生了如下变化，请您复查并确认：',
@@ -315,6 +342,19 @@
     autoCheckFollowingLost: { cn: '减少如下关注', tw: '減少如下關注', en: 'Recent Unfollowed' },
     autoCheckFollowingRename: { cn: '如下关注修改了昵称', tw: '如下關注修改了暱稱', en: 'Recent Renamed' },
     autoCheckFollowingConfirmed: { cn: '已确认', tw: '已確認', en: 'Confirmed' },
+    checkingProgress: {
+      cn: '【{status}】{current}/{total}页，{result}关注',
+      tw: '【{status}】{current}/{total}頁，{result}關注',
+      en: '[{status}] {current}/{total} pages，{result} followings',
+    },
+    checkingProgressInactive: { cn: '尚未启动', tw: '尚未啟動', en: 'Inactive' },
+    checkingProgressWaiting: { cn: '等待开始', tw: '等待開始', en: 'Wait to Start' },
+    checkingProgressStarting: { cn: '正在初始化', tw: '正在初期化', en: 'Initializing' },
+    checkingProgressPending: { cn: '正由其他页面负责更新', tw: '正由其他頁面負責更新', en: 'Updating by Other Pages' },
+    checkingProgressRunning: { cn: '正在获取数据', tw: '正在擷取資料', en: 'Fetching' },
+    checkingProgressChecking: { cn: '正在比对结果', tw: '正在比對結果', en: 'Comparing List' },
+    checkingProgressRunningFail: { cn: '数据获取出错', tw: '資料擷取出錯', en: 'Error While Fetching' },
+    checkingProgressCheckingFail: { cn: '结果比对出错', tw: '結果比對出錯', en: 'Error While Comparing' },
   });
 
   /**
@@ -398,7 +438,6 @@
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
           buttonArea.innerHTML = '<span class="yawf-following-checking"></span><a href="javascript:;" class="W_btn_b yawf-following-check-now"><span class="W_f14"></span></a>';
-          buttonArea.querySelector('.yawf-following-checking').textContent = i18n.autoCheckFollowingRunning;
           const checkingText = buttonArea.querySelector('.yawf-following-checking');
           const checkNowButton = buttonArea.querySelector('.yawf-following-check-now');
           checkNowButton.addEventListener('click', event => {
@@ -406,8 +445,7 @@
             updateFollowList();
           });
           checkNowButton.querySelector('span').textContent = i18n.autoCheckFollowingNow;
-          if (fetchData && fetchData.lock) checkNowButton.style.display = 'none';
-          else checkingText.style.display = 'none';
+          this.renderValue(buttonArea);
           return buttonArea;
         },
         renderValue(buttonArea) {
@@ -417,6 +455,23 @@
           if (fetchData && fetchData.lock) {
             checkNowButton.style.display = 'none';
             checkingText.style.display = '';
+            const progress = {
+              status: {
+                waiting: i18n.checkingProgressWaiting,
+                starting: i18n.checkingProgressStarting,
+                inactive: i18n.checkingProgressInactive,
+                pending: i18n.checkingProgressPending,
+                running: i18n.checkingProgressRunning,
+                running_fail: i18n.checkingProgressRunningFail,
+                checking: i18n.checkingProgressChecking,
+                checking_fail: i18n.checkingProgressCheckingFail,
+              }[updateStatus.status],
+              total: updateStatus.total,
+              current: updateStatus.current,
+              result: updateStatus.result,
+            };
+            const statusText = i18n.checkingProgress.replace(/\{(\w+)\}/g, (_, w) => progress[w]);
+            checkingText.textContent = i18n.autoCheckFollowingRunning.replace(/\{1\}/, () => statusText);
           } else {
             checkingText.style.display = 'none';
             checkNowButton.style.display = '';
@@ -474,7 +529,7 @@
     },
     init() {
       const enabled = this.isEnabled();
-      const frequency = this.ref.frequency.getConfig();
+      const frequency = this.ref.frequency.getConfig() && 0;
       const { fetchData, lastList, lastChange } = followingContext;
       let shouldUpdate = false;
       const fetchContext = fetchData.getConfig();
@@ -482,7 +537,10 @@
       if (fetchContext.lock) shouldUpdate = true;
       if (enabled && (!list || !list.list)) shouldUpdate = true;
       if (enabled && list && list.timestamp < Date.now() - frequency) shouldUpdate = true;
-      if (shouldUpdate) setTimeout(updateFollowList, 10e3);
+      if (shouldUpdate) {
+        reportUpdateStatus('waiting');
+        setTimeout(updateFollowList, 10e3);
+      }
       const change = lastChange.getConfig();
       if (change && change.timestamp) {
         if (init.page.type() === 'search') return;
