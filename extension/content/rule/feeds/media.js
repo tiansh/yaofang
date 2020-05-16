@@ -628,23 +628,57 @@
   });
 
   Object.assign(i18n, {
-    useBuiltInVideoPlayer: { cn: '使用浏览器原生视频播放器{{i}}||音量{{volume}}%|{{memorize}}记忆上一次设置的音量', hk: '使用瀏覽器內建影片播放器{{i}}||音量{{volume}}%|{{memorize}}記住上一次設置的音量', en: 'Use browser built-in video player {{i}}||Volume {{volume}} | {{memorize}} memorize last volume' },
+    useBuiltInVideoPlayer: {
+      cn: '使用浏览器原生视频播放器{{i}}||音量{{volume}}%|{{memorize}}记忆上一次设置的音量||视频质量{{quality}}',
+      hk: '使用瀏覽器內建影片播放器{{i}}||音量{{volume}}%|{{memorize}}記住上一次設置的音量||影片品質{{quality}}',
+      en: 'Use browser built-in video player {{i}}||Volume {{volume}} | {{memorize}} memorize last volume||Video quality {{quality}}',
+    },
     useBuiltInVideoPlayerDetail: { cn: '一次性解决自动播放和交互逻辑的各种问题，开启时其他视频相关的改造功能不再生效。不支持直播视频。播放可能不会被微博正确计入播放数。' },
     mediaVideoType: { cn: '视频', hk: '影片', tw: '影片', en: 'Video' },
+    useBuiltInVideoPlayerAutoQuality: { cn: '自动', tw: '自動', en: 'Auto' },
+    useBuiltInVideoPlayerBestQuality: { cn: '最佳', en: 'Best' },
   });
 
   media.useBuiltInVideoPlayer = rule.Rule({
     id: 'feed_built_in_video_player',
-    version: 1,
+    version: 60,
     parent: media.media,
     template: () => i18n.useBuiltInVideoPlayer,
     ref: {
       volume: { type: 'range', min: 0, max: 100, initial: 100 },
       memorize: { type: 'boolean' },
+      quality: {
+        type: 'select',
+        initial: 'auto',
+        select: [
+          { value: 'auto', text: () => i18n.useBuiltInVideoPlayerAutoQuality },
+          { value: 'best', text: () => i18n.useBuiltInVideoPlayerBestQuality },
+        ],
+      },
       i: { type: 'bubble', icon: 'warn', template: () => i18n.useBuiltInVideoPlayerDetail },
     },
     ainit() {
       const rule = this;
+      const getVideoSource = function (videoSources) {
+        const videoSourceData = new URLSearchParams(videoSources);
+        const quality = rule.ref.quality.getConfig();
+        const qualityTypes = [];
+        const allKeys = Array.from(videoSourceData).map(([key]) => key);
+        if (quality === 'best') {
+          const available = allKeys.filter(Number).sort((x, y) => y - x);
+          qualityTypes.push(...available.map(q => String(q)));
+        }
+        qualityTypes.push(videoSourceData.get('qType'), ...allKeys);
+        const qualityType = qualityTypes.find(q => /^https?(?::|%3A)/i.test(videoSourceData.get(q)));
+        let videoSource = videoSourceData.get(qualityType);
+        // 有时候会被转义两次，所以要再额外处理一次，原因不明
+        if (/^https?%3A/i.test(videoSource)) {
+          videoSource = decodeURIComponent(videoSource);
+        }
+        // http 会直接被浏览器拦掉，但是有的历史数据是 http
+        videoSource = videoSource.replace(/^http:/, 'https:');
+        return videoSource;
+      };
       const replaceWeiboVideoPlayer = function replaceWeiboVideoPlayer() {
         const containers = document.querySelectorAll('li.WB_video[node-type="fl_h5_video"][video-sources]');
         containers.forEach(function (container) {
@@ -653,19 +687,7 @@
           if (!cover) return;
           const video = container.querySelector('video');
           if (video) video.src = 'data:text/plain,42';
-          const videoSourceData = new URLSearchParams(container.getAttribute('video-sources'));
-          let videoSource = videoSourceData.get(videoSourceData.get('qType'));
-          if (!videoSource) {
-            videoSource = Array.from(videoSourceData)
-              .filter(([key, value]) => /^https?(?::|%3A)/i.test(value))
-              .reduce((s1, s2) => +s1[0] > +s2[0] ? s1 : s2)[1];
-          }
-          // 有时候会被转义两次，所以要再额外处理一次，原因不明
-          if (/^https?%3A/i.test(videoSource)) {
-            videoSource = decodeURIComponent(videoSource);
-          }
-          // http 会直接被浏览器拦掉，但是有的历史数据是 http
-          videoSource = videoSource.replace(/^http:/, 'https:');
+          const videoSource = getVideoSource(container.getAttribute('video-sources'));
           const newContainer = document.createElement('li');
           newContainer.className = container.className;
           newContainer.classList.add('yawf-WB_video');
