@@ -70,10 +70,15 @@
       cn: '查看更多微博',
       en: 'Show more feeds',
     },
-    feedsUnreadTip: {
+    feedsUnreadTipWithCount: {
       cn: '有 {1} 条新微博，点击查看',
       tw: '有 {1} 條新微博，點擊查看',
       en: '{1} new feeds',
+    },
+    feedsUnreadTip: {
+      cn: '有新微博，点击查看',
+      tw: '有新微博，點擊查看',
+      en: 'show new feeds',
     },
     feedsUnreadLoading: {
       cn: '正在加载……',
@@ -459,7 +464,7 @@
           const newfeedtip = document.getElementById('yawf-group-new-feed-tip');
           if (Number(newfeedtip.dataset.status) !== status) {
             newfeedtip.dataset.status = status;
-            newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTip.replace('{1}', status);
+            newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTipWithCount.replace('{1}', status);
           }
         }
       };
@@ -541,7 +546,12 @@
             feedlist.parentNode.insertBefore(newfeedtip, feedlist);
             newfeedtip.querySelector('a').addEventListener('click', showUnreadFeeds);
           }
-          newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTip.replace('{1}', status);
+          const link = newfeedtip.querySelector('a');
+          if (status > 0 && status < 100) {
+            link.textContent = i18n.feedsUnreadTipWithCount.replace('{1}', status);
+          } else {
+            link.textContent = i18n.feedsUnreadTip;
+          }
         }
       });
 
