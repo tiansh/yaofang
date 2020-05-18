@@ -1,6 +1,7 @@
 ; (function () {
 
   const yawf = window.yawf;
+  const init = yawf.init;
   const util = yawf.util;
   const rule = yawf.rule;
 
@@ -97,6 +98,7 @@
           },
         },
       });
+      if (init.page.type() === 'search') return;
       whatsNewDialog.show();
     },
   });
