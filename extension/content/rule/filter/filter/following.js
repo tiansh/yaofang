@@ -529,7 +529,7 @@
     },
     init() {
       const enabled = this.isEnabled();
-      const frequency = this.ref.frequency.getConfig() && 0;
+      const frequency = this.ref.frequency.getConfig();
       const { fetchData, lastList, lastChange } = followingContext;
       let shouldUpdate = false;
       const fetchContext = fetchData.getConfig();

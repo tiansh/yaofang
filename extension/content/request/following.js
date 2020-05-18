@@ -33,7 +33,8 @@
 
     const allPages = (function () {
       try {
-        const urlTemplate = dom.querySelector('.W_pages a.page[href]').href;
+        const pageLink = dom.querySelector('.W_pages a.page[href]');
+        const urlTemplate = new URL(pageLink.getAttribute('href'), url).href;
         const pageLinks = dom.querySelectorAll('.W_pages .page');
         const pageCount = Number(pageLinks[pageLinks.length - 2].textContent) || 1;
 
