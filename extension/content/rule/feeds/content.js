@@ -518,8 +518,21 @@
         const renderImages = function (images) {
           ref.parentNode.appendChild(images);
         };
+        const linkImage = function (container) {
+          const imgs = Array.from(container.querySelectorAll('img'));
+          imgs.forEach(img => {
+            const link = document.createElement('a');
+            const src = new URL(img.src).href;
+            link.href = ['https://', new URL(src).host, '/large', src.match(/\/([^/]*)$/g)].join('');
+            link.target = '_blank';
+            link.className = 'yawf-diff-image-link';
+            link.appendChild(img.parentNode.replaceChild(link, img));
+          });
+        };
         const [sourceImg, sourceHtml, sourceItems, sourceActionDatas] = getImages(source);
         const [targetImg, targetHtml, targetItems, targetActionDatas] = getImages(target);
+        linkImage(sourceImg);
+        linkImage(targetImg);
         // 如果压根没有图片，就什么都不用做
         if (!sourceImg && !targetImg) return;
         // 如果图片没变，那么展示一份就行了
@@ -671,6 +684,7 @@
 .yawf-img-delete { outline: 3px dashed #c33; }
 .yawf-img-reorder { outline: 3px dotted #36f; }
 .yawf-feed-edit-view-content .WB_media_wrap ~ .WB_media_wrap { border-top-width: 1px; border-top-style: solid; padding-top: 10px; }
+.yawf-diff-image-link { cursor: zoom-in; }
 `);
     },
   });
