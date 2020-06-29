@@ -44,7 +44,9 @@
       get() { return proxied; },
       set(value) {
         let $CONFIG;
-        Object.defineProperty(window, '$CONFIG', { enumerable: true });
+        const property = Object.getOwnPropertyDescriptor(window, '$CONFIG');
+        property.enumerable = true;
+        Object.defineProperty(window, '$CONFIG', property);
         if (holder) {
           holder.$CONFIG = value;
           $CONFIG = holder.$CONFIG;

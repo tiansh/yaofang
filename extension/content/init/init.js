@@ -72,9 +72,8 @@
   init.status = () => status;
   // 触发 Ready
   init.ready = async $CONFIG => {
-    page.$CONFIG = $CONFIG;
     status = true;
-    init.ready = noop;
+    init.ready = init.deinit = noop;
     util.debug('yawf onready');
     await runSet(onReadyCallback);
     if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
@@ -86,6 +85,7 @@
   // 触发 ConfigChange
   init.configChange = async $CONFIG => {
     util.debug('yawf onconfigchange: %o', $CONFIG);
+    page.$CONFIG = $CONFIG;
     await runSet(onConfigChangeCallback);
     if (validPageReady($CONFIG)) {
       await init.ready($CONFIG);
