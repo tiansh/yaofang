@@ -1270,6 +1270,7 @@
       request.userInfo({ id }).then(({ name, avatar }) => {
         const img = new Image();
         img.src = avatar;
+        img.classList.add('yawf-config-user-avatar-img');
         useravatar.appendChild(img);
         username.textContent = name;
       });
@@ -1586,6 +1587,7 @@
 .yawf-config-collection-user-id .yawf-config-collection-remove { right: 0; left: auto; text-align: center; }
 .yawf-config-collection-user-id .yawf-config-collection-remove a { position: static; margin: 0; }
 .yawf-config-collection-user-id .yawf-config-user-avatar { position: absolute; left: 1px; top: 1px; width: 50px; height: 50px; overflow: hidden; }
+.yawf-config-collection-user-id .yawf-config-user-avatar-img { width: 50px; height: 50px; }
 .yawf-config-collection-user-id .yawf-config-user-name { max-width: 100%; word-break: break-all; white-space: normal; max-height: 40px; overflow: hidden; }
 .yawf-collection-suggestion.yawf-collection-suggestion { z-index: 10000; position: fixed; }
 .yawf-list-suggestion-item a { min-height: 15.6px; }

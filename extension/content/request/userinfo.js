@@ -32,15 +32,16 @@
       return JSON.parse(JSON.stringify(userInfoCacheByName.get(name)));
     }
     const url = new URL(baseUrl);
-    url.searchParams.set('type', '1');
-    url.searchParams.set('callback', network.fakeCallback());
+    url.searchParams.set('ajwvr', '6');
     if (id) url.searchParams.set('id', id);
     else url.searchParams.set('name', name);
+    url.searchParams.set('type', '1');
+    const callback = network.fakeCallback();
+    url.searchParams.set('callback', callback);
     try {
       util.debug('fetch url %s', url);
-      const resp = await network.fetchText(url);
+      const { data: html } = await network.jsonp(url, callback);
       // 我仍然无法理解一个使用 JSON 包裹 HTML 的 API
-      const html = network.parseJson(resp).data;
       const usercard = new DOMParser().parseFromString(html, 'text/html');
       return (function parseUserInfoResponse() {
         const avatar = usercard.querySelector('.pic_box img').src;
