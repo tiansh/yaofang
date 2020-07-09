@@ -51,7 +51,7 @@
   i18n.commentFaceCount = {
     cn: '隐藏表情|数量超过{{count}}个的评论',
     tw: '隱藏表情|數量超過{{count}}個的評論',
-    en: 'Hide comments | with more than {{count}} face',
+    en: 'Hide comments | with more than {{count}} image emoji',
   };
 
   more.commentFaceCount = rule.Rule({
@@ -82,7 +82,7 @@
   i18n.commentFaceTypes = {
     cn: '隐藏表情|种类超过{{count}}种的评论',
     tw: '隱藏表情|種類超過{{count}}種的評論',
-    en: 'Hide comments | with more than {{count}} kinds of face',
+    en: 'Hide comments | with more than {{count}} kinds of image emoji',
   };
 
   more.commentFaceTypes = rule.Rule({
@@ -130,7 +130,7 @@
         const texts = Array.from(comment.querySelector('.WB_text').childNodes)
           .filter(n => !((n instanceof Element) && n.matches('a[usercard]'))) // 提到人不算内容
           .map(n => n.textContent).join('')
-          .replace(/回[复復覆]|Reply|[:/\s：]/ig, ''); // 空格、“回复”和冒号不算内容
+          .replace(/回[复復覆]|Reply|微博|[转轉][发發]|[:/\s：.\u200b]/ig, ''); // 空格、“回复”和冒号不算内容
         if (!texts) return 'hide';
         return null;
       });
