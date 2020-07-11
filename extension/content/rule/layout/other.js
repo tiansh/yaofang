@@ -357,7 +357,7 @@
 .yawf-face-title { float: left; font-weight: bold; line-height: 32px; padding: 0; text-align: center; width: 52px; margin: 0 -8px 0 0; }
 .yawf-face-items { float: right; margin: 0 8px; }
 .yawf-face-items li { color: transparent; }
-.yawf-face-drop-area { background: rgba(255, 255, 127, 0.5); clear: both; float: right; font-weight: bold; height: 32px; line-height: 32px; margin: -32px 8px 0; opacity: 1; padding: 0; width: 306px; text-align: center; }
+.yawf-face-drop-area { background: rgba(255, 255, 127, 0.5); clear: both; float: right; font-weight: bold; height: 36px; line-height: 36px; margin: -36px 8px 0; opacity: 1; padding: 0; width: 348px; text-align: center; }
 .layer_faces .faces_list { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
 .layer_faces .faces_list li { overflow: hidden; }
 .layer_faces .faces_list img { border: 10px transparent solid; margin: -10px; }

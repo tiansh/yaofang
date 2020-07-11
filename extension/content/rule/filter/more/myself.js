@@ -40,7 +40,8 @@
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.uid;
         const [author] = feedParser.author.id(feed);
-        if (String(me) === String(author)) return 'showme';
+        const [fauthor] = feedParser.fauthor.id(feed);
+        if (me === author || me === fauthor) return 'showme';
         return null;
       }, { priority: 1e4 });
       this.addConfigListener(() => { observer.feed.rerun(); });
@@ -64,7 +65,8 @@
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.uid;
         const [original] = feedParser.original.id(feed);
-        if (String(me) === String(original)) return 'showme';
+        const [author] = feedParser.isFastForward(feed) ? feedParser.author.id(feed) : [];
+        if (me === original || me === author) return 'showme';
         return null;
       }, { priority: 1e4 });
       this.addConfigListener(() => { observer.feed.rerun(); });

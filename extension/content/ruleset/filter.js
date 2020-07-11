@@ -253,10 +253,10 @@
 [yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }
 [yawf-feed-display="fold"] { position: relative; }
 [yawf-feed-display="fold"] > * { display: none; }
-[yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; }
+[yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; line-height: 16px; }
 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: none; }
-.WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail { display: block; max-height: 0; transition: max-height, padding 0.1s; overflow: hidden; padding: 0 20px; }
-.WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { max-height: 1000px; padding: 0 20px 27px; }
+.WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { display: block; overflow: hidden; padding: 0 20px 27px; }
+.WB_feed.WB_feed_v3 .WB_feed_type[yawf-feed-display="fold"].WB_feed_vipcover:hover .WB_feed_detail { padding-top: 0; }
 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
 `);
   init.onLoad(function () {
@@ -275,6 +275,8 @@
     return feed.matches('.WB_artical *') ? 'unset' : null;
   }, { priority: 1e6 });
   // 无论因为何种原因，同一页面上同一条微博不应出现两次
+  // 2020年7月后，上一行注释是错的，因为快转之后他们的 mid 是一样的，需要用 fmid 区分
+  // 不过就算是快转的，展示几次也没有任何意义，所以这段逻辑保持不变
   observer.feed.filter(function hideDuplicate(feed) {
     const mid = feed.getAttribute('mid');
     if (!mid) return null;

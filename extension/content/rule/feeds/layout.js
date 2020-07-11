@@ -131,6 +131,9 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 [id^="Pl_Core_WendaList__"] .WB_text::before { width: 68px; }
 
 .WB_feed.WB_feed_v3 .WB_expand_media_box { margin-top: 10px; }
+
+.WB_feed.WB_feed_v3 .WB_info .sp_kz, 
+.WB_feed.WB_feed_v3 .WB_info .W_autocut { vertical-align: top; }
 `);
     },
   });

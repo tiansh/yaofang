@@ -43,13 +43,25 @@
     init() {
       const rule = this;
       observer.feed.filter(function authorFilterFeedFilter(/** @type {Element} */feed) {
-        const isForward = feedParser.isForward(feed);
-        if (!isForward) return null;
-        const [author] = feedParser.author.id(feed);
+        const authors = [];
+        // 如果一条微博是传统的转发微博，转发作者计入在内
+        // 如果一条微博是快转微博，被快转的微博如果是转发微博，被快转的微博的作者同样计入在内
+        if (feedParser.isForward(feed)) {
+          const [id] = feedParser.author.id(feed);
+          const [name] = feedParser.author.name(feed);
+          authors.push({ id, name });
+        }
+        // 如果一条微博是快转微博，快转的作业计入在内
+        if (feedParser.isFastForward(feed)) {
+          const [id] = feedParser.fauthor.id(feed);
+          const [name] = feedParser.fauthor.name(feed);
+          authors.push({ id, name });
+        }
+        if (!authors.length) return null;
         const accounts = rule.ref.items.getConfig();
-        const contain = accounts.find(account => account.id === author);
-        if (!contain) return null;
-        const reason = i18n.accountAuthorForwardReason.replace('{1}', () => feedParser.author.name(feed));
+        const reasonUser = authors.find(author => accounts.some(account => author.id === account.id));
+        if (!reasonUser) return null;
+        const reason = i18n.accountAuthorForwardReason.replace('{1}', () => reasonUser.name);
         return { result: rule.feedAction, reason };
       }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });

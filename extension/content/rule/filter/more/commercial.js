@@ -44,10 +44,13 @@
       observer.feed.filter(function adFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
         // 修改这里时请注意，悄悄关注也会显示关注按钮，但是相关微博不应被隐藏
+        // 快转也可能有关注按钮，但是快转不在这里隐藏
         if (feed.getAttribute('feedtype') === 'ad') return 'hide';
         if (feed.querySelector('[action-type="feed_list_ad"]')) return 'hide';
         if (feed.querySelector('a[href*="//adinside.weibo.cn/"]')) return 'hide';
-        if (feed.querySelector('[diss-data*="feedad"]')) return 'hide';
+        // 这里 !feedParser.isFastForward(feed) 是临时处理
+        // 我认为是微博自己写的有 bug：抄代码忘了改了；总之这地方不该这样
+        if (feed.querySelector('[diss-data*="feedad"]') && !feedParser.isFastForward(feed)) return 'hide';
         if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
         if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
         if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
@@ -230,8 +233,9 @@
         if (init.page.type() !== 'profile') return null;
         const { oid, onick } = init.page.$CONFIG;
         if (!oid || !onick) return null;
-        const [id] = feedParser.author.id(feed);
-        if (String(id) !== String(oid)) return 'hide';
+        const [author] = feedParser.author.id(feed);
+        const [fauthor] = feedParser.fauthor.id(feed);
+        if ((fauthor || author) !== oid) return 'hide';
         return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });

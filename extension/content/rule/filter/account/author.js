@@ -46,12 +46,28 @@
       observer.feed.filter(function authorFilterFeedFilter(/** @type {Element} */feed) {
         const oid = init.page.$CONFIG.oid;
         const [author] = feedParser.author.id(feed);
+        const [fauthor] = feedParser.fauthor.id(feed);
         // 个人主页不按照作者隐藏（否则就会把所有东西都藏起来……）
-        if (String(author) === String(oid) && rule.feedAction !== 'show') return null;
+        const pageType = init.page.type();
+        const isShowRule = rule.feedAction === 'show';
+        if ((fauthor || author) === oid && !isShowRule && pageType === 'profile') return null;
         const accounts = rule.ref.items.getConfig();
-        const contain = accounts.find(account => account.id === author);
-        const reason = i18n.accountAuthorReason.replace('{1}', () => feedParser.author.name(feed));
-        if (contain) return { result: rule.feedAction, reason };
+        const ignoreFastAuthor = pageType === 'group' && !isShowRule;
+        const ignoreAuthor = ignoreFastAuthor && !feedParser.isFastForward(feed);
+        if (!ignoreAuthor) {
+          const contain = accounts.find(account => account.id === author);
+          if (contain) {
+            const reason = i18n.accountAuthorReason.replace('{1}', () => feedParser.author.name(feed));
+            return { result: rule.feedAction, reason };
+          }
+        }
+        if (!ignoreFastAuthor) {
+          const fcontain = accounts.find(account => account.id === fauthor);
+          if (fcontain) {
+            const reason = i18n.accountAuthorReason.replace('{1}', () => feedParser.fauthor.name(feed));
+            return { result: rule.feedAction, reason };
+          }
+        }
         return null;
       }, { priority: this.priority });
       this.ref.items.addConfigListener(() => { observer.feed.rerun(); });

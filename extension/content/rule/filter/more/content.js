@@ -44,7 +44,7 @@
       const rule = this;
       observer.feed.filter(function deletedForwardFilter(feed) {
         if (!rule.isEnabled()) return null;
-        const isForward = feed.getAttribute('isforward') === '1';
+        const isForward = feedParser.isForward(feed);
         if (!isForward) return null;
         const forwardContent = feed.querySelector('.WB_media_expand .WB_info .WB_name, .WB_expand .WB_info .W_fb');
         if (forwardContent) return null;
@@ -76,7 +76,7 @@
       observer.feed.filter(function commentAndForwardFilter(feed) {
         if (!rule.isEnabled()) return null;
         const replyText = ['回复', '回復', '回覆', 'Reply', 'reply'];
-        if (feed.getAttribute('isforward') !== '1') return null;
+        if (!feedParser.isForward(feed)) return null;
         const content = feed.querySelector('[node-type="feed_list_content"]'); if (!content) return null;
         if (!content.firstChild || !replyText.includes(content.firstChild.textContent.trim())) return null;
         if (!content.childNodes[1] || !content.childNodes[1].getAttribute('usercard')) return null;
@@ -407,6 +407,34 @@
         const limit = rule.ref.num.getConfig();
         const topics = feedParser.topic.dom(feed);
         if (topics.length >= limit) return 'hide';
+        return null;
+      });
+      this.addConfigListener(() => { observer.feed.rerun(); });
+    },
+  });
+
+  i18n.fastForwardFeedFilter = {
+    cn: '使用快转转发的微博',
+    tw: '使用快轉轉發的微博',
+    en: 'Fast forwarded feeds',
+  };
+  i18n.fastForwardFeedFilterDetail = {
+    cn: '使用快转转发微博时，转发得到的微博的评论和转发不可用，展示时仅显示被转发的那条微博并标注“被××快转了”。任何针对该微博的评论实际上是针对被转发的微博的评论。',
+  };
+
+  content.fastForward = rule.Rule({
+    id: 'filter_fast_forward',
+    version: 67,
+    parent: content.content,
+    template: () => i18n.fastForwardFeedFilter,
+    ref: {
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.fastForwardFeedFilterDetail },
+    },
+    init() {
+      const rule = this;
+      observer.feed.filter(function fastForwardFilter(feed) {
+        if (!rule.isEnabled()) return null;
+        if (feedParser.isFastForward(feed)) return 'hide';
         return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });

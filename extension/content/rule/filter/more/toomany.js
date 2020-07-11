@@ -79,17 +79,19 @@
         if (parsed.has(feed)) return null;
         const me = init.page.$CONFIG.uid;
         const [author] = feedParser.author.id(feed);
+        const [fauthor] = feedParser.fauthor.id(feed);
+        const authorId = fauthor || author;
         // 自己的微博发多少也不触发这个规则
-        if (String(me) === String(author)) return null;
+        if (me === authorId) return null;
         // 个人主页不工作
         if (init.page.type() === 'profile') return null;
         // 分组页面根据设置决定是否生效
         if (init.page.type() === 'group') {
           if (rule.ref.group.getConfig()) return null;
         }
-        parsed.set(feed, author);
-        const feeds = [...document.querySelectorAll('[mid]')];
-        const count = feeds.filter(feed => parsed.get(feed) === author).length;
+        parsed.set(feed, authorId);
+        const feeds = [...document.querySelectorAll('.WB_feed_type')];
+        const count = feeds.filter(feed => parsed.get(feed) === authorId).length;
         if (count <= rule.ref.number.getConfig()) return null;
         const result = rule.ref.action.getConfig();
         const reason = i18n.floodingAuthorReason;

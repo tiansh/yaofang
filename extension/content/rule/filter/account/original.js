@@ -49,13 +49,15 @@
       tw: '作者 @{1}',
       en: 'author @{1}',
     },
-    accountOriginalFollower: {
-      cn: '隐藏转发自|粉丝数量超过{{count}}万的博主的微博{{i}}||例外帐号{{account}}',
-      tw: '隱藏轉發自|粉絲數量超過{{count}}萬的博主的微博{{i}}||例外帐号{{account}}',
-      en: 'Hide feeds forwarded from authors with | more than {{count}}0,000 fans{{i}}||Exception {{account}}',
+    accountOriginalFastForwardReason: {
+      cn: '快转自 @{1}',
+      tw: '快轉自 @{1}',
+      en: 'fast forwarded from @{1}',
     },
-    accountOriginalFollowerDetail: {
-      cn: '发现页面作者不计入。',
+    accountOriginalFollower: {
+      cn: '隐藏转发自|粉丝数量超过{{count}}万的博主的微博||例外帐号{{account}}',
+      tw: '隱藏轉發自|粉絲數量超過{{count}}萬的博主的微博||例外帐号{{account}}',
+      en: 'Hide feeds forwarded from authors with | more than {{count}}0,000 fans||Exception {{account}}',
     },
   });
 
@@ -77,19 +79,26 @@
       observer.feed.filter(function originalFilterFeedFilter(/** @type {Element} */feed) {
         const accounts = rule.ref.items.getConfig();
 
-        const original = new Set(feedParser.original.id(feed));
-        if (accounts.find(account => original.has(account.id))) {
+        const [original] = feedParser.original.id(feed);
+        if (accounts.find(account => account.id === original)) {
           const name = feedParser.original.name(feed);
           const reason = i18n.accountOriginalReason.replace('{1}', () => name);
           return { result: rule.feedAction, reason };
         }
 
-        if (rules.original.id.discover.isEnabled() && init.page.type() === 'discover') {
+        const asDiscover = rules.original.id.discover.isEnabled() && init.page.type() === 'discover';
+        const asFastForward = feedParser.isFastForward(feed);
+        if (asDiscover || asFastForward) {
           const [author] = feedParser.author.id(feed);
           if (accounts.find(account => author === account.id)) {
             const name = feedParser.author.name(feed);
-            const reason = i18n.accountOriginalDiscoverReason.replace('{1}', () => name);
-            return { result: rule.feedAction, reason };
+            if (asDiscover) {
+              const reason = i18n.accountOriginalDiscoverReason.replace('{1}', () => name);
+              return { result: rule.feedAction, reason };
+            } else {
+              const reason = i18n.accountOriginalFastForwardReason.replace('{1}', () => name);
+              return { result: rule.feedAction, reason };
+            }
           }
         }
 
@@ -141,6 +150,9 @@
       observer.feed.filter(async function originalFollowerFeedFilter(/** @type {Element} */feed) {
         if (!rule.isEnabled()) return null;
         const original = feedParser.original.id(feed);
+        if (feedParser.isFastForward(feed)) {
+          original.push(feedParser.author.id(feed));
+        }
         const accounts = rule.ref.account.getConfig();
         const filtered = original.filter(id => !accounts.find(user => user.id === id));
         const followers = await Promise.all(filtered

@@ -19,11 +19,14 @@
   // document.domain 基于 STK.lib.card.usercard.basecard 并非笔误
   }[document.domain === 'www.weibo.com' ? 'userCard_abroad' : 'userCard'], location.href);
 
+  let lastRequest = Promise.resolve();
+
   /**
    * @param {{id:number?,name:string?}}
    * @return {UserInfo}
    */
   const userInfo = async function userInfo({ id = null, name = null }) {
+    await lastRequest;
     if (!id && !name) throw TypeError('Request userinfo without id or name.');
     if (id && userInfoCacheById.has(id)) {
       return JSON.parse(JSON.stringify(userInfoCacheById.get(id)));
@@ -40,7 +43,9 @@
     url.searchParams.set('callback', callback);
     try {
       util.debug('fetch url %s', url);
-      const { data: html } = await network.jsonp(url, callback);
+      const request = network.jsonp(url, callback);
+      lastRequest = request;
+      const { data: html } = await request;
       // 我仍然无法理解一个使用 JSON 包裹 HTML 的 API
       const usercard = new DOMParser().parseFromString(html, 'text/html');
       return (function parseUserInfoResponse() {

@@ -585,7 +585,9 @@
         // 最早出现的几条不算延迟加载的
         if (document.querySelectorAll('.WB_feed_type[yawf-feed-preload]').length < 5) isUnread = false;
         // 如果作者是自己那么不算延迟加载的（发微薄的时候会插入到最前面）
-        if (init.page.$CONFIG.uid === feedParser.author.id(feed)[0]) isUnread = false;
+        const [author] = feedParser.author.id(feed);
+        const [fauthor] = feedParser.fauthor.id(feed);
+        if (init.page.$CONFIG.uid === (fauthor || author)) isUnread = false;
         feed.setAttribute('yawf-feed-preload', isUnread ? 'unread' : 'show');
       });
 

@@ -1,6 +1,8 @@
 ; (function () {
 
   const yawf = window.yawf;
+  const init = yawf.init;
+  const page = init.page;
 
   const feedParser = yawf.feed = {};
   const commentParser = yawf.comment = {};
@@ -88,7 +90,6 @@
     return true;
   };
 
-
   /**
    * 检查某个元素是否是一条转发的微博
    * @param {Element} element
@@ -97,6 +98,17 @@
   const isForwardFeedElement = function (element) {
     if (!isFeedElement(element)) return false;
     if (!element.hasAttribute('omid')) return false;
+    return true;
+  };
+
+  /**
+   * 检查某个元素是否是一条简单转发的微博
+   * @param {Element} element
+   * @returns {boolean}
+   */
+  const isFastForwardFeedElement = function (element) {
+    if (!isFeedElement(element)) return false;
+    if (!element.hasAttribute('fmid')) return false;
     return true;
   };
 
@@ -115,6 +127,10 @@
       const [source] = feedParser.source.dom(feed, true);
       const [date] = feedParser.date.dom(feed, true);
       post = [author, ...post, source, date];
+    }
+    if (feed.hasAttribute('fmid')) {
+      const [fauthor] = feedParser.fauthor.dom(feed);
+      post.unshift(fauthor);
     }
     if (feed.hasAttribute('omid')) {
       const reason = feedParser.content.dom(feed, false, false);
@@ -269,7 +285,12 @@
         const sibling = [...node.parentNode.children];
         items.push(...sibling.filter(item => item.matches('a[title]')));
       } else {
-        items.push(...node.parentNode.querySelectorAll('[title]'));
+        const sibling = [];
+        for (let next = node; next; next = next.nextElementSibling) {
+          if (next.matches('.sp_kz')) break;
+          if (next.matches('[title]')) sibling.push(next);
+        }
+        items.push(...sibling);
       }
       const icons = items.filter(item => item !== node && item.title.trim());
       return icons.map(icon => `[${icon.title.trim()}]`);
@@ -524,6 +545,7 @@
   };
 
   // 作者（这条微博是谁发的）
+  // 对于快转微博，是这条微博转发自的作者
   const author = feedParser.author = {};
   author.dom = feed => {
     if (!(feed instanceof Node)) return [];
@@ -562,6 +584,35 @@
     }
   };
 
+  // 快转作者
+  const fauthor = feedParser.fauthor = {};
+  fauthor.dom = feed => {
+    if (!(feed instanceof Node)) return [];
+    if (!isSearchFeedElement(feed)) {
+      const fauthor = feed.querySelector('.sp_kz ~ a[usercard]');
+      return fauthor ? [fauthor] : [];
+    } else {
+      return [];
+    }
+  };
+  fauthor.id = feed => {
+    const domList = fauthor.dom(feed);
+    if (!isSearchFeedElement(feed)) {
+      return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
+    } else {
+      return [];
+    }
+  };
+  fauthor.name = feed => {
+    const domList = fauthor.dom(feed);
+    const $CONFIG = page.$CONFIG;
+    return domList.map(dom => {
+      const id = new URLSearchParams(dom.getAttribute('usercard')).get('id');
+      if (id === $CONFIG.uid) return $CONFIG.nick;
+      return dom.textContent.trim();
+    });
+  };
+
   // 原作者（一条被转发的微博最早来自谁）
   const original = feedParser.original = {};
   original.dom = feed => {
@@ -587,7 +638,7 @@
   };
   original.name = feed => {
     const domList = original.dom(feed);
-    return domList.map(dom => dom.textContent.trim());
+    return domList.map(dom => dom.textContent.trim().replace(/^@/, ''));
   };
 
   // 提到（微博中提到的人，转发路径中的人同属于提到）
@@ -763,9 +814,11 @@
   feedParser.isFeed = feed => isFeedElement(feed);
   feedParser.isSearchFeed = feed => isSearchFeedElement(feed);
   feedParser.isForward = feed => isForwardFeedElement(feed);
+  feedParser.isFastForward = feed => isFastForwardFeedElement(feed);
 
   feedParser.mid = node => feedContainer(node).getAttribute('mid');
   feedParser.omid = node => feedContainer(node).getAttribute('omid');
+  feedParser.fmid = node => feedContainer(node).getAttribute('fmid');
 
   // 评论内容
   commentParser.text = target => {
