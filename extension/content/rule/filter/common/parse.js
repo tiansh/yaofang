@@ -285,12 +285,14 @@
         const sibling = [...node.parentNode.children];
         items.push(...sibling.filter(item => item.matches('a[title]')));
       } else {
-        const sibling = [];
+        const icons = [];
         for (let next = node; next; next = next.nextElementSibling) {
           if (next.matches('.sp_kz')) break;
-          if (next.matches('[title]')) sibling.push(next);
+          if (next.matches('[title]')) icons.push(next);
+          const inner = next.querySelector('.W_icon[title]');
+          if (inner) icons.push(inner);
         }
-        items.push(...sibling);
+        items.push(...icons);
       }
       const icons = items.filter(item => item !== node && item.title.trim());
       return icons.map(icon => `[${icon.title.trim()}]`);
