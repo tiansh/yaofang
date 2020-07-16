@@ -96,7 +96,8 @@
       const feeds = feedElements.map(item => {
         const dateitem = item.querySelector('[node-type="feed_list_item_date"][date]'); if (!dateitem) return null;
         const date = Number(dateitem.getAttribute('date')); if (!date) return null;
-        const mid = item.getAttribute('mid'); if (!mid) return null;
+        const mid = item.getAttribute('fmid') || item.getAttribute('mid');
+        if (!mid) return null;
         return { type: 'feed', date, mid, dom: item.cloneNode(true) };
       }).filter(feed => feed);
       this.feedsByPage.push(feeds);
