@@ -133,9 +133,11 @@
         browser.storage[this.area].get(this.key)
       ));
       if (!this.initialized && this.area === 'local' && !Object.hasOwnProperty.call(results, this.key)) {
-        results = await this.run(() => (
-          browser.storage.sync.get(this.key)
-        ));
+        results = await this.run(async () => {
+          const data = await browser.storage.sync.get(this.key);
+          await browser.storage.local.set(data);
+          return data;
+        });
       }
       this.initialized = true;
       return results[this.key];
