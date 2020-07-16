@@ -17,7 +17,10 @@
   const css = util.css;
 
   const getContext = functools.once(async function () {
-    const followConfig = await config.pool('Follow', { uid: init.page.$CONFIG.uid });
+    const followConfig = await config.pool('Follow', {
+      uid: init.page.$CONFIG.uid,
+      isLocal: true,
+    });
     const fetchData = new rule.class.OffscreenConfigItem({
       id: 'fetchData',
       configPool: followConfig,

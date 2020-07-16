@@ -64,6 +64,7 @@
       this.last = Promise.resolve();
       this.processing = false;
       this.dirty = false;
+      this.initialized = false;
       /** @type Array<Function> */
       this.watcher = [];
       watcher.addListener(this, newValue => {
@@ -128,9 +129,15 @@
       });
     }
     async get() {
-      const results = await this.run(() => (
+      let results = await this.run(() => (
         browser.storage[this.area].get(this.key)
       ));
+      if (!this.initialized && this.area === 'local' && !Object.hasOwnProperty.call(results, this.key)) {
+        results = await this.run(() => (
+          browser.storage.sync.get(this.key)
+        ));
+      }
+      this.initialized = true;
       return results[this.key];
     }
     /** @param {*} value */
@@ -288,5 +295,17 @@
     return new ConfigCollection(storage);
   };
 
+}());
+
+// 将数据从 sync 移动到 local
+; (async function () {
+  const [syncStorage, localStorage] = await Promise.all([
+    browser.storage.sync.get(),
+    browser.storage.local.get(),
+  ]);
+  const [syncKeys, localKeys] = [syncStorage, localStorage].map(storage => Object.keys(storage || {}));
+  const syncOnlyKeys = syncKeys.filter(key => !localKeys.includes(key));
+  const updateObject = Object.assign({}, ...syncOnlyKeys.map(key => ({ [key]: syncStorage[key] })));
+  await browser.storage.local.set(updateObject);
 }());
 

@@ -61,6 +61,7 @@
 
     const manuallyHideConfig = await config.pool('Hide', {
       uid: init.page.$CONFIG.uid,
+      isLocal: true,
     });
 
     return new rule.class.OffscreenConfigItem({
