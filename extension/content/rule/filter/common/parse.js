@@ -102,13 +102,24 @@
   };
 
   /**
-   * 检查某个元素是否是一条简单转发的微博
+   * 检查某个元素是否是一条类似简单转发的微博
+   * @param {Element} element
+   * @returns {boolean}
+   */
+  const isFastFeedElement = function (element) {
+    if (!isFeedElement(element)) return false;
+    if (!element.hasAttribute('fmid')) return false;
+    return true;
+  };
+
+  /**
+   * 检查某个元素是否是一条快转的微博
    * @param {Element} element
    * @returns {boolean}
    */
   const isFastForwardFeedElement = function (element) {
-    if (!isFeedElement(element)) return false;
-    if (!element.hasAttribute('fmid')) return false;
+    if (!isFastFeedElement(element)) return false;
+    if (element.getAttribute('isfastforward') !== '1') return false;
     return true;
   };
 
@@ -816,6 +827,7 @@
   feedParser.isFeed = feed => isFeedElement(feed);
   feedParser.isSearchFeed = feed => isSearchFeedElement(feed);
   feedParser.isForward = feed => isForwardFeedElement(feed);
+  feedParser.isFast = feed => isFastFeedElement(feed);
   feedParser.isFastForward = feed => isFastForwardFeedElement(feed);
 
   feedParser.mid = node => feedContainer(node).getAttribute('mid');

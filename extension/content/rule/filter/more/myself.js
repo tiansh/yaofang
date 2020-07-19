@@ -65,7 +65,7 @@
         if (!rule.isEnabled()) return null;
         const me = init.page.$CONFIG.uid;
         const [original] = feedParser.original.id(feed);
-        const [author] = feedParser.isFastForward(feed) ? feedParser.author.id(feed) : [];
+        const [author] = feedParser.isFast(feed) ? feedParser.author.id(feed) : [];
         if (me === original || me === author) return 'showme';
         return null;
       }, { priority: 1e4 });

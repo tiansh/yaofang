@@ -52,7 +52,7 @@
           authors.push({ id, name });
         }
         // 如果一条微博是快转微博，快转的作业计入在内
-        if (feedParser.isFastForward(feed)) {
+        if (feedParser.isFast(feed)) {
           const [id] = feedParser.fauthor.id(feed);
           const [name] = feedParser.fauthor.name(feed);
           authors.push({ id, name });

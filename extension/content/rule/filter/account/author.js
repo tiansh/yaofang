@@ -53,7 +53,7 @@
         if ((fauthor || author) === oid && !isShowRule && pageType === 'profile') return null;
         const accounts = rule.ref.items.getConfig();
         const ignoreFastAuthor = pageType === 'group' && !isShowRule;
-        const ignoreAuthor = ignoreFastAuthor && !feedParser.isFastForward(feed);
+        const ignoreAuthor = ignoreFastAuthor && !feedParser.isFast(feed);
         if (!ignoreAuthor) {
           const contain = accounts.find(account => account.id === author);
           if (contain) {

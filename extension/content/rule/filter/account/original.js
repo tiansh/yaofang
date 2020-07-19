@@ -87,7 +87,7 @@
         }
 
         const asDiscover = rules.original.id.discover.isEnabled() && init.page.type() === 'discover';
-        const asFastForward = feedParser.isFastForward(feed);
+        const asFastForward = feedParser.isFast(feed);
         if (asDiscover || asFastForward) {
           const [author] = feedParser.author.id(feed);
           if (accounts.find(account => author === account.id)) {
@@ -150,7 +150,7 @@
       observer.feed.filter(async function originalFollowerFeedFilter(/** @type {Element} */feed) {
         if (!rule.isEnabled()) return null;
         const original = feedParser.original.id(feed);
-        if (feedParser.isFastForward(feed)) {
+        if (feedParser.isFast(feed)) {
           original.push(feedParser.author.id(feed));
         }
         const accounts = rule.ref.account.getConfig();

@@ -48,8 +48,6 @@
         if (feed.getAttribute('feedtype') === 'ad') return 'hide';
         if (feed.querySelector('[action-type="feed_list_ad"]')) return 'hide';
         if (feed.querySelector('a[href*="//adinside.weibo.cn/"]')) return 'hide';
-        // 这里 !feedParser.isFastForward(feed) 是临时处理
-        // 我认为是微博自己写的有 bug：抄代码忘了改了；总之这地方不该这样
         if (feed.querySelector('[diss-data*="feedad"]') && !feedParser.isFastForward(feed)) return 'hide';
         if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
         if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
