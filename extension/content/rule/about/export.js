@@ -118,7 +118,7 @@
             i18n.configImportWarning,
         });
         if (!confirmAnswer) return;
-        await rule.configPool.import(config);
+        await rule.configPool.importConfig(config);
         await ui.alert({
           id: 'yawf-import-success',
           icon: 'succ',

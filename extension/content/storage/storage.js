@@ -264,7 +264,7 @@
     key(key) {
       return new ConfigKey(this, key);
     }
-    async import(data) {
+    async importConfig(data) {
       this.value = JSON.parse(JSON.stringify(data));
       await this.storage.set(this.value);
     }
