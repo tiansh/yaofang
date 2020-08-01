@@ -35,6 +35,8 @@
     },
   });
 
+  const cleanText = text => text.replace(/^[\s\u200b]+|[\s\u200b]+$/g, '');
+
   const recognize = fast.recognize = {};
   // 识别选中的文本
   recognize.textSimple = function (selection) {
@@ -42,11 +44,11 @@
     if (!(selection + '')) return [];
     if (selection.rangeCount !== 1) return [];
     let simple, full, type;
-    simple = (feedParser.text.simple(selection) || []).map(t => t.trim());
-    full = (feedParser.text.detail(selection) || []).map(t => t.trim());
+    simple = (feedParser.text.simple(selection) || []).map(cleanText);
+    full = (feedParser.text.detail(selection) || []).map(cleanText);
     type = 'text';
     if (!simple.join('') && !full.join('')) {
-      simple = full = (commentParser.text(selection) || []).map(t => t.trim());
+      simple = full = (commentParser.text(selection) || []).map(cleanText);
       type = 'comment';
     }
     if (!simple.join('') && !full.join('')) {
@@ -62,10 +64,10 @@
   recognize.textComplex = function (selection) {
     if (!(selection instanceof Selection)) return [];
     if (selection.rangeCount <= 1) return [];
-    let texts = feedParser.text.detail(selection).filter(text => text.trim());
+    let texts = feedParser.text.detail(selection).filter(cleanText);
     let type = 'multitext';
     if (!texts.length) {
-      texts = commentParser.text(selection).filter(text => text.trim());
+      texts = commentParser.text(selection).filter(cleanText);
       type = 'multitextcomment';
     }
     if (!texts.length) {
