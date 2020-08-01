@@ -519,6 +519,7 @@
           ref.parentNode.appendChild(images);
         };
         const linkImage = function (container) {
+          if (!container) return;
           const imgs = Array.from(container.querySelectorAll('img'));
           imgs.forEach(img => {
             const link = document.createElement('a');
