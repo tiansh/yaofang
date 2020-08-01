@@ -14,8 +14,17 @@
     util.debug('fetch url %s', url);
     const resp = await network.fetchText(url);
     const dom = (new DOMParser()).parseFromString(resp, 'text/html');
-    const script = dom.querySelector('head script').textContent;
-    const data = JSON.parse(script.match(/\{[\s\S]*\}/)[0]);
+    const scripts = dom.querySelectorAll('script:not([src])');
+    const data = [...scripts].reduce((data, script) => {
+      if (data) return data;
+      try {
+        const data = JSON.parse(script.textContent.match(/\{[\s\S]*\}/)[0]);
+        if (!data.vote_info) return null;
+        return data;
+      } catch (e) {
+        return null;
+      }
+    }, null);
     return data;
   };
 
