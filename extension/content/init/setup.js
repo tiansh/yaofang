@@ -27,15 +27,23 @@
     };
     let holder = null;
     if ('$CONFIG' in window) {
-      if (window.$CONFIG) {
-        location.reload();
-        return;
+      // Failed to load YAWF before $CONFIG object ready. Some feature may not work.
+      const onDomContentLoaded = function () {
+        window.$CONFIG = new Proxy(window.$CONFIG, {
+          set: function (self, property, value) {
+            self[property] = value;
+            reportResult(window.$CONFIG);
+            return true;
+          },
+        });
+        reportResult(window.$CONFIG);
+      };
+      if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
+        setTimeout(() => { onDomContentLoaded(); }, 0);
       } else {
-        const descriptor = Object.getOwnPropertyDescriptor(window, '$CONFIG');
-        holder = {};
-        Object.defineProperty(holder, '$CONFIG', descriptor);
-        delete window.$CONFIG;
+        document.addEventListener('DOMContentLoaded', onDomContentLoaded);
       }
+      return;
     }
     let proxied = void 0;
     Object.defineProperty(window, '$CONFIG', {
