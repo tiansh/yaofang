@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "1.0.72",
+  "version": "1.0.73",
   "default_locale": "zh_CN",
 
   "icons": {
@@ -67,7 +67,8 @@
         "*://verified.weibo.com/*",
         "*://vip.weibo.com/*",
         "*://open.weibo.com/*",
-        "*://api.weibo.com/chat*"
+        "*://api.weibo.com/chat*",
+        "*://passport.weibo.com/*"
       ],
       "js": [
         "common/global/env.js",
@@ -206,7 +207,7 @@
     },
     {
       "matches": [
-        "https://api.weibo.com/chat*"
+        "*://api.weibo.com/chat*"
       ],
       "js": [
         "content/util/inject.js",
@@ -223,6 +224,19 @@
         "content/chat/inject.js",
         "content/chat/narrow.js",
         "content/chat/rule.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://t.cn/*"
+      ],
+      "js": [
+        "content/storage/storage.js",
+        "content/storage/config.js",
+
+        "content/shorturl/redirect.js"
       ],
       "all_frames": true,
       "run_at": "document_start"

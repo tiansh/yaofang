@@ -3,6 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;
+  const config = yawf.config;
   const observer = yawf.observer;
   const request = yawf.request;
   const feedParser = yawf.feed;
@@ -1220,5 +1221,37 @@ ${selection ? `
     },
   });
 
+  Object.assign(i18n, {
+    shortLinkWithoutConfirm: {
+      cn: '打开短链接时无需二次确认（全局设置） {{i}}',
+      tw: '打開簡短的連接時無需二次確認（全局設定） {{i}}',
+      en: 'Open short URL without another confirmation (Global Option) {{i}}',
+    },
+    shortLinkWithoutConfirmDetail: {
+      cn: '打开短链接时无需二次手动确认。由于短链接网页无法获取登录状态，此设置项无论登录任意用户均会生效',
+    },
+  });
+
+  content.shortLinkWithoutConfirm = rule.Rule({
+    id: 'short_url_wo_confirm',
+    version: 73,
+    get configPool() { return config.global; },
+    parent: content.content,
+    template: () => i18n.shortLinkWithoutConfirm,
+    ref: {
+      i: { type: 'bubble', icon: 'warn', template: () => i18n.shortLinkWithoutConfirmDetail },
+    },
+    // 真正的执行逻辑在单独的文件里
+    // 这段是处理一下奇怪的追踪代码导致链接根本打不开的问题
+    // 建议如果真的想加追踪代码，在 mouseup 时改 href，而不是在 click 的时候 window.open
+    init() {
+      document.addEventListener('click', event => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (!target.matches('[action-type="feed_list_url"]')) return;
+        event.stopPropagation();
+      }, true);
+    },
+  });
 
 }());

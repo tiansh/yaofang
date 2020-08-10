@@ -10,7 +10,7 @@
   const i18n = util.i18n;
 
   config.init = async function (uid) {
-    const userPromise = config.pool('Config', { uid, isLocal: true });
+    const userPromise = uid != null ? config.pool('Config', { uid, isLocal: true }) : Promise.resolve(null);
     const globalPromise = config.pool('Config', { isLocal: true });
     const [user, global] = await Promise.all([userPromise, globalPromise]);
     Object.assign(config, { user, global });
