@@ -20,15 +20,25 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const init = yawf.init = yawf.init || {};
+  init.VERSION = 0;
 
   const page = init.page = init.page || {};
 
-  const validPageReady = $CONFIG => {
+  const validPageReadyV6 = $CONFIG => {
     // 必须的参数
     if (!$CONFIG) return false;
     if (!$CONFIG.uid) return false;
     if (!$CONFIG.nick) return false;
     if ($CONFIG.islogin === '0') return false;
+    return true;
+  };
+
+  const validPageReadyV7 = config => {
+    // 必须的参数
+    if (!config) return false;
+    if (!config.user) return false;
+    if (!config.user.idstr) return false;
+    if (!config.user.screen_name) return false;
     return true;
   };
 
@@ -69,6 +79,17 @@
     set.clear();
   };
 
+  const genV6LikeConfigByV7Config = config => ({
+    uid: config.user.idstr,
+    name: config.user.screen_name,
+    oid: null, // 无数据
+    domain: '', // 无数据
+    bpType: '', // 无数据
+    location: '', // 无数据
+    lang: 'zh-CN',
+    skin: null, // 无数据
+  });
+
   init.status = () => status;
   // 触发 Ready
   init.ready = async $CONFIG => {
@@ -83,12 +104,21 @@
     }
   };
   // 触发 ConfigChange
-  init.configChange = async $CONFIG => {
-    util.debug('yawf onconfigchange: %o', $CONFIG);
-    page.$CONFIG = $CONFIG;
-    await runSet(onConfigChangeCallback);
-    if (validPageReady($CONFIG)) {
-      await init.ready($CONFIG);
+  init.configChange = async config => {
+    util.debug('yawf onconfigchange: %o', config);
+    if (validPageReadyV6(config)) {
+      if (!init.VERSION) init.VERSION = 6;
+      if (init.VERSION !== 6) return;
+      page.$CONFIG = config;
+      await runSet(onConfigChangeCallback);
+      await init.ready(config);
+    } else if (validPageReadyV7(config)) {
+      if (!init.VERSION) init.VERSION = 7;
+      if (init.VERSION !== 7) return;
+      page.config = config;
+      page.$CONFIG = genV6LikeConfigByV7Config(config);
+      await runSet(onConfigChangeCallback);
+      await init.ready(config);
     } else {
       await init.deinit();
       return;

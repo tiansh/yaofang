@@ -35,6 +35,10 @@
     ainit: function () {
       util.debug.setEnabled(this.isEnabled());
     },
+    // DEBUG!
+    init: function () {
+      util.debug.setEnabled(true);
+    },
   });
 
   i18n.debugRegex = {

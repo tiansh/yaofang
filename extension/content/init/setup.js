@@ -90,3 +90,72 @@
 
 }());
 
+; (function () {
+  const yawf = window.yawf;
+  const util = yawf.util;
+  const init = yawf.init;
+
+  const strings = util.strings;
+  const randStr = strings.randKey();
+  const key = `yawf_${randStr}`;
+
+  document.documentElement.addEventListener(key, function (event) {
+    const config = JSON.parse(event.detail.config);
+    init.configChange(config);
+  }, true);
+
+  util.inject(function (key) {
+    const reportNewNode = function ({ tag, node, replace, root = false }) {
+      const event = new CustomEvent('yawf-VueNodeInserted', {
+        bubbles: true,
+        detail: { tag, replace, root },
+      });
+      node.dispatchEvent(event);
+    };
+    const reportRootNode = function (node) {
+      const config = node.__vue__.config;
+      const event = new CustomEvent(key, {
+        detail: { config: JSON.stringify(config) },
+      });
+      node.dispatchEvent(event);
+    };
+
+    /** @type {WeakMap<Object, Node>} */
+    const vmToHtmlNode = new WeakMap();
+    /** @type {MutationCallback} */
+    const markElements = function (records) {
+      Array.from(records).forEach(record => {
+        Array.from(record.addedNodes).forEach(node => {
+          const nodes = [node];
+          if (node instanceof Element) {
+            nodes.push(...node.getElementsByTagName('*'));
+          }
+          nodes.forEach(node => {
+            if (!node.__vue__) return;
+            if (node.__vue__.$parent == null) {
+              reportRootNode(node);
+            }
+            const tag = (node.__vue__.$options || {})._componentTag;
+            if (tag && node instanceof Element) {
+              node.setAttribute('yawf-component-tag', tag);
+            }
+            if (tag) {
+              if (vmToHtmlNode.has(node.__vue__)) {
+                const old = vmToHtmlNode.has(node.__vue__);
+                if (old !== node) {
+                  reportNewNode({ tag, node, replace: true });
+                }
+              } else {
+                reportNewNode({ tag, node, replace: false });
+              }
+              vmToHtmlNode.set(node.__vue__, node);
+            }
+          });
+        });
+      });
+    };
+    const observer = new MutationObserver(markElements);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }, key);
+}());
+
