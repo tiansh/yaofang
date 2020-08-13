@@ -156,6 +156,11 @@
       addScriptMenu(iconContainer);
     };
     if (['search', 'ttarticle'].includes(init.page.type())) return;
+    if (init.VERSION === 7) {
+      searchStyle.remove();
+      iconStyle.remove();
+      return;
+    }
     icon(); menuitem();
   });
 
@@ -164,6 +169,46 @@
       // 统一海外版导航栏
       const navUs = document.querySelector('.WB_global_nav_us');
       if (navUs) navUs.classList.remove('WB_global_nav_us');
+    });
+  });
+
+}());
+
+; (function () {
+
+  const yawf = window.yawf;
+  const util = yawf.util;
+  const init = yawf.init;
+
+  const i18n = util.i18n;
+
+  init.onLoad(() => {
+    if (init.VERSION !== 7) return;
+    util.inject(function () {
+      const yawf = window.yawf;
+      const vueSetup = yawf.vueSetup;
+
+      vueSetup.eachComponentInstance('Configs', function (element, __vue__) {
+        const configItems = __vue__.configItems;
+        configItems.splice(-1, 0, {
+          divider: true,
+          href: '',
+          name: '药方设置',
+          type: 'yawf-config',
+        });
+      });
+      vueSetup.eachComponentInstance('weibo-top-nav', function (element, __vue__) {
+        __vue__.configHandle = (function (configHandle) {
+          return function (index) {
+            if (this.configs[index].type === 'yawf-config') {
+              this.configClose = true;
+              alert('showConfig!');
+            } else {
+              configHandle.call(this, index);
+            }
+          }.bind(__vue__);
+        }(__vue__.configHandle));
+      });
     });
   });
 

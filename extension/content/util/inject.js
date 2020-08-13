@@ -6,13 +6,12 @@
   util.inject = function (func, ...args) {
     const executeScript = `void(${func}(${args.map(value => JSON.stringify(value))}));`;
     const script = document.createElement('script');
-    script.async = false;
     script.textContent = executeScript;
     const target = document.head || document.body || document.documentElement;
     return new Promise(resolve => {
       script.addEventListener('load', () => {
         resolve();
-        script.parentElement.removeChild(script);
+        // script.parentElement.removeChild(script);
       });
       if (target) target.appendChild(script);
       else setTimeout(function injectScript() {
