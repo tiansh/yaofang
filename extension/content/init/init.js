@@ -20,7 +20,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const init = yawf.init = yawf.init || {};
-  init.VERSION = 0;
+  yawf.WEIBO_VERSION = 0;
 
   const page = init.page = init.page || {};
 
@@ -107,14 +107,20 @@
   init.configChange = async config => {
     util.debug('yawf onconfigchange: %o', config);
     if (validPageReadyV6(config)) {
-      if (!init.VERSION) init.VERSION = 6;
-      if (init.VERSION !== 6) return;
+      if (!yawf.WEIBO_VERSION) {
+        yawf.WEIBO_VERSION = 6;
+        document.documentElement.classList.add('yawf-WBV6');
+      }
+      if (yawf.WEIBO_VERSION !== 6) return;
       page.$CONFIG = config;
       await runSet(onConfigChangeCallback);
       await init.ready(config);
     } else if (validPageReadyV7(config)) {
-      if (!init.VERSION) init.VERSION = 7;
-      if (init.VERSION !== 7) return;
+      if (!yawf.WEIBO_VERSION) {
+        yawf.WEIBO_VERSION = 7;
+        document.documentElement.classList.add('yawf-WBV7');
+      }
+      if (yawf.WEIBO_VERSION !== 7) return;
       page.config = config;
       page.$CONFIG = genV6LikeConfigByV7Config(config);
       await runSet(onConfigChangeCallback);

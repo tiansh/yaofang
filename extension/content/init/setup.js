@@ -118,7 +118,8 @@
     };
     // 发现 Vue 根元素的时候启动脚本的初始化
     const reportRootNode = function (node) {
-      const config = node.__vue__.config;
+      const vm = node.__vue__;
+      const config = vm.config;
       const event = new CustomEvent(key, {
         detail: { config: JSON.stringify(config) },
       });
@@ -128,9 +129,9 @@
     /** @type {WeakMap<Object, Node>} */
     const vmToHtmlNode = new WeakMap();
     const seenElement = new WeakSet();
-    const markElement = function (node, instance) {
-      if (!instance || instance.$el !== node) return;
-      const tag = (instance.$options || {})._componentTag;
+    const markElement = function (node, vm) {
+      if (!vm || vm.$el !== node) return;
+      const tag = (vm.$options || {})._componentTag;
       if (tag && node instanceof Element) {
         if (node.hasAttribute('yawf-component-tag')) {
           const tags = [...new Set([...node.getAttribute('yawf-component-tag').split(' '), tag]).values()].join(' ');
@@ -140,24 +141,38 @@
         }
       }
       if (tag) {
-        if (vmToHtmlNode.has(instance)) {
-          const old = vmToHtmlNode.has(instance);
+        if (vmToHtmlNode.has(vm)) {
+          const old = vmToHtmlNode.has(vm);
           if (old !== node) {
             reportNewNode({ tag, node, replace: true });
           }
         } else {
           reportNewNode({ tag, node, replace: false });
         }
-        vmToHtmlNode.set(instance, node);
+        vmToHtmlNode.set(vm, node);
+      }
+    };
+    const eachVmForNode = function* (node) {
+      for (let vm = node.__vue__; vm && vm.$el === node; vm = vm.$parent) {
+        yield vm;
+      }
+      for (let vm = node.__vue__; ; vm = vm.$children[0]) {
+        if (!Array.isArray(vm.$children)) break;
+        if (vm.$children.length !== 1) break;
+        const child = vm.$children[0];
+        if (!child || child.$el !== node) break;
+        yield child;
       }
     };
     const eachMountedNode = function (node) {
-      if (!node.__vue__) return;
-      if (node.__vue__.$parent == null) {
+      const vm = node.__vue__;
+      if (!vm) return;
+      // 如果发现根元素，那么初始化脚本
+      if (vm.$parent == null) {
         reportRootNode(node);
       }
-      for (let instance = node.__vue__; instance && instance.$el === node; instance = instance.$parent) {
-        markElement(node, instance);
+      for (let vmi of eachVmForNode(node)) {
+        markElement(node, vmi);
       }
       if (seenElement.has(node)) return;
       seenElement.add(node);
@@ -198,11 +213,8 @@
       const found = function (target) {
         if (seen.has(target)) return;
         seen.add(target);
-        let instance = target.__vue__;
-        for (; instance && instance.$el === target; instance = instance.$parent) {
-          if ((instance.$options || {})._componentTag === tag) {
-            callback(target, instance);
-          }
+        for (let vm of eachVmForNode(target)) {
+          if (vm.$options._componentTag === tag) callback(target, vm);
         }
       };
       document.documentElement.addEventListener('yawf-VueNodeInserted', event => {
@@ -216,68 +228,72 @@
     const childArray = function (element) {
       return element.children || (element.componentOptions || {}).children;
     };
-    const buildResult = function buildResult(element) {
-      const node = document.createElement(element.tag);
-      node.__vue_element__ = element;
+    const buildResult = function buildResult(vnode) {
+      const tag = vnode.componentOptions ? 'x-' + vnode.componentOptions.tag : vnode.tag;
+      const node = document.createElement(tag);
+      node.__vnode__ = vnode;
       const data = node.data || {};
       if (typeof data.class === 'string') {
         node.className = data.class;
-      }
-      if (Array.isArray(data.class)) {
+      } else if (Array.isArray(data.class)) {
         data.class.filter(x => x).forEach(n => node.classList.add(n));
       }
-      const children = childArray(element);
-      if (children) children.forEach(element => node.appendChild(buildResult(element)));
+      const children = childArray(vnode);
+      if (children) children.forEach(vnode => {
+        if (vnode.tag == null) return;
+        node.appendChild(buildResult(vnode));
+      });
       return node;
     };
-    const before = function (newElement, refNode) {
-      const newNode = buildResult(newElement);
-      const refElement = refNode.__vue_element__;
+    const before = function (newVNode, refNode) {
+      const newNode = buildResult(newVNode);
+      const refVNode = refNode.__vnode__;
       const parentNode = refNode.parentNode;
-      const parentElement = parentNode.__vue_element__;
-      const children = childArray(parentElement);
-      const index = children.indexOf(refElement);
-      children.splice(index, 0, newElement);
+      const parentVNode = parentNode.__vnode__;
+      const children = childArray(parentVNode);
+      const index = children.indexOf(refVNode);
+      children.splice(index, 0, newVNode);
       parentNode.insertBefore(newNode, refNode);
       return newNode;
     };
-    const append = function (newElement, parentNode) {
-      const parentElement = parentNode.__vue_element__;
-      const children = childArray(parentElement);
-      const newNode = buildResult(newElement);
-      children.push(newElement);
+    const append = function (newVNode, parentNode) {
+      const parentVNode = parentNode.__vnode__;
+      const children = childArray(parentVNode);
+      const newNode = buildResult(newVNode);
+      children.push(newVNode);
       parentNode.appendChild(newNode);
       return newNode;
     };
     const remove = function (targetNode) {
-      const targetElement = targetNode.__vue_element__;
+      const targetVNode = targetNode.__vnode__;
       const parentNode = targetNode.parentNode;
-      const parentElement = parentNode.__vue__element__;
-      const children = childArray(parentElement);
-      const index = children.indexOf(targetElement);
+      const parentVNode = parentNode.__vnode__;
+      const children = childArray(parentVNode);
+      const index = children.indexOf(targetVNode);
       children.splice(index, 1);
       parentNode.removeChild(targetNode);
       return targetNode;
     };
 
-    const transformRender = vueSetup.transformRender = function (render, transformer) {
+    const transformRender = function (render, transformer) {
       return function (createElement) {
-        const result = render.call(this, createElement);
-        const nodeStruct = buildResult(result);
+        const vdom = render.call(this, createElement);
+        const nodeStruct = buildResult(vdom);
         transformer(nodeStruct, { before, remove, append, createElement });
-        return result;
+        return vdom;
       };
     };
-    const transformElementRender = vueSetup.transformElementRender = function (instance, transformer) {
-      instance.$options.render = transformRender(instance.$options.render, transformer);
+    const transformElementRender = vueSetup.transformElementRender = function (vm, transformer) {
+      vm.$options.render = transformRender(vm.$options.render, transformer);
     };
     vueSetup.transformCompontentRender = function (tag, transformer) {
-      eachComponentInstance(tag, function (target, instance) {
-        transformElementRender(instance, transformer);
-        instance.$forceUpdate();
+      eachComponentInstance(tag, function (target, vm) {
+        transformElementRender(vm, transformer);
+        vm.$forceUpdate();
       });
     };
     */
+
   }, key);
 }());
 

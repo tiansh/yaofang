@@ -156,7 +156,7 @@
       addScriptMenu(iconContainer);
     };
     if (['search', 'ttarticle'].includes(init.page.type())) return;
-    if (init.VERSION === 7) {
+    if (yawf.WEIBO_VERSION === 7) {
       searchStyle.remove();
       iconStyle.remove();
       return;
@@ -183,22 +183,19 @@
   const i18n = util.i18n;
 
   init.onLoad(() => {
-    if (init.VERSION !== 7) return;
+    if (yawf.WEIBO_VERSION !== 7) return;
     util.inject(function () {
       const yawf = window.yawf;
       const vueSetup = yawf.vueSetup;
 
-      vueSetup.eachComponentInstance('Configs', function (element, __vue__) {
-        const configItems = __vue__.configItems;
-        configItems.splice(-1, 0, {
+      vueSetup.eachComponentInstance('weibo-top-nav', function (element, vm) {
+        vm.configs.splice(-1, 0, {
           divider: true,
           href: '',
           name: '药方设置',
           type: 'yawf-config',
         });
-      });
-      vueSetup.eachComponentInstance('weibo-top-nav', function (element, __vue__) {
-        __vue__.configHandle = (function (configHandle) {
+        vm.configHandle = (function (configHandle) {
           return function (index) {
             if (this.configs[index].type === 'yawf-config') {
               this.configClose = true;
@@ -206,8 +203,8 @@
             } else {
               configHandle.call(this, index);
             }
-          }.bind(__vue__);
-        }(__vue__.configHandle));
+          }.bind(vm);
+        }(vm.configHandle));
       });
     });
   });
