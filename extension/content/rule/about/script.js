@@ -39,6 +39,7 @@
   });
 
   script.text = rule.Text({
+    weiboVersion: [6, 7],
     parent: script.script,
     template: () => i18n.aboutText,
     ref: {

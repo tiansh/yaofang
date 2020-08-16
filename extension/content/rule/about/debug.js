@@ -28,16 +28,13 @@
   };
 
   debug.enable = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'script_enable_debug',
     version: 1,
     parent: debug.debug,
     template: () => i18n.debugText,
     ainit: function () {
       util.debug.setEnabled(this.isEnabled());
-    },
-    // DEBUG!
-    init: function () {
-      util.debug.setEnabled(true);
     },
   });
 

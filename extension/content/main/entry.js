@@ -179,14 +179,30 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const init = yawf.init;
+  const rule = yawf.rule;
 
   const i18n = util.i18n;
+
+  const showRuleDialog = function (event, tab = null) {
+    try {
+      rule.dialog(tab);
+    } catch (e) { util.debug('Error while prompting dialog: %o', e); }
+    event.preventDefault();
+  };
+  document.documentElement.addEventListener('yawf-showRuleDialog', function () {
+    showRuleDialog();
+  });
 
   init.onLoad(() => {
     if (yawf.WEIBO_VERSION !== 7) return;
     util.inject(function () {
       const yawf = window.yawf;
       const vueSetup = yawf.vueSetup;
+
+      const showRuleDialog = function () {
+        const event = new CustomEvent('yawf-showRuleDialog');
+        document.documentElement.dispatchEvent(event);
+      };
 
       vueSetup.eachComponentInstance('weibo-top-nav', function (element, vm) {
         vm.configs.splice(-1, 0, {
@@ -199,7 +215,7 @@
           return function (index) {
             if (this.configs[index].type === 'yawf-config') {
               this.configClose = true;
-              alert('showConfig!');
+              showRuleDialog();
             } else {
               configHandle.call(this, index);
             }

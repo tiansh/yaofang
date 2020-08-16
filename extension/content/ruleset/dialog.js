@@ -27,35 +27,62 @@
   const configDom = {};
   configDom.left = () => {
     const container = document.createElement('div');
-    container.innerHTML = '<div class="WB_minitab yawf-config-header" node-type="yawf-config-header"><ul class="minitb_ul S_line1 S_bg1 clearfix"></ul></div>';
+    if (yawf.WEIBO_VERSION === 6) {
+      container.innerHTML = '<div class="WB_minitab yawf-config-header" node-type="yawf-config-header"><ul class="minitb_ul S_line1 S_bg1 clearfix"></ul></div>';
+    } else {
+      container.innerHTML = '<div class="yawf-config-header"><ul class="woo-box-flex woo-tab-nav"></ul></div>';
+    }
     return container.removeChild(container.firstChild);
   };
   configDom.search = () => {
     const container = document.createElement('ul');
-    container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab yawf-config-tab-search"><label class="minitb_lk S_txt1"><input id="yawf-config-search" class="yawf-config-search" type="search"><span class="yawf-config-search-logo W_ficon S_txt2">f</span></label></li>';
+    if (yawf.WEIBO_VERSION === 6) {
+      container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab yawf-config-tab-search"><label class="minitb_lk S_txt1"><input id="yawf-config-search" class="yawf-config-search" type="search"><span class="yawf-config-search-logo W_ficon S_txt2">f</span></label></li>';
+    } else {
+      container.innerHTML = '<li class="woo-tab-item-main yawf-config-tab yawf-config-tab-search"><label><input id="yawf-config-search" class="woo-input-main yawf-config-search" type="search"><i data-v-2621="" class="woo-font icon woo-font--search yawf-config-search-logo"></i></label></li>';
+    }
     return container.removeChild(container.firstChild);
   };
   configDom.item = title => {
     const container = document.createElement('ul');
-    container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab"><a class="minitb_lk S_txt1 S_bg1 S_bg2" action-type="tab_item" href="javascript:void(0);"></a></li>';
-    const text = container.querySelector('a');
-    text.appendChild(title);
+    if (yawf.WEIBO_VERSION === 6) {
+      container.innerHTML = '<li class="minitb_item S_line1 yawf-config-tab"><a class="minitb_lk S_txt1 S_bg1 S_bg2" action-type="tab_item" href="javascript:void(0);"></a></li>';
+      const text = container.querySelector('a');
+      text.appendChild(title);
+    } else {
+      container.innerHTML = '<li class="woo-tab-item-main yawf-config-tab"><button></button></li>';
+      const text = container.querySelector('button');
+      text.appendChild(title);
+    }
     return container.removeChild(container.firstChild);
   };
   configDom.right = () => {
     const container = document.createElement('div');
-    container.innerHTML = '<div node-type="yawf-config-body" class="yawf-config-body yawf-window-body"></div>';
+    if (yawf.WEIBO_VERSION === 6) {
+      container.innerHTML = '<div node-type="yawf-config-body" class="yawf-config-body yawf-window-body"></div>';
+    } else {
+      container.innerHTML = '<div class="yawf-config-body yawf-window-body"></div>';
+    }
     return container.removeChild(container.firstChild);
   };
   configDom.layer = () => {
     const container = document.createElement('div');
-    container.innerHTML = '<div class="yawf-config-layer"></div>';
+    if (yawf.WEIBO_VERSION === 6) {
+      container.innerHTML = '<div class="yawf-config-layer"></div>';
+    } else {
+      container.innerHTML = '<div class="yawf-config-layer"></div>';
+    }
     return container.removeChild(container.firstChild);
   };
 
   const renderTip = (layer, text) => {
-    layer.innerHTML = '<div class="WB_empty"><div class="WB_innerwrap"><div class="empty_con clearfix"><p class="icon_bed"><i class="W_icon icon_warnB"></i></p><p class="text"></p></div></div></div>';
-    layer.querySelector('.text').textContent = text;
+    if (yawf.WEIBO_VERSION === 6) {
+      layer.innerHTML = '<div class="WB_empty"><div class="WB_innerwrap"><div class="empty_con clearfix"><p class="icon_bed"><i class="W_icon icon_warnB"></i></p><p class="text yawf-tip-text"></p></div></div></div>';
+    } else {
+      layer.innerHTML = '<div class="woo-tip-main woo-tip-vertical yawf-empty-tip"><span class="woo-tip-icon woo-tip-warnFill yawf-empty-tip-icon"></span><span class="woo-tip-text yawf-tip-text"></p></div>';
+      layer.querySelector('.woo-tip-icon').appendChild(ui.icon('warn').documentElement).setAttribute('class', 'woo-tip-icon');
+    }
+    layer.querySelector('.yawf-tip-text').textContent = text;
   };
 
   const renderSearch = (layer, input, filter) => {
@@ -99,6 +126,13 @@
     inner.classList.add('yawf-config-inner');
     const left = inner.appendChild(configDom.left());
     const right = inner.appendChild(configDom.right());
+    if (yawf.WEIBO_VERSION === 7) {
+      const v7Tip = document.createElement('div');
+      v7Tip.innerHTML = '<div class="tip woo-box-flex woo-box-alignCenter woo-box-justifyCenter woo-tip-main woo-tip-flat woo-tip-error" style="padding: 10px;"><span class="woo-tip-text">药方（YAWF）针对微博新版（V7）的支持正在开发中！目前绝大多数功能暂不支持新版！！欢迎到 <a href="https://github.com/tiansh/yaofang" target="_blank" rel="noopener">项目主页</a> 贡献代码！</span></div>';
+      const text = v7Tip.querySelector('.woo-tip-text');
+      text.parentElement.insertBefore(ui.icon('error').documentElement, text).setAttribute('style', 'width: 32px; height: 32px;');
+      right.appendChild(v7Tip.firstChild);
+    }
     const tablist = left.querySelector('ul');
     const search = tablist.appendChild(configDom.search());
     const searchInput = search.querySelector('input');
@@ -139,9 +173,10 @@
     });
     const setCurrent = tabLeft => {
       if (current === tabLeft) return;
-      if (current) current.classList.remove('current');
+      const currentClassName = yawf.WEIBO_VERSION === 6 ? 'current' : 'woo-tab-active';
+      if (current) current.classList.remove('yawf-current', currentClassName);
       current = tabLeft;
-      tabLeft.classList.add('current');
+      tabLeft.classList.add('yawf-current', currentClassName);
       if (search !== tabLeft && searchInput.value) searchInput.value = '';
       tabInit.get(tabLeft)();
       right.scrollTo(0, 0);
@@ -195,26 +230,51 @@
         render: inner => {
           renderTabs(inner, tabs, { initial: tab, filter });
         },
+        bar: true,
       }).show();
     } catch (e) { util.debug('Error while showing rule dialog %o', e); }
   };
 
   css.append(`
-#yawf-config .yawf-config-inner { padding: 0 0 0 160px; width: 640px; height: 480px; position: relative; }
-#yawf-config .yawf-config-header { position: absolute; width: 160px; height: 480px; top: 0; left: 0; }
-#yawf-config .yawf-config-header ul { height: 450px; width: 120px; overflow: hidden; padding: 20px 0 10px 40px; box-shadow: -4px 0 2px -2px rgba(64, 64, 64, 0.15) inset, 0 4px 2px -2px rgba(64, 64, 64, 0.15) inset; }
-#yawf-config .yawf-config-header li { display: block; width: 120px; height: 25px; border-style: solid none; margin-top: -1px; }
-#yawf-config .yawf-config-header a,
-#yawf-config .yawf-config-header label { width: 100px; padding: 0 10px; position: relative; z-index: 1; }
-#yawf-config .yawf-config-header .yawf-config-tab:not(.current) a { background: none transparent; }
-#yawf-config .yawf-config-header .yawf-config-search { -moz-appearance: none; -webkit-appearance: none; background: none transparent; border: medium none; height: 25px; padding: 0 0 0 30px; text-align: right; width: 70px; box-sizing: content-box; position: relative; z-index: 2; }
-#yawf-config .yawf-config-search-logo { clear: both; display: block; float: left; left: 45px; position: relative; top: -27px; transition: left linear 0.2s; cursor: text; font-weight: normal; }
-#yawf-config .yawf-config-header li.current .yawf-config-search-logo,
-#yawf-config .yawf-config-search:focus ~ .yawf-config-search-logo { left: 15px; }
-#yawf-config .yawf-config-body { padding: 10px 20px 20px; width: 600px; max-height: 450px; overflow: auto; box-shadow: 0 4px 2px -2px rgba(64, 64, 64, 0.15) inset; position: relative; line-height: 20px; }
-#yawf-config .yawf-config-layer { padding-bottom: 20px; min-height: 400px; }
-#yawf-config .yawf-config-layer.current { display: block; }
+.yawf-WBV6 #yawf-config .yawf-config-inner { padding: 0 0 0 160px; width: 640px; height: 480px; position: relative; }
+.yawf-WBV6 #yawf-config .yawf-config-header { position: absolute; width: 160px; height: 480px; top: 0; left: 0; }
+.yawf-WBV6 #yawf-config .yawf-config-header ul { height: 450px; width: 120px; overflow: hidden; padding: 20px 0 10px 40px; box-shadow: -4px 0 2px -2px rgba(64, 64, 64, 0.15) inset, 0 4px 2px -2px rgba(64, 64, 64, 0.15) inset; }
+.yawf-WBV6 #yawf-config .yawf-config-header li { display: block; width: 120px; height: 25px; border-style: solid none; margin-top: -1px; }
+.yawf-WBV6 #yawf-config .yawf-config-header a,
+.yawf-WBV6 #yawf-config .yawf-config-header label { width: 100px; padding: 0 10px; position: relative; z-index: 1; }
+.yawf-WBV6 #yawf-config .yawf-config-header .yawf-config-tab:not(.current) a { background: none transparent; }
+.yawf-WBV6 #yawf-config .yawf-config-header .yawf-config-search { -moz-appearance: none; -webkit-appearance: none; background: none transparent; border: medium none; height: 25px; padding: 0 0 0 30px; text-align: right; width: 70px; box-sizing: content-box; position: relative; z-index: 2; }
+.yawf-WBV6 #yawf-config .yawf-config-search-logo { clear: both; display: block; float: left; left: 45px; position: relative; top: -27px; transition: left linear 0.2s; cursor: text; font-weight: normal; }
+.yawf-WBV6 #yawf-config .yawf-config-header li.current .yawf-config-search-logo,
+.yawf-WBV6 #yawf-config .yawf-config-search:focus ~ .yawf-config-search-logo { left: 15px; }
+.yawf-WBV6 #yawf-config .yawf-config-body { padding: 10px 20px 20px; width: 600px; max-height: 450px; overflow: auto; box-shadow: 0 4px 2px -2px rgba(64, 64, 64, 0.15) inset; position: relative; line-height: 20px; }
+.yawf-WBV6 #yawf-config .yawf-config-layer { padding-bottom: 20px; min-height: 400px; }
+.yawf-WBV6 #yawf-config .yawf-config-layer.current { display: block; }
 `);
 
+  css.append(`
+.yawf-WBV7 #yawf-config { width: 800px; font-size: 14px; }
+.yawf-WBV7 #yawf-config .yawf-config-inner { padding: 0 0 0 160px; width: 640px; height: 480px; position: relative; }
+.yawf-WBV7 #yawf-config .yawf-config-header { position: absolute; width: 160px; height: 480px; top: 0; left: 0; }
+.yawf-WBV7 #yawf-config .yawf-config-header ul { height: 442px; width: 120px; overflow: hidden; padding: 20px 0 20px 40px; border-right: 10px solid var(--frame-background); }
+.yawf-WBV7 #yawf-config .yawf-config-header li { display: block; width: 120px; height: 25px; line-height: 25px; }
+.yawf-WBV7 #yawf-config .yawf-config-header li.yawf-current { box-shadow: -2px 0 var(--w-brand) inset; font-weight: bold; }
+.yawf-WBV7 #yawf-config .yawf-config-header li:hover button { background: var(--w-hover) !important; border-radius: 15px; }
+.yawf-WBV7 #yawf-config .yawf-config-header button,
+.yawf-WBV7 #yawf-config .yawf-config-header label { width: 120px; padding: 0; border: none; background: none; position: relative; z-index: 1; }
+.yawf-WBV7 #yawf-config .yawf-config-header button { color: inherit; outline: none; cursor: pointer; font: inherit; }
+.yawf-WBV7 #yawf-config .yawf-config-header .yawf-config-search { -moz-appearance: none; -webkit-appearance: none; background: none transparent; height: 25px; padding: 0 10px   0 30px; text-align: right; width: 80px; box-sizing: content-box; position: relative; z-index: 2; }
+.yawf-WBV7 #yawf-config .yawf-config-search-logo { clear: both; display: block; float: left; left: 55px; position: relative; top: -18px; transition: left linear 0.2s; cursor: text; font-weight: normal; }
+.yawf-WBV7 #yawf-config .yawf-config-header li.yawf-current .yawf-config-search-logo,
+.yawf-WBV7 #yawf-config .yawf-config-search:focus ~ .yawf-config-search-logo { left: 15px; }
+.yawf-WBV7 #yawf-config .yawf-config-body { padding: 10px 20px 20px; width: 600px; max-height: 450px; overflow: auto; position: relative; line-height: 20px; }
+.yawf-WBV7 #yawf-config .yawf-config-layer { padding-bottom: 20px; min-height: 400px; }
+.yawf-WBV7 #yawf-config .yawf-config-layer.yawf-current { display: block; }
+.yawf-WBV7 #yawf-config .woo-dialog-main { width: 800px; max-width: none; padding: 0; overflow: hidden; }
+.yawf-WBV7 #yawf-config .woo-dialog-title { margin-bottom: 0; }
+.yawf-WBV7 #yawf-config .woo-tab-nav { margin: 0; flex-direction: column; }
+.yawf-WBV7 #yawf-config .yawf-empty-tip { text-align: center; }
+.yawf-WBV7 #yawf-config .yawf-empty-tip-icon { display: block; margin: 0 auto 20px; padding-top: 150px; }
+`);
 
 }());
