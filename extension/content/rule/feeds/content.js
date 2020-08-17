@@ -81,6 +81,7 @@
   };
 
   content.expandLong = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'feed_long_expand',
     version: 1,
     parent: content.content,
@@ -89,7 +90,70 @@
       count: { type: 'range', min: 140, max: 2000, step: 10, initial: 200 },
       br: { type: 'range', min: 1, max: 60, step: 1, initial: 30 },
     },
-    // 这个设置项的相关逻辑实现在 content/rule/feed/feed/long.js
+    // V6 这个设置项的相关逻辑实现在 content/rule/filter/common/long.js
+    // V7 实现如下
+    init() {
+      const expand = this.isEnabled();
+      const count = this.ref.count.getConfig();
+      const br = this.ref.br.getConfig();
+      util.inject(function (rootKey, expand, { count, br }) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        const expandLongTextContent = function (vm) {
+          vm.$set(vm.data, 'text_expand', vm.showText);
+          vm.$http = Object.create(vm.$http);
+          vm.$http.get = (function (get) {
+            return async function (...args) {
+              if (args[0] === '/ajax/statuses/longtext' && vm.data.longTextContent_raw) {
+                return { data: { ok: true, data: { longTextContent: vm.data.longTextContent_raw } } };
+              } else {
+                return get.call(this, ...args);
+              }
+            };
+          }(vm.$http.get));
+          const text = vm.data.longTextContent_raw;
+          if (!text) return;
+          const len = text.length;
+          const remLen = len + (text.split('\n').length - 1) * (br - 1);
+          if (!expand || remLen < count) {
+            vm.handleExpand();
+            const unwatch = vm.$watch(function () { return this.data.longTextContent; }, function () {
+              if (!vm.data.longTextContent) return;
+              unwatch();
+              vm.showText = vm.data.longTextContent;
+              vm.$emit('updateText', vm.showText);
+            });
+          } else {
+            const expand = '<span class="expand">展开</span>';
+            const wordTip = `展开（约 ${Math.ceil(len / 10) * 10} 字）`;
+            vm.data.text_expand = vm.data.text_expand.replace(expand, () => expand.replace('展开', wordTip));
+            vm.showText = vm.data.text_expand;
+            vm.$emit('updateText', vm.showText);
+          }
+        };
+
+        vueSetup.eachComponentVM('feed-detail', function (node, vm) {
+          const needLoadLong = function () {
+            if (!this.isLongText) return false;
+            if (this.data._yawf_LongTextContentLoading !== false) return false;
+            if (this.data.longTextContent) return false;
+            if (this.data._yawf_LongTextContentAutoExpand) return false;
+            return this.data.mid;
+          };
+          vm.$watch(needLoadLong, function () {
+            if (!needLoadLong.call(vm)) return;
+            vm.$set(vm.data, '_yawf_LongTextContentAutoExpand', true);
+            try {
+              expandLongTextContent(vm);
+            } catch (e) {
+              console.error(e);
+            }
+          }, { immediate: true });
+        });
+
+      }, util.inject.rootKey, expand, { count, br });
+    }
   });
 
   i18n.feedContentLineBreak = {

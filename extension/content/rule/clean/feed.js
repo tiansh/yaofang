@@ -144,6 +144,7 @@ a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3
   clean.CleanRule('use_card_background', () => i18n.cleanFeedUseCardBackground, 1, '.screen_box .layer_menu_list a[action-type="fl_cardCover"] { display: none !important; }');
 
   observer.feed.onBefore(function (feed) {
+    if (yawf.WEIBO_VERSION !== 6) return;
     const lis = Array.from(feed.querySelectorAll('.WB_feed_type .WB_handle .WB_row_line li, .WB_feed_together .WB_func .WB_handle li'));
     lis.forEach(li => {
       let type = li.querySelector('a').getAttribute('action-type');

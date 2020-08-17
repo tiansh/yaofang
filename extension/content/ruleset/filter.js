@@ -21,6 +21,7 @@
   const priority = util.priority;
   const css = util.css;
   const i18n = util.i18n;
+  const strings = util.strings;
 
   /**
    * 用于收集针对微博或评论的过滤规则，并根据优先级逐一检查
@@ -150,90 +151,250 @@
     onDone(callback) { this.done.push(callback); }
   }
 
-  const removeHiddenItem = function (item, { result }) {
-    if (result !== 'hide') return;
-    item.remove();
-  };
-
-  const unfoldEventHandler = function (event) {
-    const feed = event.target.closest('[mid]');
-    feed.setAttribute('yawf-feed-display', 'unfold');
-    feed.removeEventListener('click', unfoldEventHandler);
-  };
-  const foldFeedUnfold = function (feed, { result }) {
-    if (result !== 'fold') return;
-    feed.addEventListener('click', unfoldEventHandler);
-  };
-
   /**
    * 针对微博的过滤规则
    * 对应脚本版 observer.weibo.*
    */
   observer.feed = new FilterObserver();
-  observer.feed.apply = function (feed, { result, filter = null, reason = null }) {
-    feed.setAttribute('yawf-feed-display', result || 'unset');
-    if (result && result !== 'unset') {
-      const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]') ||
-        feed.querySelector('.card-feed .info .name');
-      const authorName = author && author.textContent;
-      if (authorName) feed.setAttribute('yawf-feed-author', authorName);
-      if (reason) feed.setAttribute('yawf-feed-reason', reason);
-      util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
-    }
-    if (result === 'hide') return false;
-    return true;
-  };
-  observer.feed.reapply = function () {
-    const parsed = Array.from(document.querySelectorAll('[yawf-feed-display]'));
-    parsed.forEach(feed => {
-      feed.removeEventListener('click', unfoldEventHandler);
-    });
-    return this.active(parsed, false);
-  };
-  observer.feed.onFinally(removeHiddenItem);
-  observer.feed.onFinally(foldFeedUnfold);
 
   /**
    * 针对评论的过滤规则
    * 对应脚本版 observer.comment
    */
   observer.comment = new FilterObserver();
-  observer.comment.apply = function (comment, { result, filter = null, reason = null }) {
-    comment.setAttribute('yawf-comment-display', result || 'unset');
-    if (result && result !== 'unset') {
-      util.debug('Comment filter %o -> %o by %o due to %o', comment, result, filter, reason);
-    }
-    if (result === 'hide') return false;
-    return true;
-  };
-  observer.comment.reapply = function () {
-    const parsed = Array.from(document.querySelectorAll('[yawf-comment-display]'));
-    return this.active(parsed, false);
-  };
-  observer.comment.onFinally(removeHiddenItem);
 
 
   init.onLoad(function () {
-    // 自动检测页面中的微博并触发过滤规则
-    observer.dom.add(function feedFilter() {
-      const feeds = document.querySelectorAll([
-        '[action-type="feed_list_item"]:not([yawf-feed])',
-        '[node-type="feed_list"] .WB_feed_type:not([yawf-feed])',
-      ].join(','));
-      if (!feeds.length) return;
-      feeds.forEach(feed => feed.setAttribute('yawf-feed', ''));
-      observer.feed.active(feeds);
-    });
-    // 自动检测页面中的评论并触发过滤规则
-    observer.dom.add(function commentFilter() {
-      const comments = document.querySelectorAll([
-        '.list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment])',
-        '.list_ul[node-type="comment_list"] .list_li:not([yawf-comment]) ',
-      ].join(','));
-      if (!comments.length) return;
-      comments.forEach(comment => comment.setAttribute('yawf-comment', ''));
-      observer.comment.active(comments);
-    });
+    if (yawf.WEIBO_VERSION === 6) {
+      observer.feed.apply = function (feed, { result, filter = null, reason = null }) {
+        feed.setAttribute('yawf-feed-display', result || 'unset');
+        if (result && result !== 'unset') {
+          const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]') ||
+            feed.querySelector('.card-feed .info .name');
+          const authorName = author && author.textContent;
+          if (authorName) feed.setAttribute('yawf-feed-author', authorName);
+          if (reason) feed.setAttribute('yawf-feed-reason', reason);
+          util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
+        }
+        if (result === 'hide') return false;
+        return true;
+      };
+      observer.feed.reapply = function () {
+        const parsed = Array.from(document.querySelectorAll('[yawf-feed-display]'));
+        parsed.forEach(feed => {
+          feed.removeEventListener('click', unfoldEventHandler);
+        });
+        return this.active(parsed, false);
+      };
+      observer.comment.apply = function (comment, { result, filter = null, reason = null }) {
+        comment.setAttribute('yawf-comment-display', result || 'unset');
+        if (result && result !== 'unset') {
+          util.debug('Comment filter %o -> %o by %o due to %o', comment, result, filter, reason);
+        }
+        if (result === 'hide') return false;
+        return true;
+      };
+      observer.comment.reapply = function () {
+        const parsed = Array.from(document.querySelectorAll('[yawf-comment-display]'));
+        return this.active(parsed, false);
+      };
+      const removeHiddenItem = function (item, { result }) {
+        if (result !== 'hide') return;
+        item.remove();
+      };
+      const unfoldEventHandler = function (event) {
+        const feed = event.target.closest('[mid]');
+        feed.setAttribute('yawf-feed-display', 'unfold');
+        feed.removeEventListener('click', unfoldEventHandler);
+      };
+      const foldFeedUnfold = function (feed, { result }) {
+        if (result !== 'fold') return;
+        feed.addEventListener('click', unfoldEventHandler);
+      };
+      observer.feed.onFinally(removeHiddenItem);
+      observer.feed.onFinally(foldFeedUnfold);
+      observer.comment.onFinally(removeHiddenItem);
+
+      // 自动检测页面中的微博并触发过滤规则
+      observer.dom.add(function feedFilter() {
+        const feeds = document.querySelectorAll([
+          '[action-type="feed_list_item"]:not([yawf-feed])',
+          '[node-type="feed_list"] .WB_feed_type:not([yawf-feed])',
+        ].join(','));
+        if (!feeds.length) return;
+        feeds.forEach(feed => feed.setAttribute('yawf-feed', ''));
+        observer.feed.active(feeds);
+      });
+      // 自动检测页面中的评论并触发过滤规则
+      observer.dom.add(function commentFilter() {
+        const comments = document.querySelectorAll([
+          '.list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment])',
+          '.list_ul[node-type="comment_list"] .list_li:not([yawf-comment]) ',
+        ].join(','));
+        if (!comments.length) return;
+        comments.forEach(comment => comment.setAttribute('yawf-comment', ''));
+        observer.comment.active(comments);
+      });
+    } else {
+      const randStr = strings.randKey();
+      const key = `yawf_feedFilter_${randStr}`;
+
+      // 当有一条完成过滤规则判断时，交给页面脚本处理
+      observer.feed.apply = function (data, { result, filter = null, reason = null }) {
+        const mid = data.mid;
+        const event = new CustomEvent(key, {
+          detail: JSON.stringify({ action: 'result', mid, result: { result: result || 'unset', reason } }),
+        });
+        document.documentElement.dispatchEvent(event);
+        util.debug('Feed filter %o -> %o by %o due to %o', data, result, filter, reason);
+        if (result === 'hide') return false;
+        return true;
+      };
+      // 如果需要重新触发过滤规则，那么让页面脚本重新触发一次
+      observer.feed.reapply = function () {
+        const event = new CustomEvent(key, { detail: JSON.stringify({ action: 'rerun' }) });
+        document.documentElement.dispatchEvent(event);
+      };
+      // 当页面脚本检测到一条需要过滤的微博时，提交过滤
+      window.addEventListener(key, function (event) {
+        const detail = JSON.parse(event.detail);
+        if (detail.action === 'trigger') {
+          observer.feed.active([detail.data]);
+        }
+      }, true);
+      util.inject(function (rootKey, key) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        // 展开微博正文
+        const longContentExpandForDetail = async function (vm, feedDetail) {
+          if (!feedDetail || !feedDetail.isLongText) return;
+          if (feedDetail.longTextContent_raw) return;
+          if ([true, false].includes(feedDetail._yawf_LongTextContentLoading)) return;
+          vm.$set(feedDetail, '_yawf_LongTextContentLoading', true);
+          vm.$set(feedDetail, 'longTextContent_raw', null);
+          vm.$set(feedDetail, 'longTextContent', null);
+          try {
+            const resp = await vm.$http.get('/ajax/statuses/longtext', {
+              params: { id: feedDetail.mid },
+            });
+            if (!resp.data || !resp.data.ok || !resp.data.data) return;
+            const data = resp.data.data;
+            if (data && data.longTextContent) {
+              feedDetail.longTextContent_raw = data.longTextContent;
+            }
+          } catch (e) {
+            console.error(e);
+          }
+          feedDetail._yawf_LongTextContentLoading = false;
+        };
+        const longContentExpand = async function (vm, feed) {
+          await longContentExpandForDetail(vm, feed);
+          await longContentExpandForDetail(vm, feed.retweeted_status);
+        };
+        // 触发过滤并等待过滤结果回来
+        const pendingFeeds = new Map();
+        const triggerFilter = function (vm, feed) {
+          const mid = feed.mid;
+          feed._yawf_FilterStatus = 'running';
+          const cleanUp = function () {
+            pendingFeeds.delete(mid);
+            vm.$off('hook:beforeDestroy', cleanUp);
+          };
+          vm.$once('hook:beforeDestroy', cleanUp);
+          return new Promise(resolve => {
+            const handleFilterResult = function ({ result, reason }) {
+              cleanUp();
+              feed._yawf_FilterStatus = result;
+              feed._yawf_FilterReason = reason;
+              resolve({ result, reason });
+            };
+            pendingFeeds.set(mid, handleFilterResult);
+            const event = new CustomEvent(key, {
+              detail: JSON.stringify({ action: 'trigger', mid, data: feed }),
+            });
+            document.documentElement.dispatchEvent(event);
+          });
+        };
+        // 处理过滤结果
+        const applyFilterResult = function (vm, feed, { result, reason }) {
+          if (result === 'hide') {
+            const index = vm.data.indexOf(feed);
+            vm.data.splice(index, 1);
+          }
+        };
+        vueSetup.eachComponentVM('feed', function (node, vm) {
+          // 在渲染一条 feed 时，额外插入过滤状态的标识
+          vm.$options.render = (function (render) {
+            return function (createElement) {
+              const result = render.call(this, createElement);
+              Object.assign(result.data.class, {
+                'yawf-feed-filter': true,
+                [`yawf-feed-filter-${this.data._yawf_FilterStatus || 'loading'}`]: true,
+              });
+              result.data.attrs['data-feed-author-name'] = this.data.user.screen_name;
+              result.data.attrs['data-feed-mid'] = this.data.mid;
+              if (this.data.retweeted_status) {
+                result.data.attrs['data-feed-omid'] = this.data.retweeted_status.mid;
+              }
+              if (this.data._yawf_FilterReason) {
+                result.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
+              }
+              return result;
+            };
+          }(vm.$options.render));
+          vm.$on('mouseenter', function () {
+            if (vm.data._yawf_FilterStatus === 'fold') {
+              vm.data._yawf_FilterStatus = 'foldhover';
+            }
+          });
+          vm.$on('mouseleave', function () {
+            if (vm.data._yawf_FilterStatus === 'foldhover') {
+              vm.data._yawf_FilterStatus = 'fold';
+            }
+          });
+        });
+        window.addEventListener(key, function (event) {
+          const detail = JSON.parse(event.detail);
+          if (detail.action === 'rerun') {
+            // 对现有的元素再来一次
+            vueSetup.eachComponentVM('feed-scroll', function (node, vm) {
+              [...vm.data].forEach(async feed => {
+                if (['loading', 'running'].includes(feed._yawf_FilterStatus)) return;
+                const { result, reason } = await triggerFilter(vm, feed);
+                applyFilterResult(vm, feed, { result, reason });
+              });
+            }, { watch: false });
+          } else if (detail.action === 'result') {
+            // 应用过滤结果
+            const handler = pendingFeeds.get(detail.mid);
+            if (handler) handler(detail.result);
+          }
+        }, true);
+        // 当折叠 feed 时，feed-scroll 应当重新调整 feed 的位置
+        vueSetup.eachComponentVM('feed-scroll', function (node, vm) {
+          if (Array.isArray(vm.sizeDependencies)) {
+            const sizeDependencies = ['_yawf_FilterStatus'];
+            sizeDependencies.forEach(key => {
+              if (vm.sizeDependencies.includes(key)) return;
+              vm.sizeDependencies.push(key);
+            });
+          }
+          vm.$watch(function () { return this.data; }, function () {
+            const feeds = [...vm.data];
+            feeds.forEach(async feed => {
+              if (feed._yawf_FilterApply) return;
+              vm.$set(feed, '_yawf_FilterStatus', 'loading');
+              vm.$set(feed, '_yawf_FilterReason', null);
+              vm.$set(feed, '_yawf_FilterApply', true);
+              await longContentExpand(vm, feed);
+              const { result, reason } = await triggerFilter(vm, feed);
+              applyFilterResult(vm, feed, { result, reason });
+            });
+          }, { immediate: true });
+        });
+      }, util.inject.rootKey, key);
+    }
   }, { priority: priority.LAST });
 
   i18n.foldReason = {
@@ -243,24 +404,27 @@
   };
 
   const hideFeedCss = css.add(`
-[action-type="feed_list_item"]:not([yawf-feed]),
-[node-type="feed_list"] .WB_feed_type:not([yawf-feed]),
-.list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment]),
-.list_ul[node-type="comment_list"] .list_li:not([yawf-comment])
-{ visibility: hidden; opacity: 0; }
-[action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
-[yawf-feed]:not([yawf-feed-display]), [yawf-comment]:not([yawf-comment-display]) { visibility: hidden; opacity: 0; }
-[yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }
-[yawf-feed-display="fold"] { position: relative; }
-[yawf-feed-display="fold"] > * { display: none; }
-[yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; line-height: 16px; }
-.WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: none; }
-.WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { display: block; overflow: hidden; padding: 0 20px 27px; }
-.WB_feed.WB_feed_v3 .WB_feed_type[yawf-feed-display="fold"].WB_feed_vipcover:hover .WB_feed_detail { padding-top: 0; }
-.WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
+.yawf-WBV6 [action-type="feed_list_item"]:not([yawf-feed]),
+.yawf-WBV6 [node-type="feed_list"] .WB_feed_type:not([yawf-feed]),
+.yawf-WBV6 .list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment]),
+.yawf-WBV6 .list_ul[node-type="comment_list"] .list_li:not([yawf-comment])
+.yawf-WBV6 { visibility: hidden; opacity: 0; }
+.yawf-WBV6 [action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
+.yawf-WBV6 [yawf-feed]:not([yawf-feed-display]), [yawf-comment]:not([yawf-comment-display]) { visibility: hidden; opacity: 0; }
+.yawf-WBV6 [yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }
+.yawf-WBV6 [yawf-feed-display="fold"] { position: relative; }
+.yawf-WBV6 [yawf-feed-display="fold"] > * { display: none; }
+.yawf-WBV6 [yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; line-height: 16px; }
+.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: none; }
+.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { display: block; overflow: hidden; padding: 0 20px 27px; }
+.yawf-WBV6 .WB_feed.WB_feed_v3 .WB_feed_type[yawf-feed-display="fold"].WB_feed_vipcover:hover .WB_feed_detail { padding-top: 0; }
+.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
+
+.yawf-WBV7 .yawf-feed-filter-loading,
+.yawf-WBV7 .yawf-feed-filter-running { visibility: hidden; }
 `);
   init.onLoad(function () {
-    css.append(`[yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);
+    css.append(`.yawf-WBV6 [yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);
   });
   init.onDeinit(() => {
     hideFeedCss.remove();
@@ -272,12 +436,14 @@
   }, { priority: 1e6 });
   // 头条文章是一条微博，类似于单条微博，不应当隐藏
   observer.feed.filter(function singleWeiboPageUnsetRule(feed) {
+    if (yawf.WEIBO_VERSION !== 6) return null;
     return feed.matches('.WB_artical *') ? 'unset' : null;
   }, { priority: 1e6 });
   // 无论因为何种原因，同一页面上同一条微博不应出现两次
   // 2020年7月后，上一行注释是错的，因为快转之后他们的 mid 是一样的，需要用 fmid 区分
   // 不过就算是快转的，展示几次也没有任何意义，所以这段逻辑保持不变
   observer.feed.filter(function hideDuplicate(feed) {
+    if (yawf.WEIBO_VERSION !== 6) return null;
     const mid = feed.getAttribute('mid');
     if (!mid) return null;
     const all = Array.from(document.querySelectorAll('.WB_feed_type[mid]'));

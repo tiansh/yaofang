@@ -107,7 +107,16 @@
     init.configChange(config);
   }, true);
 
-  util.inject(function (key) {
+  util.inject.rootKey = `yawf_${strings.randKey()}`;
+  util.inject(function (rootKey, key) {
+    const kebabCase = function (word) {
+      if (typeof word !== 'string') return word;
+      return word.replace(/./g, (char, index) => {
+        const lower = char.toLowerCase();
+        if (char === lower || index === 0) return lower;
+        else return '-' + lower;
+      });
+    };
     // 发现任何 Vue 元素的时候上报消息以方便其他模块修改该元素
     const reportNewNode = function ({ tag, node, replace, root = false }) {
       const event = new CustomEvent('yawf-VueNodeInserted', {
@@ -131,7 +140,7 @@
     const seenElement = new WeakSet();
     const markElement = function (node, vm) {
       if (!vm || vm.$el !== node) return;
-      const tag = (vm.$options || {})._componentTag;
+      const tag = kebabCase((vm.$options || {})._componentTag);
       if (tag && node instanceof Element) {
         if (node.hasAttribute('yawf-component-tag')) {
           const tags = [...new Set([...node.getAttribute('yawf-component-tag').split(' '), tag]).values()].join(' ');
@@ -139,6 +148,10 @@
         } else {
           node.setAttribute('yawf-component-tag', tag);
         }
+      }
+      const key = (vm.$vnode || {}).key;
+      if (key && node instanceof Element) {
+        node.setAttribute('yawf-component-key', key);
       }
       if (tag) {
         if (vmToHtmlNode.has(vm)) {
@@ -205,23 +218,28 @@
     const observer = new MutationObserver(observeNewNodes);
     observer.observe(document.documentElement, { childList: true, subtree: true });
 
-    const yawf = window.yawf = (window.yawf || {});
+    const yawf = window[rootKey] = (window[rootKey] || {});
     const vueSetup = yawf.vueSetup = (yawf.vueSetup || {});
 
-    const eachComponentInstance = vueSetup.eachComponentInstance = function (tag, callback) {
+    vueSetup.kebabCase = kebabCase;
+    const eachComponentVM = vueSetup.eachComponentVM = function (tag, callback, { mounted = true, watch = true } = {}) {
       const seen = new WeakSet();
       const found = function (target) {
         if (seen.has(target)) return;
         seen.add(target);
         for (let vm of eachVmForNode(target)) {
-          if (vm.$options._componentTag === tag) callback(target, vm);
+          if (kebabCase(vm.$options._componentTag) === kebabCase(tag)) callback(target, vm);
         }
       };
-      document.documentElement.addEventListener('yawf-VueNodeInserted', event => {
-        if (tag !== event.detail.tag) return;
-        found(event.target);
-      });
-      [...document.querySelectorAll(`[yawf-component-tag~="${tag}"]`)].forEach(found);
+      if (watch) {
+        document.documentElement.addEventListener('yawf-VueNodeInserted', event => {
+          if (tag !== event.detail.tag) return;
+          found(event.target);
+        });
+      }
+      if (mounted) {
+        [...document.querySelectorAll(`[yawf-component-tag~="${tag}"]`)].forEach(found);
+      }
     };
 
     /*
@@ -287,13 +305,13 @@
       vm.$options.render = transformRender(vm.$options.render, transformer);
     };
     vueSetup.transformCompontentRender = function (tag, transformer) {
-      eachComponentInstance(tag, function (target, vm) {
+      eachComponentVM(tag, function (target, vm) {
         transformElementRender(vm, transformer);
         vm.$forceUpdate();
       });
     };
     */
 
-  }, key);
+  }, util.inject.rootKey, key);
 }());
 

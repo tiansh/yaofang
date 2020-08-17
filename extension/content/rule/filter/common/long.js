@@ -33,6 +33,7 @@
   });
 
   observer.feed.onBefore(async function (feed) {
+    if (yawf.WEIBO_VERSION !== 6) return;
     const unfold = Array.from(feed.querySelectorAll('[action-type="fl_unfold"]'));
     // 这段逻辑基于 lib.feed.plugins.moreThan140
     // 包括直接把 HTML 插入进去的逻辑也是根据这段来做的

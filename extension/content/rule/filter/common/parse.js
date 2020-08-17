@@ -4,8 +4,8 @@
   const init = yawf.init;
   const page = init.page;
 
-  const feedParser = yawf.feed = {};
-  const commentParser = yawf.comment = {};
+  const feedParser = yawf.feedV6 = {};
+  const commentParser = yawf.commentV6 = {};
 
   // 文本
   // 文本分为完整模式（用于正则匹配）和简易模式（用于关键词）
@@ -857,6 +857,38 @@
       .map(dom => dom.textContent.trim().replace(/^@?/, ''))
       .filter(user => user);
   };
+
+}());
+; (function () {
+
+  const yawf = window.yawf;
+  const init = yawf.init;
+  const page = init.page;
+
+  const feedParser = yawf.feedV7 = {};
+  const commentParser = yawf.commentV7 = {};
+
+  const text = feedParser.text = {};
+  text.simple = feed => (
+    [feed, feed.retweeted_status].filter(x => x)
+      .map(x => x.longTextContent_raw || x.text_raw).join('//')
+  );
+
+}());
+; (function () {
+  const yawf = window.yawf;
+  const init = yawf.init;
+  const util = yawf.util;
+
+  const priority = util.priority;
+
+  const feedParser = yawf.feed = {};
+  const commentParser = yawf.comment = {};
+
+  init.onLoad(function () {
+    Object.setPrototypeOf(feedParser, yawf.WEIBO_VERSION === 6 ? yawf.feedV6 : yawf.feedV7);
+    Object.setPrototypeOf(commentParser, yawf.WEIBO_VERSION === 6 ? yawf.commentV6 : yawf.commentV7);
+  }, { priority: priority.FIRST });
 
 }());
 

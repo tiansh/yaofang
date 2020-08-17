@@ -195,8 +195,8 @@
 
   init.onLoad(() => {
     if (yawf.WEIBO_VERSION !== 7) return;
-    util.inject(function () {
-      const yawf = window.yawf;
+    util.inject(function (rootKey) {
+      const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;
 
       const showRuleDialog = function () {
@@ -204,7 +204,7 @@
         document.documentElement.dispatchEvent(event);
       };
 
-      vueSetup.eachComponentInstance('weibo-top-nav', function (element, vm) {
+      vueSetup.eachComponentVM('weibo-top-nav', function (element, vm) {
         vm.configs.splice(-1, 0, {
           divider: true,
           href: '',
@@ -222,7 +222,7 @@
           }.bind(vm);
         }(vm.configHandle));
       });
-    });
+    }, util.inject.rootKey);
   });
 
 }());

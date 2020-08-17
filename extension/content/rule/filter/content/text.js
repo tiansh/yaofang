@@ -37,6 +37,10 @@
   });
 
   class TextFeedRule extends rule.class.Rule {
+    get weiboVersion() {
+      if (this.feedAction === 'fold') return [6];
+      return [6, 7];
+    }
     constructor(item) {
       super(item);
     }
