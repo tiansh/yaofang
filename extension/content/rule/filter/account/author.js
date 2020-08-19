@@ -38,21 +38,24 @@
   });
 
   class AuthorFeedRule extends rule.class.Rule {
+    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
     constructor(item) {
       super(item);
     }
     init() {
       const rule = this;
       observer.feed.filter(function authorFilterFeedFilter(/** @type {Element} */feed) {
-        const oid = init.page.$CONFIG.oid;
+        const oid = yawf.WEIBO_VERSION === 6 ? init.page.$CONFIG.oid : init.page.oid();
         const [author] = feedParser.author.id(feed);
         const [fauthor] = feedParser.fauthor.id(feed);
         // 个人主页不按照作者隐藏（否则就会把所有东西都藏起来……）
         const pageType = init.page.type();
         const isShowRule = rule.feedAction === 'show';
-        if ((fauthor || author) === oid && !isShowRule && pageType === 'profile') return null;
+        const isProfile = pageType === 'profile';
+        const isGroup = pageType === 'group';
+        if ((fauthor || author) === oid && !isShowRule && isProfile) return null;
         const accounts = rule.ref.items.getConfig();
-        const ignoreFastAuthor = pageType === 'group' && !isShowRule;
+        const ignoreFastAuthor = isGroup && !isShowRule;
         const ignoreAuthor = ignoreFastAuthor && !feedParser.isFast(feed);
         if (!ignoreAuthor) {
           const contain = accounts.find(account => account.id === author);

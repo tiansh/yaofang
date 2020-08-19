@@ -32,6 +32,7 @@
   };
 
   commercial.ad = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_ad_feed',
     version: 1,
     parent: commercial.commercial,
@@ -43,15 +44,20 @@
       const rule = this;
       observer.feed.filter(function adFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        // 修改这里时请注意，悄悄关注也会显示关注按钮，但是相关微博不应被隐藏
-        // 快转也可能有关注按钮，但是快转不在这里隐藏
-        if (feed.getAttribute('feedtype') === 'ad') return 'hide';
-        if (feed.querySelector('[action-type="feed_list_ad"]')) return 'hide';
-        if (feed.querySelector('a[href*="//adinside.weibo.cn/"]')) return 'hide';
-        if (feed.querySelector('[diss-data*="feedad"]') && !feedParser.isFastForward(feed)) return 'hide';
-        if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
-        if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
-        if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
+        if (yawf.WEIBO_VERSION === 6) {
+          // 修改这里时请注意，悄悄关注也会显示关注按钮，但是相关微博不应被隐藏
+          // 快转也可能有关注按钮，但是快转不在这里隐藏
+          if (feed.getAttribute('feedtype') === 'ad') return 'hide';
+          if (feed.querySelector('[action-type="feed_list_ad"]')) return 'hide';
+          if (feed.querySelector('a[href*="//adinside.weibo.cn/"]')) return 'hide';
+          if (feed.querySelector('[diss-data*="feedad"]') && !feedParser.isFastForward(feed)) return 'hide';
+          if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
+          if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
+          if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
+        } else {
+          // 某某赞过的微博
+          if ((feed.title || {}).type === 'likerecommend') return 'hide';
+        }
         return null;
       }, { priority: 1e6 });
       this.addConfigListener(() => { observer.feed.rerun(); });
@@ -96,6 +102,7 @@
   };
 
   commercial.weiboProduct = rule.Rule({
+    weiboVersion: 6, // V7 有另一个设置项
     id: 'filter_weibo_product',
     version: 1,
     parent: commercial.commercial,
@@ -137,6 +144,7 @@
   };
 
   commercial.taobaoProduct = rule.Rule({
+    weiboVersion: 6, // V7 有另一个设置项
     id: 'filter_tb_tm_feed',
     version: 1,
     parent: commercial.commercial,
@@ -171,6 +179,42 @@
         if (!rule.isEnabled()) return null;
         if (feed.querySelector('.icon_cd_tmall, .icon_cd_tb, .icon_cd_ju')) return 'hide';
         if (feed.querySelector('a[href^="https://shoptb.sc.weibo.com/"]')) return 'hide';
+        return null;
+      });
+      this.addConfigListener(() => { observer.feed.rerun(); });
+    },
+  });
+
+  i18n.weiboProductLikeFeedFilter = {
+    cn: '带有商品链接的微博{{i}}',
+    tw: '帶有商品鏈接的微博{{i}}',
+    en: 'Weibo with link to weibo shop / taobao {{i}}',
+  };
+  i18n.weiboProductLikeFeedFilterDetail = {
+    cn: '带有微博橱窗商品或淘宝商品链接的微博。适配微博 V7，对应 V6 版的“微博橱窗”“淘宝商品”两个设置项。',
+  };
+
+  commercial.weiboProductLike = rule.Rule({
+    weiboVersion: 7,
+    id: 'filter_weibo_product_like',
+    version: 75,
+    parent: commercial.commercial,
+    template: () => i18n.weiboProductLikeFeedFilter,
+    ref: {
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.weiboProductLikeFeedFilterDetail },
+    },
+    init() {
+      const rule = this;
+      observer.feed.filter(function taobaoProductFeedFilter(feed) {
+        if (!rule.isEnabled()) return null;
+        if (Array.isArray(feed.url_struct)) {
+          if (feed.url_struct.find(url => /taobao\.png$/.test(url.url_type_pic))) return 'hide';
+          if (feed.url_struct.find(url => url.object_type === 'product')) return 'hide';
+          if (feed.url_struct.find(url => /^https:\/\/m\.tb\.cn\//.test(url.long_url))) return 'hide';
+          if (feed.url_struct.find(url => /buy\.png$/.test(url.url_type_pic))) return 'hide';
+          if (feed.url_struct.find(url => /^https:\/\/shop\.sc\.weibo\.com\//.test(url.long_url))) return 'hide';
+          if (feed.url_struct.find(url => /shop_sc_weibo/.test((url.actionlog || {}).oid))) return 'hide';
+        }
         return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });

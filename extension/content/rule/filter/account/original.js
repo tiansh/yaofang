@@ -71,6 +71,7 @@
   };
 
   class OriginalFeedRule extends rule.class.Rule {
+    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
     constructor(item) {
       super(item);
     }
@@ -86,7 +87,9 @@
           return { result: rule.feedAction, reason };
         }
 
-        const asDiscover = rules.original.id.discover.isEnabled() && init.page.type() === 'discover';
+        const pageType = yawf.WEIBO_VERSION === 6 ? init.page.type() : null; // V7 TODO
+        const isDiscover = pageType === 'discover';
+        const asDiscover = rules.original.id.discover.isEnabled() && isDiscover;
         const asFastForward = feedParser.isFast(feed);
         if (asDiscover || asFastForward) {
           const [author] = feedParser.author.id(feed);
@@ -137,6 +140,7 @@
   });
 
   original.id.follower = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_original_follower',
     version: 1,
     parent: original.id.id,

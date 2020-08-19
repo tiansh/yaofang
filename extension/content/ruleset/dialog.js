@@ -96,8 +96,10 @@
       '=': v => v === +verNum,
       '': v => v === +verNum,
     }[verOp] || (() => true);
+    const [_wbverMatch, wbVerNum] = input.match(/\bweibo:v([67])\b/) || [];
+    const weiboVersionTest = wbVerNum ? (v => Array.isArray(v) ? v.includes(+wbVerNum) : v === +wbVerNum) : () => true;
     layer.innerHTML = '';
-    if (!searchTexts.length && verNum == null) {
+    if (!searchTexts.length && verNum == null && wbVerNum == null) {
       renderTip(layer, i18n.searchEmptyInput);
       return;
     }
@@ -105,6 +107,7 @@
       filter: function (item) {
         if (!item.version) return false;
         if (!versionTest(item.version)) return false;
+        if (!weiboVersionTest(item.weiboVersion)) return false;
         if (typeof filter === 'function' && !filter(item)) return false;
         const text = item.text().toUpperCase();
         if (searchTexts.some(t => !text.includes(t))) return false;

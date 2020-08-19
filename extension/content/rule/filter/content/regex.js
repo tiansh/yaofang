@@ -42,6 +42,7 @@
   });
 
   class RegexFeedRule extends rule.class.Rule {
+    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
     constructor(item) {
       super(item);
     }

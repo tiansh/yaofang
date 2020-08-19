@@ -1667,6 +1667,7 @@
   css.append(`
 .yawf-WBV6 .yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
 .yawf-WBV6 .yawf-config-rule { display: block; margin: 5px 20px; }
+.yawf-WBV6 .yawf-config-rule-unsupport { opacity: 0.5; }
 .yawf-WBV6 .yawf-bubble .yawf-config-rule { display: inline; margin: 0; }
 .yawf-WBV6 .yawf-config-rule > label + label { margin-left: 8px; }
 .yawf-WBV6 .yawf-config-rule > br + label { margin-left: 20px; }

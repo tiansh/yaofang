@@ -24,15 +24,16 @@
   });
 
   i18n.deletedForwardFilter = {
-    cn: '已删除微博的转发{{i}}',
-    tw: '已刪除微博的轉發{{i}}',
-    en: 'Forward of deleted Weibo{{i}}',
+    cn: '已删除或无法查看的微博的转发{{i}}',
+    tw: '已刪除或無法查看的微博的轉發{{i}}',
+    en: 'Forward of deleted / inaccessible Weibo{{i}}',
   };
   i18n.deletedForwardFilterDetail = {
     cn: '包括因为删除或对微博设置了隐私权限而使您无法看到原文的微博。这些微博您只能看见转发者的评论，但是无法看到原微博的内容。',
   };
 
   content.deletedForward = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_deleted_forward',
     version: 1,
     parent: content.content,
@@ -46,9 +47,17 @@
         if (!rule.isEnabled()) return null;
         const isForward = feedParser.isForward(feed);
         if (!isForward) return null;
-        const forwardContent = feed.querySelector('.WB_media_expand .WB_info .WB_name, .WB_expand .WB_info .W_fb');
-        if (forwardContent) return null;
-        return 'hide';
+        if (yawf.WEIBO_VERSION) {
+          const forwardContent = feed.querySelector('.WB_media_expand .WB_info .WB_name, .WB_expand .WB_info .W_fb');
+          if (forwardContent) return null;
+          return 'hide';
+        } else {
+          if (feed.retweeted_status) {
+            if ((feed.retweeted_status.visible || {}).list_id > 0) return 'hide';
+            if (feed.retweeted_status.deleted) return 'hide';
+          }
+          return null;
+        }
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
@@ -107,12 +116,22 @@
       const rule = this;
       observer.feed.filter(function voteFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        if (feed.querySelector('.WB_from a[href*="//vote.weibo.com/"]')) return 'hide';
-        if (feed.querySelector('.WB_feed_spec_cont a[action-data*="vote.weibo.com"]')) return 'hide';
-        if (feed.querySelector('a[suda-uatrack*="1022-vote"]')) return 'hide';
-        if (feed.querySelector('a[suda-uatrack*="1022-hudongvote"]')) return 'hide';
-        if (feed.querySelector('.icon_sw_vote')) return 'hide';
-        if (feedParser.source.text(feed).includes('投票')) return 'hide';
+        if (yawf.WEIBO_VERSION === 6) {
+          if (feed.querySelector('.WB_from a[href*="//vote.weibo.com/"]')) return 'hide';
+          if (feed.querySelector('.WB_feed_spec_cont a[action-data*="vote.weibo.com"]')) return 'hide';
+          if (feed.querySelector('a[suda-uatrack*="1022-vote"]')) return 'hide';
+          if (feed.querySelector('a[suda-uatrack*="1022-hudongvote"]')) return 'hide';
+          if (feed.querySelector('.icon_sw_vote')) return 'hide';
+          if (feedParser.source.text(feed).includes('投票')) return 'hide';
+        } else {
+          if (Array.isArray(feed.url_struct)) {
+            if (feed.url_struct.find(url => /^1022:231716/.test((url.actionlog || {}).oid))) return 'hide';
+            if (feed.url_struct.find(url => /https:\/\/vote\.weibo\.com\//.test(url.long_url))) return 'hide';
+            if (feed.url_struct.find(url => /https:\/\/vote\.weibo\.com\//.test(url.ori_url))) return 'hide';
+            if (feed.url_struct.find(url => /sinaweibo:\/\/browser\?url=https%3A%2F%2Fvote\.weibo\.com%2F/.test(url.ori_url))) return 'hide';
+          }
+          if ((feed.page_info || {}).object_type === 'hudongvote') return 'hide';
+        }
         return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
@@ -159,6 +178,7 @@
     cn: '微博允许给配图添加标签，标签可以是文本、话题、用户以及商品链接。选择这条规则后将不会看到对应的微博，另外您可以只隐藏[[clean_feed_pic_tag]]。',
   };
   content.imageTag = rule.Rule({
+    weiboVersion: [6, 7], // 虽然 V7 网页目前还不支持查看标签，不过我只管有没有，不管看得见看不见
     id: 'filter_image_tag',
     version: 47,
     parent: content.content,
@@ -170,18 +190,24 @@
       const rule = this;
       observer.feed.filter(function imageTagFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        const list = feed.querySelector('.WB_media_a[action-data*="photo_tag_pids"]');
-        if (!list) return null;
-        const tagPidsStr = new URLSearchParams(list.getAttribute('action-data')).get('photo_tag_pids');
-        if (!tagPidsStr) return null;
-        const tagPids = tagPidsStr.split(',');
-        const items = feed.querySelectorAll('[action-type="fl_pics"][action-data*="pic_id"]');
-        const hasTag = Array.from(items).some(item => {
-          const id = new URLSearchParams(item.getAttribute('action-data')).get('pic_id');
-          return tagPids.includes(id);
-        });
-        if (!hasTag) return null;
-        return 'hide';
+        if (yawf.WEIBO_VERSION === 6) {
+          const list = feed.querySelector('.WB_media_a[action-data*="photo_tag_pids"]');
+          if (!list) return null;
+          const tagPidsStr = new URLSearchParams(list.getAttribute('action-data')).get('photo_tag_pids');
+          if (!tagPidsStr) return null;
+          const tagPids = tagPidsStr.split(',');
+          const items = feed.querySelectorAll('[action-type="fl_pics"][action-data*="pic_id"]');
+          const hasTag = Array.from(items).some(item => {
+            const id = new URLSearchParams(item.getAttribute('action-data')).get('pic_id');
+            return tagPids.includes(id);
+          });
+          if (!hasTag) return null;
+          return 'hide';
+        } else {
+          const pics = feedParser.pics.info(feed);
+          if (pics.find(pic => (pic.pic_tags || []).length)) return 'hide';
+          return null;
+        }
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
@@ -370,12 +396,19 @@
       const rule = this;
       observer.feed.filter(function paidFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        const searchParams = new URLSearchParams(location.search);
-        const paidOnly = +searchParams.get('vplus') || searchParams.get('is_vclub');
-        if (paidOnly) return null;
-        if (feed.querySelector('.icon_vplus')) return 'hide';
-        if (feed.querySelector('.WB_media_a[action-data*="isPrivate=1"]')) return 'hide';
-        if (feed.querySelector('[action-type="fl_pics"][action-data*="isPrivate=1"]')) return 'hide';
+        if (yawf.WEIBO_VERSION === 6) {
+          const searchParams = new URLSearchParams(location.search);
+          const paidOnly = +searchParams.get('vplus') || searchParams.get('is_vclub');
+          if (paidOnly) return null;
+          if (feed.querySelector('.icon_vplus')) return 'hide';
+          if (feed.querySelector('.WB_media_a[action-data*="isPrivate=1"]')) return 'hide';
+          if (feed.querySelector('[action-type="fl_pics"][action-data*="isPrivate=1"]')) return 'hide';
+        } else {
+          const pics = feedParser.pics.info(feed);
+          // 付费图片
+          if (pics.find(pic => (pic.blur || {}).isPay)) return 'hide';
+          // 付费文章的特征找不到！
+        }
         return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
@@ -423,6 +456,7 @@
   };
 
   content.fastForward = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_fast_forward',
     version: 67,
     parent: content.content,

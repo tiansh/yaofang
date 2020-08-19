@@ -51,7 +51,7 @@
           const { result, reason = null } = ret;
           return { result: result + '', reason: reason + '', filter };
         } catch (e) {
-          util.debug('Exception while parsing rule %o: %o\n%o', filter, e, e.stack);
+          util.debug('Exception while parsing rule %o:\nparams: %o\nexception: %o\n%o', filter, params, e, e.stack);
         }
       }
       return { result: null };
@@ -236,17 +236,28 @@
         observer.comment.active(comments);
       });
     } else {
+      /*
+       * 微博表示 Feed 的结构体很奇妙
+       * 它的 idstr 属性，是个 string，是当前微博的 mid，是唯一可以用来做唯一标识的属性
+       * 它的 id 属性，大部分情况下是个 number，表示当前微博的 mid
+       * 它的 mid 属性，是个 string，大部分情况下是这条微博的 mid
+       * 它的 mblogid 是 62 进制换算后的 id
+       * 当一条微博是快转微博时，它的 ori_mid 是个字符串，表示被快转的微博，其他情况下没有 ori_mid 字段
+       * 当一条微博是快转微博时，它的 id 属性是个 string，表示被快转的微博 id
+       * 当一条微博是快转微博时，它的 mid 和 mblogid 也表示被快转的微博
+       */
+
       const randStr = strings.randKey();
       const key = `yawf_feedFilter_${randStr}`;
 
       // 当有一条完成过滤规则判断时，交给页面脚本处理
       observer.feed.apply = function (data, { result, filter = null, reason = null }) {
-        const mid = data.mid;
+        const idstr = data.idstr;
         const event = new CustomEvent(key, {
-          detail: JSON.stringify({ action: 'result', mid, result: { result: result || 'unset', reason } }),
+          detail: JSON.stringify({ action: 'result', idstr, result: { result: result || 'unset', reason } }),
         });
         document.documentElement.dispatchEvent(event);
-        util.debug('Feed filter %o -> %o by %o due to %o', data, result, filter, reason);
+        if (result) util.debug('Feed filter %o -> %o by %o due to %o', data, result, filter, reason);
         if (result === 'hide') return false;
         return true;
       };
@@ -295,10 +306,10 @@
         // 触发过滤并等待过滤结果回来
         const pendingFeeds = new Map();
         const triggerFilter = function (vm, feed) {
-          const mid = feed.mid;
+          const idstr = feed.idstr;
           feed._yawf_FilterStatus = 'running';
           const cleanUp = function () {
-            pendingFeeds.delete(mid);
+            pendingFeeds.delete(idstr);
             vm.$off('hook:beforeDestroy', cleanUp);
           };
           vm.$once('hook:beforeDestroy', cleanUp);
@@ -309,9 +320,9 @@
               feed._yawf_FilterReason = reason;
               resolve({ result, reason });
             };
-            pendingFeeds.set(mid, handleFilterResult);
+            pendingFeeds.set(idstr, handleFilterResult);
             const event = new CustomEvent(key, {
-              detail: JSON.stringify({ action: 'trigger', mid, data: feed }),
+              detail: JSON.stringify({ action: 'trigger', idstr, data: feed }),
             });
             document.documentElement.dispatchEvent(event);
           });
@@ -327,15 +338,23 @@
           // 在渲染一条 feed 时，额外插入过滤状态的标识
           vm.$options.render = (function (render) {
             return function (createElement) {
+              // 如果某个 feed 不在 feed-scroll 里面
+              // 那么我们不会把它就这么给隐藏起来
+              let collection = vueSetup.closest(this, 'feed-scroll');
+              const underFilter = collection != null && this.idstr > 0;
               const result = render.call(this, createElement);
               Object.assign(result.data.class, {
                 'yawf-feed-filter': true,
-                [`yawf-feed-filter-${this.data._yawf_FilterStatus || 'loading'}`]: true,
+                'yawf-feed-filter-ignore': !underFilter,
+                [`yawf-feed-filter-${this.data._yawf_FilterStatus || 'loading'}`]: underFilter,
               });
               result.data.attrs['data-feed-author-name'] = this.data.user.screen_name;
               result.data.attrs['data-feed-mid'] = this.data.mid;
               if (this.data.retweeted_status) {
                 result.data.attrs['data-feed-omid'] = this.data.retweeted_status.mid;
+              }
+              if (this.data.ori_mid) {
+                result.data.attrs['data-feed-fmid'] = this.data.idstr;
               }
               if (this.data._yawf_FilterReason) {
                 result.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
@@ -343,16 +362,6 @@
               return result;
             };
           }(vm.$options.render));
-          vm.$on('mouseenter', function () {
-            if (vm.data._yawf_FilterStatus === 'fold') {
-              vm.data._yawf_FilterStatus = 'foldhover';
-            }
-          });
-          vm.$on('mouseleave', function () {
-            if (vm.data._yawf_FilterStatus === 'foldhover') {
-              vm.data._yawf_FilterStatus = 'fold';
-            }
-          });
         });
         window.addEventListener(key, function (event) {
           const detail = JSON.parse(event.detail);
@@ -367,11 +376,10 @@
             }, { watch: false });
           } else if (detail.action === 'result') {
             // 应用过滤结果
-            const handler = pendingFeeds.get(detail.mid);
+            const handler = pendingFeeds.get(detail.idstr);
             if (handler) handler(detail.result);
           }
         }, true);
-        // 当折叠 feed 时，feed-scroll 应当重新调整 feed 的位置
         vueSetup.eachComponentVM('feed-scroll', function (node, vm) {
           if (Array.isArray(vm.sizeDependencies)) {
             const sizeDependencies = ['_yawf_FilterStatus'];
@@ -380,9 +388,11 @@
               vm.sizeDependencies.push(key);
             });
           }
+          // 当 feed-scroll 内 feed 列表变化时，我们把那些没见过的全都标记一下
           vm.$watch(function () { return this.data; }, function () {
             const feeds = [...vm.data];
             feeds.forEach(async feed => {
+              if (!(feed.idstr > 0)) return;
               if (feed._yawf_FilterApply) return;
               vm.$set(feed, '_yawf_FilterStatus', 'loading');
               vm.$set(feed, '_yawf_FilterReason', null);

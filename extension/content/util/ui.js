@@ -76,7 +76,7 @@
     const okButton = dialog.querySelector('.yawf-dialog-button-ok');
     const cancelButton = dialog.querySelector('.yawf-dialog-button-cancel');
     const closeButton = dialog.querySelector('.yawf-dialog-close');
-    const mask = yawf.WEIBO_VERSION === 7 ? container.querySelector('.yawf-dialog-mask'): null;
+    const mask = yawf.WEIBO_VERSION === 7 ? container.querySelector('.yawf-dialog-mask') : null;
     const contentNode = dialog.querySelector('.yawf-dialog-content');
     // 填入内容
     titleNode.textContent = title;
@@ -179,10 +179,14 @@
       event.stopPropagation();
       event.preventDefault();
     };
+    const stopKeys = event => {
+      event.stopPropagation();
+    };
     // 关闭对话框
     const hide = function () {
       if (yawf.WEIBO_VERSION === 6) dialog.classList.add('UI_animated', 'UI_speed_fast', 'UI_ani_bounceOut');
       document.removeEventListener('keydown', keys);
+      container.removeEventListener('keypress', stopKeys);
       document.removeEventListener('scroll', resetPos);
       window.removeEventListener('resize', resetPos);
       if (yawf.WEIBO_VERSION === 6) document.body.removeChild(cover);
@@ -204,6 +208,7 @@
       document.body.appendChild(container);
       resetPosition({ x, y });
       document.addEventListener('keydown', keys);
+      container.addEventListener('keypress', stopKeys);
       document.addEventListener('scroll', resetPos);
       window.addEventListener('resize', resetPos);
       document.activeElement.blur();

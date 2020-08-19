@@ -29,6 +29,7 @@
   };
 
   showthese.showMyFeed = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_my_feed',
     version: 1,
     parent: showthese.showthese,
@@ -38,7 +39,7 @@
       const rule = this;
       observer.feed.filter(function showMyFeed(feed) {
         if (!rule.isEnabled()) return null;
-        const me = init.page.$CONFIG.uid;
+        const me = yawf.WEIBO_VERSION === 6 ? init.page.$CONFIG.uid : init.page.uid();
         const [author] = feedParser.author.id(feed);
         const [fauthor] = feedParser.fauthor.id(feed);
         if (me === author || me === fauthor) return 'showme';
@@ -55,6 +56,7 @@
   };
 
   showthese.showMyOriginal = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_my_original',
     version: 1,
     parent: showthese.showthese,
@@ -63,7 +65,7 @@
       const rule = this;
       observer.feed.filter(function showMyOriginal(feed) {
         if (!rule.isEnabled()) return null;
-        const me = init.page.$CONFIG.uid;
+        const me = yawf.WEIBO_VERSION === 6 ? init.page.$CONFIG.uid : init.page.uid();
         const [original] = feedParser.original.id(feed);
         const [author] = feedParser.isFast(feed) ? feedParser.author.id(feed) : [];
         if (me === original || me === author) return 'showme';
@@ -80,6 +82,7 @@
   };
 
   showthese.showMentionMe = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_mention_me',
     version: 1,
     parent: showthese.showthese,
@@ -88,7 +91,7 @@
       const rule = this;
       observer.feed.filter(function showMentionMe(feed) {
         if (!rule.isEnabled()) return null;
-        const me = init.page.$CONFIG.nick;
+        const me = yawf.WEIBO_VERSION === 6 ? init.page.$CONFIG.uid : init.page.uid();
         const mentions = feedParser.mention.name(feed);
         if (mentions.includes(me)) return 'showme';
         return null;

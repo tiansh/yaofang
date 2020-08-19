@@ -11,7 +11,7 @@
     return new Promise(resolve => {
       script.addEventListener('load', () => {
         resolve();
-        // script.parentElement.removeChild(script);
+        script.parentElement.removeChild(script);
       });
       if (target) target.appendChild(script);
       else setTimeout(function injectScript() {

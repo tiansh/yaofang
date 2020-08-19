@@ -103,8 +103,14 @@
   const key = `yawf_${randStr}`;
 
   document.documentElement.addEventListener(key, function (event) {
-    const config = JSON.parse(event.detail.config);
-    init.configChange(config);
+    if (event.detail.config) {
+      const config = JSON.parse(event.detail.config);
+      init.configChange(config);
+    }
+    if (event.detail.route) {
+      const route = JSON.parse(event.detail.route);
+      init.page.update(route);
+    }
   }, true);
 
   util.inject.rootKey = `yawf_${strings.randKey()}`;
@@ -125,14 +131,44 @@
       });
       node.dispatchEvent(event);
     };
+    const routeReportObject = function (vm) {
+      return {
+        name: vm.$route.name,
+        fullPath: vm.$route.fullPath,
+        path: vm.$route.path,
+        params: JSON.parse(JSON.stringify(vm.$route.params)),
+        query: JSON.parse(JSON.stringify(vm.$route.query)),
+        meta: JSON.parse(JSON.stringify(vm.$route.meta)),
+      };
+    };
     // 发现 Vue 根元素的时候启动脚本的初始化
     const reportRootNode = function (node) {
       const vm = node.__vue__;
       const config = vm.config;
+      const route = routeReportObject(vm);
       const event = new CustomEvent(key, {
-        detail: { config: JSON.stringify(config) },
+        detail: {
+          config: JSON.stringify(config),
+          route: JSON.stringify(route),
+        },
       });
       node.dispatchEvent(event);
+    };
+    const reportRouteChange = function (route) {
+      const event = new CustomEvent(key, {
+        detail: { route: JSON.stringify(route) },
+      });
+      document.documentElement.dispatchEvent(event);
+    };
+    let unwatchRouteChange = null;
+    const listenRouteChange = function (node) {
+      if (unwatchRouteChange) unwatchRouteChange();
+      const vm = node.__vue__;
+      unwatchRouteChange = vm.$watch(function () {
+        return JSON.stringify(routeReportObject(vm));
+      }, function (route) {
+        reportRouteChange(JSON.parse(route));
+      });
     };
 
     /** @type {WeakMap<Object, Node>} */
@@ -150,7 +186,7 @@
         }
       }
       const key = (vm.$vnode || {}).key;
-      if (key && node instanceof Element) {
+      if (key != null && node instanceof Element) {
         node.setAttribute('yawf-component-key', key);
       }
       if (tag) {
@@ -183,6 +219,7 @@
       // 如果发现根元素，那么初始化脚本
       if (vm.$parent == null) {
         reportRootNode(node);
+        listenRouteChange(node);
       }
       for (let vmi of eachVmForNode(node)) {
         markElement(node, vmi);
@@ -192,6 +229,7 @@
       let __vue__ = node.__vue__;
       delete node.__vue__;
       Object.defineProperty(node, '__vue__', {
+        configurable: true,
         set(n) {
           __vue__ = n;
           markElement(node, n);
@@ -240,6 +278,15 @@
       if (mounted) {
         [...document.querySelectorAll(`[yawf-component-tag~="${tag}"]`)].forEach(found);
       }
+    };
+
+    vueSetup.closest = function (vm, tag) {
+      for (let p = vm; p; p = p.$parent) {
+        if (kebabCase((p.$options || {})._componentTag) === kebabCase(tag)) {
+          return p;
+        }
+      }
+      return null;
     };
 
     /*

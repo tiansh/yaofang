@@ -153,7 +153,7 @@
         });
 
       }, util.inject.rootKey, expand, { count, br });
-    }
+    },
   });
 
   i18n.feedContentLineBreak = {
