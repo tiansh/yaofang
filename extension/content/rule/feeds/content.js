@@ -133,7 +133,7 @@
           }
         };
 
-        vueSetup.eachComponentVM('feed-detail', function (node, vm) {
+        vueSetup.eachComponentVM('feed-detail', function (vm) {
           const needLoadLong = function () {
             if (!this.isLongText) return false;
             if (this.data._yawf_LongTextContentLoading !== false) return false;

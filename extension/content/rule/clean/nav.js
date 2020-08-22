@@ -15,7 +15,7 @@
     cleanNavLogoImg: { cn: '节日徽标', tw: '節日徽標', en: 'Holiday logo' },
     cleanNavMain: { cn: '首页', tw: '首頁', en: 'Home' },
     cleanNavTV: { cn: '视频', en: '视频 (Video)' },
-    cleanNavHot: { cn: '发现', en: 'Discover' },
+    cleanNavHot: { cn: '热门（发现）', en: 'Discover' },
     cleanNavGame: { cn: '游戏', tw: '遊戲', en: 'Game' },
     cleanNavHotSearch: { cn: '大家正在搜', tw: '大家正在熱搜', en: 'Hot search' },
     cleanNavNoticeNew: { cn: '新消息计数', tw: '新消息計數', en: 'Count for new notice' },
@@ -37,10 +37,28 @@
     },
     acss: '.WB_global_nav .gn_logo .box img { display: none !important; }',
   });
-  clean.CleanRule('main', () => i18n.cleanNavMain, 1, '.gn_nav_list>li:nth-child(1) { display: none !important; }');
-  clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }');
-  clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '.gn_nav_list>li:nth-child(3) { display: none !important; }');
-  clean.CleanRule('game', () => i18n.cleanNavGame, 1, '.gn_nav_list>li:nth-child(4) { display: none !important; }');
+  clean.CleanRuleGroup({
+    // V7: 那段 CSS 是 V6 的，之后应该直接删掉
+    home: clean.CleanRule('main', () => i18n.cleanNavMain, 1, '.gn_nav_list>li:nth-child(1) { display: none !important; }', { weiboVersion: [6, 7] }),
+    tv: clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }', { weiboVersion: [6, 7] }),
+    hot: clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '.gn_nav_list>li:nth-child(3) { display: none !important; }', { weiboVersion: [6, 7] }),
+    game: clean.CleanRule('game', () => i18n.cleanNavGame, 1, '.gn_nav_list>li:nth-child(4) { display: none !important; }', { weiboVersion: [6, 7] }),
+  }, function (options) {
+    util.inject(function (rootKey, options) {
+      const yawf = window[rootKey];
+      const vueSetup = yawf.vueSetup;
+
+      vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
+        if (Array.isArray(vm.channels)) {
+          vm.channels = vm.channels.filter(channel => !options[channel.name]);
+        }
+        if (Array.isArray(vm.links)) {
+          vm.links = vm.links.filter(link => !options[link.name]);
+        }
+      });
+
+    }, util.inject.rootKey, options);
+  });
   if (env.config.requestBlockingSupported) {
     clean.CleanRule('hot_search', () => i18n.cleanNavHotSearch, 1, {
       init: function () {

@@ -103,18 +103,20 @@
   const key = `yawf_${randStr}`;
 
   document.documentElement.addEventListener(key, function (event) {
-    if (event.detail.config) {
-      const config = JSON.parse(event.detail.config);
-      init.configChange(config);
-    }
     if (event.detail.route) {
       const route = JSON.parse(event.detail.route);
       init.page.update(route);
+    }
+    if (event.detail.config) {
+      const config = JSON.parse(event.detail.config);
+      init.configChange(config);
     }
   }, true);
 
   util.inject.rootKey = `yawf_${strings.randKey()}`;
   util.inject(function (rootKey, key) {
+    let rootVm = null;
+
     const kebabCase = function (word) {
       if (typeof word !== 'string') return word;
       return word.replace(/./g, (char, index) => {
@@ -144,6 +146,7 @@
     // 发现 Vue 根元素的时候启动脚本的初始化
     const reportRootNode = function (node) {
       const vm = node.__vue__;
+      rootVm = vm;
       const config = vm.config;
       const route = routeReportObject(vm);
       const event = new CustomEvent(key, {
@@ -256,8 +259,11 @@
     const observer = new MutationObserver(observeNewNodes);
     observer.observe(document.documentElement, { childList: true, subtree: true });
 
-    const yawf = window[rootKey] = (window[rootKey] || {});
+    Object.defineProperty(window, rootKey, { value: {}, enumerable: false, writable: false });
+    const yawf = window[rootKey];
     const vueSetup = yawf.vueSetup = (yawf.vueSetup || {});
+
+    vueSetup.getRootVm = () => rootVm;
 
     vueSetup.kebabCase = kebabCase;
     const eachComponentVM = vueSetup.eachComponentVM = function (tag, callback, { mounted = true, watch = true } = {}) {
@@ -266,7 +272,7 @@
         if (seen.has(target)) return;
         seen.add(target);
         for (let vm of eachVmForNode(target)) {
-          if (kebabCase(vm.$options._componentTag) === kebabCase(tag)) callback(target, vm);
+          if (kebabCase(vm.$options._componentTag) === kebabCase(tag)) callback(vm);
         }
       };
       if (watch) {
@@ -279,6 +285,11 @@
         [...document.querySelectorAll(`[yawf-component-tag~="${tag}"]`)].forEach(found);
       }
     };
+    const getComponentsByTagName = vueSetup.getComponentsByTagName = function (tag) {
+      const result = [];
+      eachComponentVM(tag, result.push.bind(result), { watch: false });
+      return result;
+    };
 
     vueSetup.closest = function (vm, tag) {
       for (let p = vm; p; p = p.$parent) {
@@ -289,7 +300,6 @@
       return null;
     };
 
-    /*
     const childArray = function (element) {
       return element.children || (element.componentOptions || {}).children;
     };
@@ -348,16 +358,15 @@
         return vdom;
       };
     };
-    const transformElementRender = vueSetup.transformElementRender = function (vm, transformer) {
+    const transformComponentRender = vueSetup.transformComponentRender = function (vm, transformer) {
       vm.$options.render = transformRender(vm.$options.render, transformer);
     };
-    vueSetup.transformCompontentRender = function (tag, transformer) {
-      eachComponentVM(tag, function (target, vm) {
-        transformElementRender(vm, transformer);
+    vueSetup.transformComponentsRenderByTagName = function (tag, transformer) {
+      eachComponentVM(tag, function (vm) {
+        transformComponentRender(vm, transformer);
         vm.$forceUpdate();
       });
     };
-    */
 
   }, util.inject.rootKey, key);
 }());

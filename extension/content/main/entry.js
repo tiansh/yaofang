@@ -204,7 +204,7 @@
         document.documentElement.dispatchEvent(event);
       };
 
-      vueSetup.eachComponentVM('weibo-top-nav', function (element, vm) {
+      vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
         vm.configs.splice(-1, 0, {
           divider: true,
           href: '',

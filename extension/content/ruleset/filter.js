@@ -238,13 +238,10 @@
     } else {
       /*
        * 微博表示 Feed 的结构体很奇妙
-       * 它的 idstr 属性，是个 string，是当前微博的 mid，是唯一可以用来做唯一标识的属性
-       * 它的 id 属性，大部分情况下是个 number，表示当前微博的 mid
-       * 它的 mid 属性，是个 string，大部分情况下是这条微博的 mid
-       * 它的 mblogid 是 62 进制换算后的 id
-       * 当一条微博是快转微博时，它的 ori_mid 是个字符串，表示被快转的微博，其他情况下没有 ori_mid 字段
-       * 当一条微博是快转微博时，它的 id 属性是个 string，表示被快转的微博 id
-       * 当一条微博是快转微博时，它的 mid 和 mblogid 也表示被快转的微博
+       * 它的 idstr 属性，是个 string，是当前微博的 mid，也可能是快转的原微博 id
+       * 它的 id 属性，大部分情况下是个 number，表示当前微博的 mid，偶尔是个字符串，表示快转微博的当前 id
+       * 它的 mid 属性，是个 string，是 id 属性的字符串形式
+       * 它的 mblogid 是 62 进制换算后的 idstr
        */
 
       const randStr = strings.randKey();
@@ -252,9 +249,9 @@
 
       // 当有一条完成过滤规则判断时，交给页面脚本处理
       observer.feed.apply = function (data, { result, filter = null, reason = null }) {
-        const idstr = data.idstr;
+        const mid = data.mid;
         const event = new CustomEvent(key, {
-          detail: JSON.stringify({ action: 'result', idstr, result: { result: result || 'unset', reason } }),
+          detail: JSON.stringify({ action: 'result', mid, result: { result: result || 'unset', reason } }),
         });
         document.documentElement.dispatchEvent(event);
         if (result) util.debug('Feed filter %o -> %o by %o due to %o', data, result, filter, reason);
@@ -287,7 +284,7 @@
           vm.$set(feedDetail, 'longTextContent', null);
           try {
             const resp = await vm.$http.get('/ajax/statuses/longtext', {
-              params: { id: feedDetail.mid },
+              params: { id: feedDetail.idstr },
             });
             if (!resp.data || !resp.data.ok || !resp.data.data) return;
             const data = resp.data.data;
@@ -306,10 +303,10 @@
         // 触发过滤并等待过滤结果回来
         const pendingFeeds = new Map();
         const triggerFilter = function (vm, feed) {
-          const idstr = feed.idstr;
+          const mid = feed.mid;
           feed._yawf_FilterStatus = 'running';
           const cleanUp = function () {
-            pendingFeeds.delete(idstr);
+            pendingFeeds.delete(mid);
             vm.$off('hook:beforeDestroy', cleanUp);
           };
           vm.$once('hook:beforeDestroy', cleanUp);
@@ -320,9 +317,9 @@
               feed._yawf_FilterReason = reason;
               resolve({ result, reason });
             };
-            pendingFeeds.set(idstr, handleFilterResult);
+            pendingFeeds.set(mid, handleFilterResult);
             const event = new CustomEvent(key, {
-              detail: JSON.stringify({ action: 'trigger', idstr, data: feed }),
+              detail: JSON.stringify({ action: 'trigger', mid, data: feed }),
             });
             document.documentElement.dispatchEvent(event);
           });
@@ -334,14 +331,15 @@
             vm.data.splice(index, 1);
           }
         };
-        vueSetup.eachComponentVM('feed', function (node, vm) {
+        vueSetup.eachComponentVM('feed', function (vm) {
+          const feedScroll = vueSetup.closest(vm, 'feed-scroll');
+
           // 在渲染一条 feed 时，额外插入过滤状态的标识
           vm.$options.render = (function (render) {
             return function (createElement) {
               // 如果某个 feed 不在 feed-scroll 里面
               // 那么我们不会把它就这么给隐藏起来
-              let collection = vueSetup.closest(this, 'feed-scroll');
-              const underFilter = collection != null && this.idstr > 0;
+              const underFilter = feedScroll != null && this.mid > 0;
               const result = render.call(this, createElement);
               Object.assign(result.data.class, {
                 'yawf-feed-filter': true,
@@ -359,15 +357,69 @@
               if (this.data._yawf_FilterReason) {
                 result.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
               }
+              if (feedScroll) {
+                // 在末尾插入一个用来侦测元素高度的元素
+                const children = result.children || result.componentOptions.children;
+                if (Array.isArray(children)) {
+                  const resizeSensor = function (h) {
+                    return h('div', { class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
+                      h('div', { class: 'yawf-resize-sensor-expand', ref: 'yawf_resize_sensor_expand' }, [
+                        h('div', { class: 'yawf-resize-sensor-child' }),
+                      ]),
+                      h('div', { class: 'yawf-resize-sensor-shrink', ref: 'yawf_resize_sensor_shrink' }, [
+                        h('div', { class: 'yawf-resize-sensor-child' }),
+                      ]),
+                    ]);
+                  };
+                  children.push(resizeSensor(createElement));
+                }
+              }
               return result;
             };
           }(vm.$options.render));
+          vm.$forceUpdate();
+
+          // 每次高度变化时更新 _yawf_Size 属性
+          // 我也不知道这段代码怎么工作起来的，反正网上的代码就这逻辑，然后也真的能用
+          if (feedScroll) {
+            vm.$nextTick(function () {
+              const element = vm.$refs.yawf_resize_sensor_element;
+              const expand = vm.$refs.yawf_resize_sensor_expand;
+              const shrink = vm.$refs.yawf_resize_sensor_shrink;
+
+              let lastHeight = element.offsetHeight, newHeight = null;
+              let dirty = false;
+              vm.$set(vm.data, '_yawf_Size', lastHeight);
+              const reset = function () {
+                expand.scrollTop = 1e6;
+                shrink.scrollTop = 1e6;
+              };
+              reset();
+              const onResized = function () {
+                if (lastHeight === newHeight) return;
+                lastHeight = newHeight;
+                vm.data._yawf_Size = newHeight;
+                reset();
+              };
+              const onScroll = function () {
+                newHeight = element.offsetHeight;
+                if (dirty) return;
+                dirty = true;
+                requestAnimationFrame(function () {
+                  dirty = false;
+                  onResized();
+                });
+              };
+              expand.addEventListener('scroll', onScroll);
+              shrink.addEventListener('scroll', onScroll);
+            });
+          }
         });
         window.addEventListener(key, function (event) {
           const detail = JSON.parse(event.detail);
           if (detail.action === 'rerun') {
             // 对现有的元素再来一次
-            vueSetup.eachComponentVM('feed-scroll', function (node, vm) {
+            vueSetup.eachComponentVM('feed-scroll', function (vm) {
               [...vm.data].forEach(async feed => {
                 if (['loading', 'running'].includes(feed._yawf_FilterStatus)) return;
                 const { result, reason } = await triggerFilter(vm, feed);
@@ -376,23 +428,21 @@
             }, { watch: false });
           } else if (detail.action === 'result') {
             // 应用过滤结果
-            const handler = pendingFeeds.get(detail.idstr);
+            const handler = pendingFeeds.get(detail.mid);
             if (handler) handler(detail.result);
           }
         }, true);
-        vueSetup.eachComponentVM('feed-scroll', function (node, vm) {
+        vueSetup.eachComponentVM('feed-scroll', function (vm) {
+          // 元素高度我们用 onScroll 事件来读
+          // 这样就不用每次我们需要改 feed 内容时都关心是不是会导致高度计算不正确了
           if (Array.isArray(vm.sizeDependencies)) {
-            const sizeDependencies = ['_yawf_FilterStatus'];
-            sizeDependencies.forEach(key => {
-              if (vm.sizeDependencies.includes(key)) return;
-              vm.sizeDependencies.push(key);
-            });
+            vm.sizeDependencies = ['_yawf_Size'];
           }
           // 当 feed-scroll 内 feed 列表变化时，我们把那些没见过的全都标记一下
           vm.$watch(function () { return this.data; }, function () {
             const feeds = [...vm.data];
             feeds.forEach(async feed => {
-              if (!(feed.idstr > 0)) return;
+              if (!(feed.mid > 0)) return;
               if (feed._yawf_FilterApply) return;
               vm.$set(feed, '_yawf_FilterStatus', 'loading');
               vm.$set(feed, '_yawf_FilterReason', null);
@@ -403,6 +453,8 @@
             });
           }, { immediate: true });
         });
+
+
       }, util.inject.rootKey, key);
     }
   }, { priority: priority.LAST });
@@ -432,6 +484,12 @@
 
 .yawf-WBV7 .yawf-feed-filter-loading,
 .yawf-WBV7 .yawf-feed-filter-running { visibility: hidden; }
+.yawf-WBV7 .yawf-resize-sensor,
+.yawf-WBV7 .yawf-resize-sensor-expand,
+.yawf-WBV7 .yawf-resize-sensor-shrink { position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; z-index: -1; visibility: hidden; }
+.yawf-WBV7 .yawf-resize-sensor-expand .yawf-resize-sensor-child { width: 1000000px; height: 1000000px; }
+.yawf-WBV7 .yawf-resize-sensor-shrink .yawf-resize-sensor-child { width: 200%; height: 200%; }
+.yawf-WBV7 .yawf-resize-sensor-child { position: absolute; top: 0; left: 0; transition: 0s; }
 `);
   init.onLoad(function () {
     css.append(`.yawf-WBV6 [yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);

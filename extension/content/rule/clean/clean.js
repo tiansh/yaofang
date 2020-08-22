@@ -65,7 +65,7 @@
     return group;
   };
 
-  clean.CleanRule = function (id, template, version, action, details) {
+  clean.CleanRule = function (id, template, version, action, ...details) {
     clean[lastCleanGroup][id] = rule.Rule(Object.assign({
       id: 'clean_' + lastCleanGroup + '_' + id,
       template,
@@ -75,7 +75,8 @@
       acss: action,
     } : typeof action === 'function' ? {
       ainit: action,
-    } : typeof action === 'object' ? action : {}, details));
+    } : typeof action === 'object' ? action : {}, ...details));
+    return clean[lastCleanGroup][id];
   };
 
   i18n.cleanConfigColumnCount = {
@@ -106,5 +107,16 @@
     Object.defineProperty(tagElements, 'name', { value: `tagElements${name}` });
     observer.dom.add(tagElements);
   };
+
+  const groupOnLoad = [];
+  clean.CleanRuleGroup = function (rules, callback) {
+    groupOnLoad.push({ rules, callback });
+  };
+  init.onLoad(function () {
+    groupOnLoad.splice(0).forEach(({ rules, callback }) => {
+      const config = Object.assign({}, ...Object.keys(rules).map(key => ({ [key]: rules[key].isEnabled() })));
+      callback(config);
+    });
+  }, { priority: priority.AFTER });
 
 }());

@@ -27,8 +27,8 @@
   clean.CleanGroup('right', () => i18n.cleanRightGroupTitle);
   clean.CleanRule('info', () => i18n.cleanRightInfo, 1, '#v6_pl_rightmod_myinfo { display: none !important; }');
   clean.CleanRule('ranks', () => i18n.cleanRightRanks, 1, '#v6_pl_rightmod_rank, [yawf-id="rightmod_taobao_movie"], [yawf-id="rightmod_recom_movie"] { display: none !important; }');
-  clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }');
-  clean.CleanRule('interest', () => i18n.cleanRightInterest, 1, '[yawf-id="rightmod_recom_interest"] { display: none !important; }');
+  const hotSearch = clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }', { weiboVersion: [6, 7] });
+  const interested = clean.CleanRule('interest', () => i18n.cleanRightInterest, 1, '[yawf-id="rightmod_recom_interest"] { display: none !important; }', { weiboVersion: [6, 7] });
   clean.CleanRule('member', () => i18n.cleanRightMember, 1, '#v6_trustPagelet_recom_member { display: none !important; }');
   clean.CleanRule('groups', () => i18n.cleanRightGroups, 1, '#v6_pl_rightmod_groups { display: none; }');
   clean.CleanRule('recom_group_user', () => i18n.cleanRightRecomGroupUser, 1, '#v6_pl_rightmod_recomgroupuser { display: none; }');
@@ -51,6 +51,28 @@
     'h2.main_title a[href*="book.weibo.com/top"]': 'v6_pl_rightmod_rank_book',
     'h4.obj_name a[href*="pop.weibo.com"]': 'v6_pl_rightmod_rank_pop',
     'div.obj_name a[href*="100808faecebff8a54b97a91699c654e5f4cda"]': 'v6_pl_rightmod_rank_hong',
+  });
+
+  clean.CleanRuleGroup({
+    cardHotSearch: hotSearch,
+    cardInterested: interested,
+  }, function (options) {
+    util.inject(function (rootKey, options) {
+      const yawf = window[rootKey];
+      const vueSetup = yawf.vueSetup;
+
+      vueSetup.eachComponentVM('side-index', function (vm) {
+        vm.$watch(function () { return this.cardsData; }, function () {
+          if (Array.isArray(vm.cardsData)) {
+            for (let i = 0; i < vm.cardsData.length;) {
+              if (options[vm.cardsData[i].card_type]) {
+                vm.cardsData.splice(i, 1);
+              } else i++;
+            }
+          }
+        }, { immediate: true });
+      });
+    }, util.inject.rootKey, options);
   });
 
 }());

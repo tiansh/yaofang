@@ -13,7 +13,7 @@
 
   Object.assign(i18n, {
     cleanLeftGroupTitle: { cn: '隐藏模块 - 左栏', tw: '隱藏模組 - 左欄', en: 'Hide modules - Left Column' },
-    cleanLeftHome: { cn: '首页', tw: '首頁', en: 'Home' },
+    cleanLeftHome: { cn: '全部关注（首页）', tw: '首頁', en: 'Home' },
     cleanLeftFav: { cn: '我的收藏', tw: '我的收藏', en: 'Favorite' },
     cleanLeftLike: { cn: '我的赞', tw: '我的讚', en: 'Like' },
     cleanLeftHot: { cn: '热门微博', tw: '熱門微博', en: 'Hot Feeds' },
@@ -80,6 +80,7 @@
     };
     css.append('#v6_pl_leftnav_group .lev:not([yawf-checked-lev]) { visibility: hidden; }');
     init.onLoad(function () {
+      if (yawf.WEIBO_VERSION !== 6) return;
       observer.dom.add(listener);
       listener();
     }, { priority: priority.LAST });
@@ -95,10 +96,10 @@
   clean.CleanRule('like', () => i18n.cleanLeftLike, 1, leftHide('like'));
   clean.CleanRule('hot', () => i18n.cleanLeftHot, 1, leftHide('hot'));
   clean.CleanRule('tv', () => i18n.cleanLeftTV, 1, leftHide('tv'));
-  clean.CleanRule('new_feed', () => i18n.cleanLeftNewFeed, 21, leftHide('new'));
-  clean.CleanRule('friends', () => i18n.cleanLeftFriends, 1, leftHide('friends'));
+  const new_feed = clean.CleanRule('new_feed', () => i18n.cleanLeftNewFeed, 21, leftHide('new'), { weiboVersion: [6, 7] });
+  const friends = clean.CleanRule('friends', () => i18n.cleanLeftFriends, 1, leftHide('friends'), { weiboVersion: [6, 7] });
   clean.CleanRule('group_to_me', () => i18n.cleanLeftGroupToMe, 1, leftHide('groupsfeed'));
-  clean.CleanRule('special', () => i18n.cleanLeftSpecial, 1, leftHide('special'));
+  const special = clean.CleanRule('special', () => i18n.cleanLeftSpecial, 1, leftHide('special'), { weiboVersion: [6, 7] });
   clean.CleanRule('whisper', () => i18n.cleanLeftWhisper, 1, leftHide('whisper'));
   clean.CleanRule('v_plus', () => i18n.cleanLeftVPlus, 1, leftHide('vplus'));
   clean.CleanRule('new', () => i18n.cleanLeftNew, 1, '.WB_left_nav .lev .W_new, .yawf-WB_left_nav .lev .W_new { display: none !important; }');
@@ -122,6 +123,32 @@
     'a[href^="/mygroups"][href*="whisper=1"]': 'leftnav_whisper',
     'a[href^="/mygroups"][href*="vplus=1"]': 'leftnav_vplus',
     'a[href^="/mygroups"]': 'leftnav_mygroups',
+  });
+
+  clean.CleanRuleGroup({
+    new_feed,
+    special,
+    friends,
+  }, function (options) {
+    util.inject(function (rootKey, options) {
+      const yawf = window[rootKey];
+      const vueSetup = yawf.vueSetup;
+
+      const icons = {
+        navNew: 'new_feed',
+        navSpecial: 'special',
+        navMutual: 'friends',
+      };
+      vueSetup.eachComponentVM('home', function (vm) {
+        vm.$watch(function () { return this.leftTabs; }, function () {
+          if (Array.isArray(vm.leftTabs)) {
+            const filtered = vm.leftTabs.filter(tab => !options[icons[tab.icon]]);
+            if (vm.leftTabs.length !== filtered.length) vm.leftTabs = filtered;
+          }
+        }, { immediate: true });
+      });
+
+    }, util.inject.rootKey, options);
   });
 
 }());

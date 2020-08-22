@@ -48,13 +48,13 @@
 
   clean.CleanGroup('icons', () => i18n.cleanIconsGroupTitle);
   clean.CleanRule('level', () => i18n.cleanIconsLevel, 1, '.icon_bed[node-type="level"], .W_level_ico, .W_icon_level { display: none !important; }');
-  clean.CleanRule('member', () => i18n.cleanIconsMember, 1, '[class*="icon_member"], [class*="ico_member"], [class*="ico_vip"], [class*="icon_vip"] { display: none !important; }', showIcons(['icon_member1']));
-  clean.CleanRule('approve', () => i18n.cleanIconsApprove, 1, '.approve, .icon_approve, .icon_pf_approve, .icon_approve_gold, .icon_pf_approve_gold { display: none !important; }', showIcons(['icon_approve', 'icon_approve_gold']));
-  clean.CleanRule('approve_co', () => i18n.cleanIconsApproveCo, 1, '.approve_co, .icon_approve_co, .icon_pf_approve_co, [class^="W_icon_co"], [class^=".icon_approve_co_"], [class^=".icon_pf_approve_co_"] { display: none !important; }', showIcons(['icon_approve_co']));
+  const member = clean.CleanRule('member', () => i18n.cleanIconsMember, 1, '[class*="icon_member"], [class*="ico_member"], [class*="ico_vip"], [class*="icon_vip"] { display: none !important; }', showIcons(['icon_member1']), { weiboVersion: [6, 7] });
+  const approve = clean.CleanRule('approve', () => i18n.cleanIconsApprove, 1, '.approve, .icon_approve, .icon_pf_approve, .icon_approve_gold, .icon_pf_approve_gold { display: none !important; }', showIcons(['icon_approve', 'icon_approve_gold']), { weiboVersion: [6, 7] });
+  const approveCo = clean.CleanRule('approve_co', () => i18n.cleanIconsApproveCo, 1, '.approve_co, .icon_approve_co, .icon_pf_approve_co, [class^="W_icon_co"], [class^=".icon_approve_co_"], [class^=".icon_pf_approve_co_"] { display: none !important; }', showIcons(['icon_approve_co']), { weiboVersion: [6, 7] });
   clean.CleanRule('approve_dead', () => i18n.cleanIconsApproveDead, 1, '.icon_approve_dead, .icon_pf_approve_dead { display: none !important; }', showIcons(['icon_approve_dead']));
   clean.CleanRule('bigfun', () => i18n.cleanIconsBigFun, 26, '.W_icon_bf { display: none !important; }', showIcons([['W_icon_bf', 'icon_bigfans']]));
-  clean.CleanRule('club', () => i18n.cleanIconsClub, 1, '.ico_club, .icon_pf_club, .icon_club { display: none !important; }', showIcons(['icon_club']));
-  clean.CleanRule('v_girl', () => i18n.cleanIconsVGirl, 1, '.ico_vlady, .icon_pf_vlady, .icon_vlady { display: none !important; }', showIcons(['icon_vlady']));
+  const club = clean.CleanRule('club', () => i18n.cleanIconsClub, 1, '.ico_club, .icon_pf_club, .icon_club { display: none !important; }', showIcons(['icon_club']), { weiboVersion: [6, 7] });
+  const vGirl = clean.CleanRule('v_girl', () => i18n.cleanIconsVGirl, 1, '.ico_vlady, .icon_pf_vlady, .icon_vlady { display: none !important; }', showIcons(['icon_vlady']), { weiboVersion: [6, 7] });
   clean.CleanRule('supervisor', () => i18n.cleanIconsSupervisor, 1, '.icon_supervisor { display: none !important; }', showIcons(['icon_supervisor']));
   clean.CleanRule('taobao', () => i18n.cleanIconsTaobao, 1, '.ico_taobao, .icon_tmall, .icon_taobao, .icon_tmall { display: none !important; }', showIcons(['icon_taobao', 'icon_tmall']));
   clean.CleanRule('cheng', () => i18n.cleanIconsCheng, 1, '.icon_cheng { display: none !important; }', showIcons(['icon_cheng']));
@@ -72,5 +72,35 @@
     });
     css.append('.W_icon_yystyle, .W_icon_yy { display: none !important; }');
   }, showIcons(['icon_yy_ssp1', 'icon_yy_gqt', 'icon_yy_lol']));
+
+  clean.CleanRuleGroup({
+    'vyellow,vgold': approve,
+    vblue: approveCo,
+    vgirl: vGirl,
+    club: club,
+    'vip,vipex': member,
+  }, function (options) {
+    const hideSymbol = Object.keys(options).filter(key => options[key]).join(',').split(',');
+
+    util.inject(function (rootKey, hideSymbol) {
+      const yawf = window[rootKey];
+      const vueSetup = yawf.vueSetup;
+
+      const wooIcon = vueSetup.getRootVm().$options._base.component('woo-icon');
+      wooIcon.options.render = (function (render) {
+        return function (h) {
+          if (hideSymbol.includes(this.symbol)) {
+            return h('span', { ref: 'frames', style: 'display: none;' });
+          }
+          return render.call(this, h);
+        };
+      }(wooIcon.options.render));
+
+      vueSetup.eachComponentVM('woo-icon', vm => { vm.$forceUpdate(); }, { watch: false });
+      vueSetup.eachComponentVM('icon', vm => {
+        if (Object.getPrototypeOf(vm) === wooIcon.prototype) vm.$forceUpdate();
+      }, { watch: false });
+    }, util.inject.rootKey, hideSymbol);
+  });
 
 }());

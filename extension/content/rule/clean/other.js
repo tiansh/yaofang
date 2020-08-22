@@ -50,64 +50,84 @@
 
   clean.CleanGroup('other', () => i18n.cleanOtherGroupTitle);
   clean.CleanRule('ads', () => i18n.cleanOtherAds, 1, {
+    weiboVersion: [6, 7],
     init: function () {
-      if (env.config.requestBlockingSupported) {
-        backend.onRequest('ads', details => {
-          if (this.isEnabled()) return { cancel: true };
-          return {};
-        });
+      if (yawf.WEIBO_VERSION === 6) {
+        if (env.config.requestBlockingSupported) {
+          backend.onRequest('ads', details => {
+            if (this.isEnabled()) return { cancel: true };
+            return {};
+          });
+        }
       }
     },
     ainit: function () {
-      util.css.append([
-        '[ad-data]', '[feedtype="ad"]',
-        '[id^="ads_"]', '[id^="ad_"]',
-        '[id*="pl_rightmod_ads"]', '[id*="pl_content_biz"]', '[id*="pl_ad_"]', '[id^="sinaadToolkitBox"]',
-        '[class*="WB_ad_"]',
-        '#topicAD', '#topicADButtom', '.WB_feed .popular_buss', '.feed_app_ads', '.W_bigDay',
-        '.WB_feed_yy2016_up_but', '.WB_feed_yy2016_down_but', '#pl_common_ali',
-        '.W_skin_banner',
-        '[node-type="imgBtn"][action-data="canUploadImage=0"]',
-      ].join(',') + ' { display: none !important; } ' +
-        '#wrapAD, .news_logo { visibility: hidden !important; }');
+      if (yawf.WEIBO_VERSION === 6) {
+        util.css.append([
+          '[ad-data]', '[feedtype="ad"]',
+          '[id^="ads_"]', '[id^="ad_"]',
+          '[id*="pl_rightmod_ads"]', '[id*="pl_content_biz"]', '[id*="pl_ad_"]', '[id^="sinaadToolkitBox"]',
+          '[class*="WB_ad_"]',
+          '#topicAD', '#topicADButtom', '.WB_feed .popular_buss', '.feed_app_ads', '.W_bigDay',
+          '.WB_feed_yy2016_up_but', '.WB_feed_yy2016_down_but', '#pl_common_ali',
+          '.W_skin_banner',
+          '[node-type="imgBtn"][action-data="canUploadImage=0"]',
+        ].join(',') + ' { display: none !important; } ' +
+          '#wrapAD, .news_logo { visibility: hidden !important; }');
 
-      let version = '';
-      // 检查应当替换为哪种皮肤
-      // 网页中 $CONFIG.skin 给出了用户选择的皮肤
-      const defaultSkin = 'skin058';
-      let targetSkin = defaultSkin;
-      try { targetSkin = init.page.$CONFIG.skin || defaultSkin; } catch (e) { targetSkin = defaultSkin; }
-      if (/skin3[56]\d/.test(targetSkin)) targetSkin = defaultSkin;
-      // 检查网页中是否被插入了广告皮肤，如果有则换成用户选择的（或默认的）皮肤
-      const updateSkin = function updateSkin() {
-        const adskin = document.querySelector('link[href*="/skin35"], link[href*="/skin36"]');
-        if (adskin) {
-          version = new URL(adskin.href).searchParams.get('version');
-          util.debug('ad skin %o(version %o) has been replaced', adskin.href, version);
-          adskin.setAttribute('href', `//img.t.sinajs.cn/t6/skin/${targetSkin}/skin.css?version=${encodeURIComponent(version)}`);
-        }
-        const adskincover = document.querySelector('#skin_cover_s[style*="/skin35"], #skin_cover_s[style*="/skin36"]');
-        if (adskincover) adskincover.style.backgroundImage = `url("//img.t.sinajs.cn/t6/skin/${targetSkin}/images/profile_cover_s.jpg?version=${encodeURIComponent(version)}")`;
-      };
-      observer.dom.add(updateSkin);
+        let version = '';
+        // 检查应当替换为哪种皮肤
+        // 网页中 $CONFIG.skin 给出了用户选择的皮肤
+        const defaultSkin = 'skin058';
+        let targetSkin = defaultSkin;
+        try { targetSkin = init.page.$CONFIG.skin || defaultSkin; } catch (e) { targetSkin = defaultSkin; }
+        if (/skin3[56]\d/.test(targetSkin)) targetSkin = defaultSkin;
+        // 检查网页中是否被插入了广告皮肤，如果有则换成用户选择的（或默认的）皮肤
+        const updateSkin = function updateSkin() {
+          const adskin = document.querySelector('link[href*="/skin35"], link[href*="/skin36"]');
+          if (adskin) {
+            version = new URL(adskin.href).searchParams.get('version');
+            util.debug('ad skin %o(version %o) has been replaced', adskin.href, version);
+            adskin.setAttribute('href', `//img.t.sinajs.cn/t6/skin/${targetSkin}/skin.css?version=${encodeURIComponent(version)}`);
+          }
+          const adskincover = document.querySelector('#skin_cover_s[style*="/skin35"], #skin_cover_s[style*="/skin36"]');
+          if (adskincover) adskincover.style.backgroundImage = `url("//img.t.sinajs.cn/t6/skin/${targetSkin}/images/profile_cover_s.jpg?version=${encodeURIComponent(version)}")`;
+        };
+        observer.dom.add(updateSkin);
 
-      // 一些广告内容的 iframe，如果这些东西只是隐藏没有被摘掉的话，里面的 JavaScript 会不停的报错，直到把你的控制台弄崩
-      const removeAdIframes = function removeAdIframes() {
-        const iframes = Array.from(document.querySelectorAll('iframe[src*="s.alitui.weibo.com"]'));
-        iframes.forEach(function (iframe) {
-          iframe.parentNode.removeChild(iframe);
+        // 一些广告内容的 iframe，如果这些东西只是隐藏没有被摘掉的话，里面的 JavaScript 会不停的报错，直到把你的控制台弄崩
+        const removeAdIframes = function removeAdIframes() {
+          const iframes = Array.from(document.querySelectorAll('iframe[src*="s.alitui.weibo.com"]'));
+          iframes.forEach(function (iframe) {
+            iframe.parentNode.removeChild(iframe);
+          });
+        };
+        observer.dom.add(removeAdIframes);
+
+        // 视频播放完毕之后会自动推荐下一个视频，之前很多是相关推荐，但现在也有不少是广告，所以不单独做一个选项，直接放在这里了
+        observer.dom.add(function videoNoAutoNext() {
+          const close = document.querySelector('.video_box_next [action-type="next_close"]:not([yawf-no-auto-next])');
+          if (!close) return;
+          close.setAttribute('yawf-no-auto-next', '');
+          close.click();
         });
-      };
-      observer.dom.add(removeAdIframes);
+      } else {
+        util.inject(function (rootKey) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
 
-      // 视频播放完毕之后会自动推荐下一个视频，之前很多是相关推荐，但现在也有不少是广告，所以不单独做一个选项，直接放在这里了
-      observer.dom.add(function videoNoAutoNext() {
-        const close = document.querySelector('.video_box_next [action-type="next_close"]:not([yawf-no-auto-next])');
-        if (!close) return;
-        close.setAttribute('yawf-no-auto-next', '');
-        close.click();
-      });
+          vueSetup.eachComponentVM('card-hot-search', function (vm) {
+            vm.$watch(function () { return this.bandList; }, function () {
+              const cleanUp = vm.bandList.filter(i => !i.is_ad);
+              if (vm.bandList.length !== cleanUp.length) vm.bandList = cleanUp;
+            });
+            vm.$watch(function () { return this.TopWord; }, function () {
+              if (vm.TopWord.is_ad) vm.TopWord = null;
+            });
+          }, { immediate: true });
 
+        }, util.inject.rootKey);
+      }
     },
   });
   if (env.config.requestBlockingSupported) {
