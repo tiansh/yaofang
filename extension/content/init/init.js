@@ -121,6 +121,7 @@
         document.documentElement.classList.add('yawf-WBV7');
       }
       if (yawf.WEIBO_VERSION !== 7) return;
+      if (!page.route) return;
       page.config = config;
       page.$CONFIG = genV6LikeConfigByV7Config(config);
       await runSet(onConfigChangeCallback);

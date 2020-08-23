@@ -53,6 +53,11 @@
       lastWeibo: { type: 'number', initial: 0 },
     },
     async init() {
+      // 这个功能需要显示对话框
+      // 对话框需要页面加载完成才能显示
+      if (!['complete', 'loaded', 'interactive'].includes(document.readyState)) {
+        await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+      }
       const whatsNew = this;
       const currentVersion = Number(browser.runtime.getManifest().version.match(/\d+$/g));
       const lastVersion = this.ref.last.getConfig();

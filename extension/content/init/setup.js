@@ -411,9 +411,6 @@
     };
     const classModify = function (node, add, remove) {
       const vnode = vNode(node);
-      if (!vnode) {
-        debugger;
-      }
       vnode.data = vnode.data || {};
       const added = parseClass([node.className, ...add].join(' '));
       const removed = added.split(/\s+/).filter(c => !remove.includes(c)).join(' ');

@@ -80,6 +80,7 @@
     club: club,
     'vip,vipex': member,
   }, function (options) {
+    if (yawf.weiboVersion !== 7) return;
     const hideSymbol = Object.keys(options).filter(key => options[key]).join(',').split(',');
 
     util.inject(function (rootKey, hideSymbol) {

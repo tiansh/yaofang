@@ -57,6 +57,7 @@
     cardHotSearch: hotSearch,
     cardInterested: interested,
   }, function (options) {
+    if (yawf.weiboVersion !== 7) return;
     util.inject(function (rootKey, options) {
       const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;
