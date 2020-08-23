@@ -300,61 +300,154 @@
       return null;
     };
 
-    const childArray = function (element) {
-      return element.children || (element.componentOptions || {}).children;
+    // 下面这一串都没测试过
+    const childArray = function (element, createChildren) {
+      if (element.componentOptions) {
+        if (!element.componentOptions.children && createChildren) {
+          element.componentOptions.children = [];
+        }
+        return element.componentOptions.children;
+      } else {
+        if (!element.children && createChildren) {
+          element.children = [];
+        }
+        return element.children;
+      }
+    };
+    const parseClass = className => {
+      if (className == null) {
+        return '';
+      } else if (typeof className === 'string') {
+        return [...new Set(className.trim().split(/\s+/))].join(' ');
+      } else if (Array.isArray(className)) {
+        return parseClass(className.map(parseClass).join(' '));
+      } else if (typeof className === 'object') {
+        return parseClass(Object.keys(className).filter(key => className[key]).join(' '));
+      }
+      return '';
     };
     const buildResult = function buildResult(vnode) {
       const tag = vnode.componentOptions ? 'x-' + vnode.componentOptions.tag : vnode.tag;
+      if (tag == null && vnode.text) {
+        const node = document.createTextNode(vnode.text);
+        node.__vnode__ = vnode;
+        return node;
+      }
+      if (tag == null) {
+        const node = document.createComment('');
+        node.__vnode__ = vnode;
+        return node;
+      }
       const node = document.createElement(tag);
       node.__vnode__ = vnode;
-      const data = node.data || {};
-      if (typeof data.class === 'string') {
-        node.className = data.class;
-      } else if (Array.isArray(data.class)) {
-        data.class.filter(x => x).forEach(n => node.classList.add(n));
-      }
+      const data = vnode.data || {};
+      const className = parseClass(data.class);
+      if (className) node.className = className;
       const children = childArray(vnode);
       if (children) children.forEach(vnode => {
-        if (vnode.tag == null) return;
         node.appendChild(buildResult(vnode));
       });
       return node;
     };
-    const before = function (newVNode, refNode) {
-      const newNode = buildResult(newVNode);
-      const refVNode = refNode.__vnode__;
-      const parentNode = refNode.parentNode;
-      const parentVNode = parentNode.__vnode__;
+    const vNode = function (node) {
+      return node.__vnode__;
+    };
+    const insertBefore = function (parentNode, newVNode, refNode, newNode) {
+      if (refNode === null) {
+        return appendChild(parentNode, newVNode);
+      }
+      if (newNode == null) newNode = buildResult(newVNode);
+      const refVNode = vNode(refNode);
+      const parentVNode = vNode(parentNode);
       const children = childArray(parentVNode);
       const index = children.indexOf(refVNode);
       children.splice(index, 0, newVNode);
       parentNode.insertBefore(newNode, refNode);
       return newNode;
     };
-    const append = function (newVNode, parentNode) {
-      const parentVNode = parentNode.__vnode__;
-      const children = childArray(parentVNode);
-      const newNode = buildResult(newVNode);
+    const appendChild = function (parentNode, newVNode, newNode) {
+      const parentVNode = vNode(parentNode);
+      const children = childArray(parentVNode, true);
+      if (newNode == null) newNode = buildResult(newVNode);
       children.push(newVNode);
       parentNode.appendChild(newNode);
       return newNode;
     };
-    const remove = function (targetNode) {
-      const targetVNode = targetNode.__vnode__;
-      const parentNode = targetNode.parentNode;
-      const parentVNode = parentNode.__vnode__;
+    const removeChild = function (parentNode, targetNode) {
+      const targetVNode = vNode(targetNode);
+      const parentVNode = vNode(parentNode);
       const children = childArray(parentVNode);
       const index = children.indexOf(targetVNode);
       children.splice(index, 1);
       parentNode.removeChild(targetNode);
-      return targetNode;
+      return targetVNode;
+    };
+    const wrapNode = function (chroot) {
+      return function (refNode, newVNode) {
+        const newNode = buildResult(newVNode);
+        const refVNode = vNode(refNode);
+        const parentNode = refNode.parentNode;
+        if (!parentNode) {
+          chroot(newVNode);
+          appendChild(newNode, refNode);
+        } else {
+          insertBefore(parentNode, newVNode, refNode, newNode);
+          removeChild(parentNode, refNode);
+          appendChild(newNode, refVNode, refNode);
+        }
+        return newNode;
+      };
+    };
+    const changeRoot = function (chroot) {
+      return function (rootNode) {
+        const parentNode = rootNode.parentNode;
+        if (parentNode) {
+          removeChild(parentNode, rootNode);
+        }
+        const rootVNode = vNode(rootNode);
+        chroot(rootVNode);
+        return rootNode;
+      };
+    };
+    const classModify = function (node, add, remove) {
+      const vnode = vNode(node);
+      if (!vnode) {
+        debugger;
+      }
+      vnode.data = vnode.data || {};
+      const added = parseClass([node.className, ...add].join(' '));
+      const removed = added.split(/\s+/).filter(c => !remove.includes(c)).join(' ');
+      vnode.data.class = removed;
+      node.className = removed;
+    };
+    const addClass = function (node, ...classNames) {
+      classModify(node, classNames, []);
+    };
+    const removeClass = function (node, ...classNames) {
+      classModify(node, [], classNames);
     };
 
     const transformRender = function (render, transformer) {
       return function (createElement) {
-        const vdom = render.call(this, createElement);
+        let vdom = render.call(this, createElement);
+        const chroot = root => { vdom = root; };
         const nodeStruct = buildResult(vdom);
-        transformer(nodeStruct, { before, remove, append, createElement });
+        try {
+          transformer.call(this, nodeStruct, {
+            vNode,
+            insertBefore,
+            removeChild,
+            appendChild,
+            wrapNode: wrapNode(chroot),
+            unwrapNode: changeRoot(chroot),
+            addClass,
+            removeClass,
+            createElement,
+            h: createElement,
+          });
+        } catch (e) {
+          console.error('YAWF Error while inject render: %o', e);
+        }
         return vdom;
       };
     };

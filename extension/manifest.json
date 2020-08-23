@@ -185,6 +185,7 @@
         "content/rule/layout/usercss.js",
 
         "content/rule/feeds/feeds.js",
+        "content/rule/feeds/render.js",
         "content/rule/feeds/layout.js",
         "content/rule/feeds/content.js",
         "content/rule/feeds/media.js",
