@@ -392,6 +392,7 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
   };
 
   layout.reorderFeedButton = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'feed_button_order',
     version: 1,
     parent: layout.layout,
@@ -411,7 +412,8 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
       });
     },
     ainit() {
-      css.append(`
+      if (yawf.WEIBO_VERSION === 6) {
+        css.append(`
 .WB_feed.WB_feed_v3 .WB_func .WB_handle li:last-child .line { border-right-width: 1px; }
 .WB_feed.WB_feed_v3 .WB_func .WB_handle ul { overflow: hidden; }
 .WB_feed.WB_feed_v3 .WB_func .WB_handle ul::after {  content: " "; display: block; margin-left: -1px; flex: 0 0 0; order: 10; }
@@ -419,7 +421,20 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
 ${[0, 1, 2, 3, 4].map(index => `
 .WB_handle ul li[yawf-handle-type="fl_${this.ref[index].getConfig()}"] { order: ${index + 1}; }
 `).join('')}
-    `);
+`);
+      } else {
+        [0, 1, 2, 3, 4].forEach(index => {
+          const config = this.ref[index].getConfig();
+          const selector = {
+            pop: '',
+            favorite: '',
+            forward: '.yawf-toolbar-retweet',
+            comment: '.yawf-toolbar-comment',
+            like: '.yawf-toolbar-like',
+          }[config];
+          if (selector) css.append(`${selector} { order: ${index} }`);
+        });
+      }
     },
   });
 

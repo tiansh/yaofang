@@ -46,8 +46,10 @@
           if (!vnode.data || !vnode.data.on) return;
           vnode.data.on.click = (function (onclick) {
             return function (event) {
+              // 按住 Ctrl 或 Shift 的时候不在当前页面打开，所以不走默认的处理逻辑比较好
+              if (event.ctrlKey || event.shiftKey || event.metaKey) return;
               event.preventDefault();
-              return onclick(event);
+              onclick(event);
             };
           }(vnode.data.on.click));
         };
@@ -159,6 +161,18 @@
           // 内容
           if (content && content.nodeType !== Node.COMMENT_NODE) {
             addClass(content, 'yawf-feed-content');
+          }
+        });
+
+        vueSetup.transformComponentsRenderByTagName('feed-toolbar', function (nodeStruct, Nodes) {
+          const { addClass } = Nodes;
+
+          const buttons = [...nodeStruct.querySelectorAll('x-woo-box-item')];
+          if (buttons.length === 3) {
+            const [retweet, comment, like] = buttons;
+            addClass(retweet, 'yawf-toolbar-retweet');
+            addClass(comment, 'yawf-toolbar-comment');
+            addClass(like, 'yawf-toolbar-like');
           }
         });
 
