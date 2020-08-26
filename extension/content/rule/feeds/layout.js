@@ -139,15 +139,16 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
   });
 
   i18n.smallImage = {
-    cn: '缩小缩略图尺寸 {{i}}||{{repost}}缩小转发原文宽度',
-    tw: '縮小縮略圖尺寸 {{i}}||{{repost}}縮小轉發原文寬度',
-    en: 'Decrease the size of image {{i}}||{{repost}} Decrease the width of original feeds',
+    cn: '缩小缩略图尺寸 {{i}}||{{repost}}缩小转发原文宽度（仅限V6）',
+    tw: '縮小縮略圖尺寸 {{i}}||{{repost}}縮小轉發原文寬度（僅限V6）',
+    en: 'Decrease the size of image {{i}}||{{repost}} Decrease the width of original feeds (V6 Only)',
   };
   i18n.smallImageDetail = {
     cn: '缩小图片尺寸仅影响图片在您的网页上的显示效果，不能降低网络数据流量用量。',
   };
 
   layout.smallImage = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'feed_small_image',
     version: 1,
     parent: layout.layout,
@@ -157,7 +158,8 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
       i: { type: 'bubble', icon: 'warn', template: () => i18n.smallImageDetail },
     },
     ainit() {
-      css.append(`
+      if (yawf.WEIBO_VERSION === 6) {
+        css.append(`
 .WB_feed.WB_feed_v3 .WB_media_a { margin: -2px 0 0 6px; width: 258px; }
 .WB_feed.WB_feed_v3 .WB_media_a_mn .WB_pic { width: 80px; height: 80px; }
 .WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic { width: 80px !important; height: 80px !important; }
@@ -221,38 +223,38 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_card_vote.WB_card_vote .vote_tit { font-size: inherit; }
 .WB_card_vote.WB_card_vote .vote_share a { line-height: 24px; height: 24px; margin-top: -5px; }
 `);
-      observer.dom.add(function smallVideo() {
-        [{
-          videoSelector: '.WB_video_h5_v2 .WB_h5video_v2:not([yawf-watch-pause])',
-          containerSelector: '.WB_video_h5_v2',
-          isPlaying: video => video.classList.contains('wbv-playing'),
-        }, {
-          videoSelector: '.html5-video .hv-icon:not([yawf-watch-pause])',
-          containerSelector: '.html5-video',
-          isPlaying: video => video.classList.contains('hv-icon-pause'),
-        }].forEach(function ({ videoSelector, containerSelector, isPlaying }) {
-          const videos = Array.from(document.querySelectorAll(videoSelector));
-          videos.forEach(video => {
-            video.setAttribute('yawf-watch-pause', '');
-            const container = video.closest(containerSelector);
-            let videoObserver;
-            const setPlayAttribute = function setPlayAttribute() {
-              const playing = isPlaying(video);
-              if (playing) {
-                container.setAttribute('yawf-video-play', '');
-                if (videoObserver) videoObserver.disconnect();
-                return true;
-              }
-              return false;
-            };
-            if (setPlayAttribute()) return;
-            videoObserver = new MutationObserver(setPlayAttribute);
-            videoObserver.observe(video, { attributes: true, attributeFilter: ['class'], childList: false, characterData: false });
+        observer.dom.add(function smallVideo() {
+          [{
+            videoSelector: '.WB_video_h5_v2 .WB_h5video_v2:not([yawf-watch-pause])',
+            containerSelector: '.WB_video_h5_v2',
+            isPlaying: video => video.classList.contains('wbv-playing'),
+          }, {
+            videoSelector: '.html5-video .hv-icon:not([yawf-watch-pause])',
+            containerSelector: '.html5-video',
+            isPlaying: video => video.classList.contains('hv-icon-pause'),
+          }].forEach(function ({ videoSelector, containerSelector, isPlaying }) {
+            const videos = Array.from(document.querySelectorAll(videoSelector));
+            videos.forEach(video => {
+              video.setAttribute('yawf-watch-pause', '');
+              const container = video.closest(containerSelector);
+              let videoObserver;
+              const setPlayAttribute = function setPlayAttribute() {
+                const playing = isPlaying(video);
+                if (playing) {
+                  container.setAttribute('yawf-video-play', '');
+                  if (videoObserver) videoObserver.disconnect();
+                  return true;
+                }
+                return false;
+              };
+              if (setPlayAttribute()) return;
+              videoObserver = new MutationObserver(setPlayAttribute);
+              videoObserver.observe(video, { attributes: true, attributeFilter: ['class'], childList: false, characterData: false });
+            });
           });
         });
-      });
-      const repost = this.ref.repost.getConfig();
-      if (repost) css.append(`
+        const repost = this.ref.repost.getConfig();
+        if (repost) css.append(`
 .WB_feed.WB_feed_v3 .WB_expand_media { margin: 2px 0 8px; padding: 12px 16px 16px; }
 .WB_feed.WB_feed_v3 .WB_expand { margin: 0 0 10px; padding: 10px 16px 13px; }
 .WB_feed.WB_feed_v3 .WB_expand .WB_func { margin: 0; }
@@ -266,12 +268,22 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .WB_feed.WB_feed_v3 .layer_view_morepic .view_pic { padding: 0 40px 20px; }
 .WB_feed.WB_feed_v3 .WB_media_view .pic_choose_box .stage_box { width: 440px; }
 `);
-      const feedWidth = layout.increaseFeedWidth.isEnabled() ? layout.increaseFeedWidth.ref.width.getConfig() : 600;
-      if (feedWidth < 650 && repost) css.append(`
+        const feedWidth = layout.increaseFeedWidth.isEnabled() ? layout.increaseFeedWidth.ref.width.getConfig() : 600;
+        if (feedWidth < 650 && repost) css.append(`
 .WB_h5video { margin-left: -22px; }
 .WB_h5video.hv-s1, .WB_h5video.hv-s3-2, .WB_h5video.hv-s3-5 { margin-left: 0; }
 .yawf-WB_video[yawf-video-play] { margin-left: -22px; }
 `);
+      } else {
+        // 单张图片尺寸计算在 render 里
+        css.append(`
+.yawf-feed-picture-col3 > div { width: 252px; }
+.yawf-feed-picture-col4 > div { width: 332px; }
+.yawf-feed-video { transition: width 0s 0.2s ease; }
+.yawf-feed-video-inactive { width: 150px; }
+.yawf-feed-card { width: 316px; }
+`);
+      }
     },
   });
 

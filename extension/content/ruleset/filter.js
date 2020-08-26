@@ -362,7 +362,7 @@
                 const children = result.children || result.componentOptions.children;
                 if (Array.isArray(children)) {
                   const resizeSensor = function (h) {
-                    return h('div', { class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
+                    return h('div', { key: 'yawf-resize-sensor', class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
                       h('div', { class: 'yawf-resize-sensor-expand', ref: 'yawf_resize_sensor_expand' }, [
                         h('div', { class: 'yawf-resize-sensor-child' }),
                       ]),

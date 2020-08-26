@@ -327,7 +327,7 @@
       return '';
     };
     const buildResult = function buildResult(vnode) {
-      const tag = vnode.componentOptions ? 'x-' + vnode.componentOptions.tag : vnode.tag;
+      const tag = vnode.componentOptions ? 'x-' + kebabCase(vnode.componentOptions.tag) : vnode.tag;
       if (tag == null && vnode.text) {
         const node = document.createTextNode(vnode.text);
         node.__vnode__ = vnode;

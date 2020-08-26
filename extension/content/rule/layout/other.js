@@ -95,6 +95,7 @@
   });
 
   details.avatarShape = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'layout_avatar_shape',
     version: 1,
     parent: details.details,
@@ -111,10 +112,15 @@
     },
     ainit() {
       const shape = this.ref.shape.getConfig();
-      if (shape === 'square') {
-        css.append(`.W_face_radius, .W_person_info .cover .headpic, .PCD_header .pf_photo, .PCD_header .photo_wrap, .PCD_header .pf_photo .photo, .PCD_user_a .picitems .pic_box, .PCD_connectlist .follow_box .mod_pic img, .PCD_ut_a .pic_box, .PCD_counter_b .pic_box, .WB_feed_v3 .WB_sonFeed .WB_face, .WB_feed_v3 .WB_sonFeed .WB_face .face img { border-radius: 0 !important; }`);
+      if (yawf.WEIBO_VERSION === 6) {
+        if (shape === 'square') {
+          css.append(`.W_face_radius, .W_person_info .cover .headpic, .PCD_header .pf_photo, .PCD_header .photo_wrap, .PCD_header .pf_photo .photo, .PCD_user_a .picitems .pic_box, .PCD_connectlist .follow_box .mod_pic img, .PCD_ut_a .pic_box, .PCD_counter_b .pic_box, .WB_feed_v3 .WB_sonFeed .WB_face, .WB_feed_v3 .WB_sonFeed .WB_face .face img { border-radius: 0 !important; }`);
+        } else {
+          css.append(`img[usercard], .WB_face img { border-radius: 50% !important; }`);
+        }
       } else {
-        css.append(`img[usercard], .WB_face img { border-radius: 50% !important; }`);
+        if (shape === 'circle') return;
+        css.append(`.woo-avatar-hoverMask, .woo-avatar-img { border-radius: 0 !important; }`);
       }
     },
   });
