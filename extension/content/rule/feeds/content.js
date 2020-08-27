@@ -86,7 +86,9 @@
 .yawf-feed-author-box { justify-content: space-between !important; }
 .yawf-feed-author-box::after { content: " "; margin-bottom: 4px }
 .yawf-feed-content { font-size: ${fs}px !important; line-height: ${lh}px !important; }
-.yawf-feed-original span, .yawf-feed-content-retweet, .yawf-feed-comment-content { font-size: ${fs2}px !important; line-height: ${lh2}px !important; }
+.yawf-feed-original span, .yawf-feed-content-retweet, .yawf-feed-comment-text, .yawf-feed-comment-more, .yawf-feed-repost-text { font-size: ${fs2}px !important; line-height: ${lh2}px !important; }
+.yawf-feed-content img, .yawf-feed-content .icon-link { height: ${fs}px !important; width: ${fs}px !important; }
+.yawf-feed-content-retweet img, .yawf-feed-content-retweet .icon-link { height: ${fs2}px !important; width: ${fs2}px !important; }
 `);
       }
     },
@@ -124,7 +126,17 @@
           vm.$http.get = (function (get) {
             return async function (...args) {
               if (args[0] === '/ajax/statuses/longtext' && vm.data.longTextContent_raw) {
-                return { data: { ok: true, data: { longTextContent: vm.data.longTextContent_raw } } };
+                return {
+                  data: {
+                    ok: 1,
+                    http_code: 200,
+                    data: {
+                      longTextContent: vm.data.longTextContent_raw,
+                      url_struct: vm.data.url_struct || [],
+                      topic_struct: vm.data.topic_struct || [],
+                    },
+                  },
+                };
               } else {
                 return get.call(this, ...args);
               }
@@ -132,9 +144,9 @@
           }(vm.$http.get));
           const text = vm.data.longTextContent_raw;
           if (!text) return;
-          const len = text.length;
+          const len = Math.ceil(text.length - text.match(/[\u0020-\u00fe]/g).length / 2);
           const remLen = len + (text.split('\n').length - 1) * (br - 1);
-          if (!expand || remLen < count) {
+          if (expand && remLen < count) {
             vm.handleExpand();
             const unwatch = vm.$watch(function () { return this.data.longTextContent; }, function () {
               if (!vm.data.longTextContent) return;

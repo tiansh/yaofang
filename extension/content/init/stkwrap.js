@@ -44,14 +44,18 @@
     };
 
     let stk = null;
-    Object.defineProperty(window, 'STK', {
-      get() { return stk; },
-      set(trueStk) {
-        trueStk.register = wrapRegister(trueStk.register);
-        stk = trueStk;
-      },
-      enumerable: true,
-    });
+    try {
+      Object.defineProperty(window, 'STK', {
+        get() { return stk; },
+        set(trueStk) {
+          trueStk.register = wrapRegister(trueStk.register);
+          stk = trueStk;
+        },
+        enumerable: true,
+      });
+    } catch (e) {
+      // ignore
+    }
 
     Object.defineProperty(window, key, {
       get() { return void 0; },

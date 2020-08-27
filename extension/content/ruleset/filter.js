@@ -290,6 +290,8 @@
             const data = resp.data.data;
             if (data && data.longTextContent) {
               feedDetail.longTextContent_raw = data.longTextContent;
+              if (data.url_struct) feedDetail.url_struct = data.url_struct;
+              if (data.topic_struct) feedDetail.topic_struct = data.topic_struct;
             }
           } catch (e) {
             console.error(e);
@@ -331,8 +333,55 @@
             vm.data.splice(index, 1);
           }
         };
+        const setupSizeSensor = function (vm, attr) {
+          const element = vm.$refs.yawf_resize_sensor_element;
+          const expand = vm.$refs.yawf_resize_sensor_expand;
+          const shrink = vm.$refs.yawf_resize_sensor_shrink;
+
+          let lastHeight = element.offsetHeight, newHeight = null;
+          let dirty = false;
+          vm.$set(vm[attr], '_yawf_Size', lastHeight);
+          const reset = function () {
+            expand.scrollTop = 1e6;
+            shrink.scrollTop = 1e6;
+          };
+          reset();
+          const onResized = function () {
+            if (lastHeight === newHeight) return;
+            lastHeight = newHeight;
+            vm[attr]._yawf_Size = newHeight;
+            reset();
+          };
+          const onScroll = function () {
+            newHeight = element.offsetHeight;
+            if (dirty) return;
+            dirty = true;
+            requestAnimationFrame(function () {
+              dirty = false;
+              onResized();
+            });
+          };
+          expand.addEventListener('scroll', onScroll);
+          shrink.addEventListener('scroll', onScroll);
+        };
+        const addResizeSensor = function (vdom, h) {
+          // 在末尾插入一个用来侦测元素高度的元素
+          const children = vdom.children || vdom.componentOptions.children;
+          if (Array.isArray(children)) {
+            const resizeSensor = h('div', { key: 'yawf-resize-sensor', class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
+              h('div', { class: 'yawf-resize-sensor-expand', ref: 'yawf_resize_sensor_expand' }, [
+                h('div', { class: 'yawf-resize-sensor-child' }),
+              ]),
+              h('div', { class: 'yawf-resize-sensor-shrink', ref: 'yawf_resize_sensor_shrink' }, [
+                h('div', { class: 'yawf-resize-sensor-child' }),
+              ]),
+            ]);
+            children.push(resizeSensor);
+          }
+        };
         vueSetup.eachComponentVM('feed', function (vm) {
           const feedScroll = vueSetup.closest(vm, 'feed-scroll');
+          const scrollItem = vueSetup.closest(vm, 'scroll');
 
           // 在渲染一条 feed 时，额外插入过滤状态的标识
           vm.$options.render = (function (render) {
@@ -357,62 +406,62 @@
               if (this.data._yawf_FilterReason) {
                 result.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
               }
-              if (feedScroll) {
-                // 在末尾插入一个用来侦测元素高度的元素
-                const children = result.children || result.componentOptions.children;
-                if (Array.isArray(children)) {
-                  const resizeSensor = function (h) {
-                    return h('div', { key: 'yawf-resize-sensor', class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
-                      h('div', { class: 'yawf-resize-sensor-expand', ref: 'yawf_resize_sensor_expand' }, [
-                        h('div', { class: 'yawf-resize-sensor-child' }),
-                      ]),
-                      h('div', { class: 'yawf-resize-sensor-shrink', ref: 'yawf_resize_sensor_shrink' }, [
-                        h('div', { class: 'yawf-resize-sensor-child' }),
-                      ]),
-                    ]);
-                  };
-                  children.push(resizeSensor(createElement));
-                }
+              if (scrollItem) {
+                addResizeSensor(result, createElement);
               }
               return result;
             };
           }(vm.$options.render));
           vm.$forceUpdate();
-
           // 每次高度变化时更新 _yawf_Size 属性
           // 我也不知道这段代码怎么工作起来的，反正网上的代码就这逻辑，然后也真的能用
-          if (feedScroll) {
+          if (scrollItem) {
             vm.$nextTick(function () {
-              const element = vm.$refs.yawf_resize_sensor_element;
-              const expand = vm.$refs.yawf_resize_sensor_expand;
-              const shrink = vm.$refs.yawf_resize_sensor_shrink;
-
-              let lastHeight = element.offsetHeight, newHeight = null;
-              let dirty = false;
-              vm.$set(vm.data, '_yawf_Size', lastHeight);
-              const reset = function () {
-                expand.scrollTop = 1e6;
-                shrink.scrollTop = 1e6;
-              };
-              reset();
-              const onResized = function () {
-                if (lastHeight === newHeight) return;
-                lastHeight = newHeight;
-                vm.data._yawf_Size = newHeight;
-                reset();
-              };
-              const onScroll = function () {
-                newHeight = element.offsetHeight;
-                if (dirty) return;
-                dirty = true;
-                requestAnimationFrame(function () {
-                  dirty = false;
-                  onResized();
-                });
-              };
-              expand.addEventListener('scroll', onScroll);
-              shrink.addEventListener('scroll', onScroll);
+              setupSizeSensor(vm, 'data');
             });
+          }
+        });
+        vueSetup.eachComponentVM('comment', function (vm) {
+          const scrollItem = vueSetup.closest(vm, 'scroll');
+
+          vm.$options.render = (function (render) {
+            return function (createElement) {
+              const result = render.call(this, createElement);
+              if (scrollItem) {
+                addResizeSensor(result, createElement);
+              }
+              return result;
+            };
+          }(vm.$options.render));
+          vm.$forceUpdate();
+          if (scrollItem) {
+            vm.$nextTick(function () {
+              setupSizeSensor(vm, 'item');
+            });
+          }
+        });
+        vueSetup.eachComponentVM('repost', function (vm) {
+          const scrollItem = vueSetup.closest(vm, 'scroll');
+          if (!scrollItem) return;
+          vm.$options.render = (function (render) {
+            return function (createElement) {
+              const result = render.call(this, createElement);
+              addResizeSensor(result, createElement);
+              return result;
+            };
+          }(vm.$options.render));
+          vm.$forceUpdate();
+          vm.$nextTick(function () {
+            setupSizeSensor(vm, 'item');
+          });
+        });
+        vueSetup.eachComponentVM('scroll', function (vm) {
+          if (['repost-comment-list', 'feed-scroll'].some(id => vueSetup.closest(id))) {
+            // vm.__proto__.sizeDependencies 里面存的是原本关心的属性
+            // 那个没什么统一的好办法给改过来，但是我们可以在 vm 自己身上设置这个属性来覆盖它
+            // 因为设置的这个属性我们并不期望以后还有变化，所以我们不需要让它过 Vue 的生命周期 $forceUpdate 就是了
+            Object.defineProperty(vm, 'sizeDependencies', { value: ['_yawf_Size'], configurable: true, enumerable: true, writable: true });
+            vm.$forceUpdate();
           }
         });
         window.addEventListener(key, function (event) {
@@ -433,11 +482,6 @@
           }
         }, true);
         vueSetup.eachComponentVM('feed-scroll', function (vm) {
-          // 元素高度我们用 onScroll 事件来读
-          // 这样就不用每次我们需要改 feed 内容时都关心是不是会导致高度计算不正确了
-          if (Array.isArray(vm.sizeDependencies)) {
-            vm.sizeDependencies = ['_yawf_Size'];
-          }
           // 当 feed-scroll 内 feed 列表变化时，我们把那些没见过的全都标记一下
           vm.$watch(function () { return this.data; }, function () {
             const feeds = [...vm.data];

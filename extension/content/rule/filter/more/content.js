@@ -47,7 +47,7 @@
         if (!rule.isEnabled()) return null;
         const isForward = feedParser.isForward(feed);
         if (!isForward) return null;
-        if (yawf.WEIBO_VERSION) {
+        if (yawf.WEIBO_VERSION === 6) {
           const forwardContent = feed.querySelector('.WB_media_expand .WB_info .WB_name, .WB_expand .WB_info .W_fb');
           if (forwardContent) return null;
           return 'hide';
@@ -105,6 +105,7 @@
   };
 
   content.vote = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_vote',
     version: 1,
     parent: content.content,
@@ -385,6 +386,7 @@
   };
 
   content.paid = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_paid',
     version: 1,
     parent: content.content,

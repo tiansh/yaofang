@@ -282,6 +282,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .yawf-feed-video { transition: width 0s 0.2s ease; }
 .yawf-feed-video-inactive { width: 150px; }
 .yawf-feed-card { width: 316px; }
+.yawf-feed-comment-picture { max-width: 80px; }
 `);
       }
     },

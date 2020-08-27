@@ -1720,7 +1720,8 @@
 .yawf-WBV7 .yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
 .yawf-WBV7 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
 .yawf-WBV7 .yawf-config-color input[type="color"] { width: 45px; box-sizing: border-box; height: 20px; vertical-align: middle; }
-.yawf-WBV7 .yawf-config-text textarea { width: 100%; min-height: 120px; resize: vertical; }
+.yawf-WBV7 .yawf-config-text .woo-input-wrap { width: 520px; height: auto; adding: 0; }
+.yawf-WBV7 .yawf-config-text textarea { width: 100%; min-height: 120px; resize: vertical; padding-left: var(--w-input-indent); padding-right: var(--w-input-indent); }
 .yawf-WBV7 .yawf-config-collection-submit,
 .yawf-WBV7 .yawf-config-key button { padding: 4px 16px; margin: 0 4px; vertical-align: bottom; }
 .yawf-WBV7 .yawf-config-collection-list { display: block; margin: 5px; padding: 0; }

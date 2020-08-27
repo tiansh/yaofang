@@ -20,31 +20,46 @@
 
   Object.assign(i18n, {
     feedRenderFix: {
-      cn: '允许脚本修改微博显示逻辑以允许相关改造功能 {{i}}',
+      cn: '修改微博显示逻辑以允许相关改造功能 {{i}}',
     },
     feedRenderFixDetail: {
-      cn: '如果因为微博的改版导致该功能故障，请停用该选项。只有打开该选项才能使用大部分对微博的改造功能。打开后作者等处会显示为链接，转发原微博会显示来源。此外不会有明显的变化。',
+      cn: '如果因为微博的改版导致该功能故障，请停用该选项。只有打开该选项才能使用大部分对微博的改造功能。打开后会有一些细节上的变化，作者等处会显示为链接，转发的原微博会显示来源，微博下的转发列表可以点击时间跳转到该微博。',
     },
   });
 
   const renderModify = function (rootKey, configs) {
     const yawf = window[rootKey];
     const vueSetup = yawf.vueSetup;
+
     const absoluteUrl = function (url) {
       const base = location.host === 'www.weibo.com' ? '//www.weibo.com/' : '//weibo.com/';
       return new URL(url, new URL(base, location.href)).href;
     };
+    const setHref = function (vnode, url) {
+      if (!vnode.data) vnode.data = {};
+      if (!vnode.data.attrs) vnode.data.attrs = {};
+      vnode.data.attrs.href = url;
+    };
 
+    const removeClickHandler = function (vnode) {
+      if (!vnode.data || !vnode.data.on) return null;
+      const onclick = vnode.data.on.click;
+      delete vnode.data.on.click;
+      return onclick;
+    };
+    const addClickHandler = function (vnode, onclick) {
+      if (!vnode.data) vnode.data = {};
+      if (!vnode.data.on) vnode.data.on = {};
+      vnode.data.on.click = onclick;
+    };
     const configClickHandler = function (vnode) {
-      if (!vnode.data || !vnode.data.on) return;
-      vnode.data.on.click = (function (onclick) {
-        return function (event) {
-          // 按住 Ctrl 或 Shift 的时候不在当前页面打开，所以不走默认的处理逻辑比较好
-          if (event.ctrlKey || event.shiftKey || event.metaKey) return;
-          event.preventDefault();
-          onclick(event);
-        };
-      }(vnode.data.on.click));
+      const onclick = removeClickHandler(vnode);
+      if (!onclick) return;
+      addClickHandler(vnode, function (event) {
+        if (event.ctrlKey || event.shiftKey || event.metaKey) return;
+        event.preventDefault();
+        onclick(event);
+      });
     };
 
     vueSetup.transformComponentsRenderByTagName('feed-head', function (nodeStruct, Nodes) {
@@ -74,29 +89,27 @@
       addClass(userNode.parentNode.parentNode, 'yawf-feed-author-box');
 
       // 快转的作者也是链接形式
-      if (this.screen_name_suffix_new) do {
-        const index = this.screen_name_suffix_new.findIndex(item => item.type === 2);
-        const item = this.screen_name_suffix_new[index];
-        const span = userNode.parentNode.childNodes[index];
-        const feed = vueSetup.closest(this, 'feed');
-        if (!index || !span || !feed) break;
-        if (!item.scheme) break;
-        const refId = new URL(item.scheme).searchParams.get('uid');
-        const linkVNode = h('a', {
-          class: 'yawf-feed-fast-author yawf-extra-link',
-          attrs: { href: absoluteUrl(`/u/${refId}`) },
+      if (Array.isArray(this.screen_name_suffix_new)) {
+        this.screen_name_suffix_new.forEach((item, index) => {
+          if (typeof item.scheme !== 'string') return;
+          if (!item.scheme.startsWith('sinaweibo://userinfo')) return;
+          const span = userNode.parentNode.childNodes[index];
+          if (!index || !span) return;
+          if (!item.scheme) return;
+          const refId = new URL(item.scheme).searchParams.get('uid');
+          const linkVNode = h('a', {
+            class: 'yawf-feed-fast-author yawf-extra-link',
+            attrs: { href: absoluteUrl(`/u/${refId}`) },
+          });
+          wrapNode(span, linkVNode);
+          configClickHandler(vNode(span));
         });
-        wrapNode(span, linkVNode);
-        configClickHandler(vNode(span));
-      } while (false);
+      }
 
       // “被”和“快转了”几个字不应该点了跳转到错误页面
-      if (this.screen_name_suffix_new && this.screen_name_suffix_new.length) {
+      if (Array.isArray(this.screen_name_suffix_new)) {
         Array.from(userNode.parentNode.children).forEach(item => {
-          const vnode = vNode(item);
-          if (vnode && vnode.data && vnode.data.on) {
-            delete vnode.data.on.click;
-          }
+          removeClickHandler(vNode(item));
         });
       }
 
@@ -106,15 +119,20 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-head-info', function (nodeStruct, Nodes) {
-      const { h, insertBefore, removeChild, addClass } = Nodes;
+      const { h, insertBefore, removeChild, addClass, vNode } = Nodes;
+
+      // 微博应该在新标签页打开
+      const link = nodeStruct.querySelector('a');
+      addClass(link, 'yawf-feed-time');
 
       // 来源用个 span 套起来
       const sourceBox = nodeStruct.querySelector('x-woo-box-item x-woo-box');
       const [source, edited] = sourceBox.childNodes;
       if (source && source.nodeType !== Node.COMMENT_NODE) {
         const newSourceVNode = h('div', {
-          class: [this.$style.source, 'yawf-feed-source'],
+          class: [this.$style.source, 'yawf-feed-source-container'],
         }, ['来自 ', h('span', {
+          class: ['yawf-feed-source'],
           attrs: { draggable: 'true' },
         }, [this.source || '微博 weibo.com'])]);
         insertBefore(sourceBox, newSourceVNode, source);
@@ -222,9 +240,11 @@
       if (more) {
         const linkVNode = h('a', {
           class: 'yawf-feed-comment-more yawf-extra-link',
-          attrs: { href: absoluteUrl(`/${this.data.user.id}/${this.data.mblogid}#${this.curTab}`) },
+          attrs: {
+            href: absoluteUrl(`/${this.data.user.id}/${this.data.mblogid}#${this.curTab}`),
+          },
         });
-        const userNode = wrapNode(more, linkVNode);
+        wrapNode(more, linkVNode);
         configClickHandler(vNode(more));
       }
     };
@@ -248,23 +268,18 @@
     vueSetup.transformComponentsRenderByTagName('comment', function (nodeStruct, Nodes) {
       const { h, wrapNode, vNode, addClass } = Nodes;
 
-      const setHref = function (node, url) {
-        const vnode = vNode(node);
-        if (!vnode.data) vnode.data = {};
-        if (!vnode.data.attrs) vnode.data.attrs = {};
-        vnode.data.attrs.href = url;
-      };
+      addClass(nodeStruct, 'yawf-feed-comment');
 
       const [author, ...comments] = nodeStruct.querySelectorAll('a');
       if (author) {
-        setHref(author, absoluteUrl(this.item.user.profile_url));
+        setHref(vNode(author), absoluteUrl(this.item.user.profile_url));
         configClickHandler(vNode(author));
       }
       if (comments && comments.length) {
         comments.forEach((comment, index) => {
           if (!this.item.comments || !this.item.comments[index]) return;
           const item = this.item.comments[index];
-          setHref(comment, absoluteUrl(item.user.profile_url));
+          setHref(vNode(comment), absoluteUrl(item.user.profile_url));
           configClickHandler(vNode(comment));
         });
       }
@@ -280,8 +295,63 @@
         configClickHandler(vNode(avatar));
       }
 
+      const contentList = [...nodeStruct.querySelectorAll('span')];
+      contentList.forEach(content => {
+        if (!Object.prototype.hasOwnProperty.call((vNode(content).data || {}).domProps || {}, 'innerHTML')) return;
+        addClass(content, 'yawf-feed-comment-content');
+        addClass(content.parentNode, 'yawf-feed-comment-text');
+      });
+
+      const picture = nodeStruct.querySelector('x-woo-picture');
+      if (picture) addClass(picture, 'yawf-feed-comment-picture');
+
+      const moreIcon = nodeStruct.querySelector('a > x-woo-fonticon');
+      if (moreIcon) {
+        addClass(moreIcon.parentNode, 'yawf-feed-comment-more');
+      }
+    });
+
+    vueSetup.transformComponentsRenderByTagName('repost', function (nodeStruct, Nodes) {
+      const { h, wrapNode, vNode, addClass } = Nodes;
+
+      addClass(nodeStruct, 'yawf-feed-repost');
+
+      const author = nodeStruct.querySelector('a');
+      if (author) {
+        setHref(vNode(author), absoluteUrl(this.item.user.profile_url));
+        configClickHandler(vNode(author));
+      }
+
+      const avatar = nodeStruct.querySelector('x-woo-avatar');
+      if (avatar) {
+        const linkVNode = h('a', {
+          class: 'yawf-feed-comment-avatar yawf-extra-link',
+          attrs: { href: absoluteUrl(this.item.user.profile_url) },
+        });
+        wrapNode(avatar, linkVNode);
+        configClickHandler(vNode(avatar));
+      }
+
       const content = nodeStruct.querySelector('span');
-      addClass(content, 'yawf-feed-comment-content');
+      if (content) {
+        addClass(content, 'yawf-feed-repost-content');
+        addClass(content.parentNode, 'yawf-feed-repost-text');
+      }
+
+      const showRepost = removeClickHandler(vNode(nodeStruct));
+
+      const time = content && content.parentNode.nextSibling.querySelector('div');
+      addClickHandler(vNode(time), showRepost);
+      if (time) {
+        const linkVNode = h('a', {
+          class: 'yawf-feed-repost-time yawf-extra-link',
+          attrs: {
+            href: absoluteUrl(`/${this.item.user.id}/${this.item.mblogid}`),
+          },
+        });
+        wrapNode(time, linkVNode);
+        configClickHandler(vNode(time));
+      }
     });
   };
 
@@ -303,7 +373,11 @@
       util.inject(renderModify, util.inject.rootKey, configs);
 
       css.append(`
-.yawf-extra-link { display: contents; }
+.yawf-extra-link { all: inherit; display: contents; }
+.yawf-feed-source { cursor: default; }
+.yawf-feed-repost.yawf-feed-repost { cursor: auto; }
+.yawf-feed-repost-time { cursor: pointer; color: var(--w-sub); }
+.yawf-feed-source:hover, .yawf-feed-repost-time:hover { color: var(--w-brand); }
 `);
 
     },

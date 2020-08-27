@@ -150,6 +150,11 @@
         }
         importData({ config, source });
       });
+      if (yawf.WEIBO_VERSION === 7) {
+        importButton.addEventListener('click', event => {
+          importInput.click();
+        });
+      }
       exportButton.addEventListener('click', event => {
         if (exportButton.classList.contains('yawf-export-busy')) return;
         exportButton.classList.add('yawf-export-busy');
