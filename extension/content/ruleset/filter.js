@@ -421,38 +421,24 @@
             });
           }
         });
-        vueSetup.eachComponentVM('comment', function (vm) {
-          const scrollItem = vueSetup.closest(vm, 'scroll');
-
-          vm.$options.render = (function (render) {
-            return function (createElement) {
-              const result = render.call(this, createElement);
-              if (scrollItem) {
-                addResizeSensor(result, createElement);
-              }
-              return result;
-            };
-          }(vm.$options.render));
-          vm.$forceUpdate();
-          if (scrollItem) {
-            vm.$nextTick(function () {
-              setupSizeSensor(vm, 'item');
-            });
-          }
-        });
-        vueSetup.eachComponentVM('repost', function (vm) {
-          const scrollItem = vueSetup.closest(vm, 'scroll');
-          if (!scrollItem) return;
-          vm.$options.render = (function (render) {
-            return function (createElement) {
-              const result = render.call(this, createElement);
-              addResizeSensor(result, createElement);
-              return result;
-            };
-          }(vm.$options.render));
-          vm.$forceUpdate();
-          vm.$nextTick(function () {
-            setupSizeSensor(vm, 'item');
+        ['comment', 'repost', 'reply'].forEach(componentName => {
+          vueSetup.eachComponentVM(componentName, function (vm) {
+            const scrollItem = vueSetup.closest(vm, 'scroll');
+            vm.$options.render = (function (render) {
+              return function (createElement) {
+                const result = render.call(this, createElement);
+                if (scrollItem) {
+                  addResizeSensor(result, createElement);
+                }
+                return result;
+              };
+            }(vm.$options.render));
+            vm.$forceUpdate();
+            if (scrollItem) {
+              vm.$nextTick(function () {
+                setupSizeSensor(vm, 'item');
+              });
+            }
           });
         });
         vueSetup.eachComponentVM('scroll', function (vm) {

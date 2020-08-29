@@ -302,7 +302,9 @@
 
     // 下面这一串都没测试过
     const childArray = function (element, createChildren) {
-      if (element.componentOptions) {
+      if (Array.isArray(element)) {
+        return element;
+      } else if (element.componentOptions) {
         if (!element.componentOptions.children && createChildren) {
           element.componentOptions.children = [];
         }
@@ -327,6 +329,12 @@
       return '';
     };
     const buildResult = function buildResult(vnode) {
+      if (Array.isArray(vnode)) {
+        const fragment = document.createElement('x-yawf-fragment');
+        fragment.__vnode__ = vnode;
+        vnode.forEach(child => { fragment.appendChild(buildResult(child)); });
+        return fragment;
+      }
       const tag = vnode.componentOptions ? 'x-' + kebabCase(vnode.componentOptions.tag) : vnode.tag;
       if (tag == null && vnode.text) {
         const node = document.createTextNode(vnode.text);
@@ -343,6 +351,8 @@
       const data = vnode.data || {};
       const className = parseClass(data.class);
       if (className) node.className = className;
+      const staticClassName = parseClass(data.staticClass);
+      if (staticClassName) node.className += ' ' + staticClassName;
       const children = childArray(vnode);
       if (children) children.forEach(vnode => {
         node.appendChild(buildResult(vnode));
@@ -412,7 +422,7 @@
     const classModify = function (node, add, remove) {
       const vnode = vNode(node);
       vnode.data = vnode.data || {};
-      const added = parseClass([node.className, ...add].join(' '));
+      const added = parseClass([parseClass(vnode.data.class), ...add].join(' '));
       const removed = added.split(/\s+/).filter(c => !remove.includes(c)).join(' ');
       vnode.data.class = removed;
       node.className = removed;
@@ -422,6 +432,12 @@
     };
     const removeClass = function (node, ...classNames) {
       classModify(node, [], classNames);
+    };
+    const transformSlot = function (node, slotName, transformer) {
+      const vnode = vNode(node);
+      const slots = (vnode.data || {}).scopedSlots;
+      if (!slots || !slots[slotName]) return;
+      slots[slotName] = transformRender(slots[slotName], transformer);
     };
 
     const transformRender = function (render, transformer) {
@@ -441,6 +457,7 @@
             removeClass,
             createElement,
             h: createElement,
+            transformSlot,
           });
         } catch (e) {
           console.error('YAWF Error while inject render: %o', e);

@@ -1672,6 +1672,7 @@
 .yawf-WBV6 .yawf-config-rule > label + label { margin-left: 8px; }
 .yawf-WBV6 .yawf-config-rule > br + label { margin-left: 20px; }
 .yawf-WBV6 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }
+.yawf-WBV6 .yawf-bubble-text .yawf-bubble-icon { display: none; }
 .yawf-WBV6 .yawf-config-select { height: 20px; }
 .yawf-WBV6 .yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
 .yawf-WBV6 .yawf-config-range { position: relative; }
@@ -1713,6 +1714,7 @@
 .yawf-WBV7 .yawf-config-rule > label + label { margin-left: 8px; }
 .yawf-WBV7 .yawf-config-rule > br + label { margin-left: 20px; }
 .yawf-WBV7 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; display: inline; }
+.yawf-WBV7 .yawf-bubble-text .yawf-bubble-icon { display: none; }
 .yawf-WBV7 .yawf-config-select { height: 20px; }
 .yawf-WBV7 .yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
 .yawf-WBV7 .yawf-config-range { position: relative; }
@@ -1720,7 +1722,6 @@
 .yawf-WBV7 .yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
 .yawf-WBV7 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
 .yawf-WBV7 .yawf-config-color input[type="color"] { width: 45px; box-sizing: border-box; height: 20px; vertical-align: middle; }
-.yawf-WBV7 .yawf-config-text .woo-input-wrap { width: 520px; height: auto; adding: 0; }
 .yawf-WBV7 .yawf-config-text textarea { width: 100%; min-height: 120px; resize: vertical; padding-left: var(--w-input-indent); padding-right: var(--w-input-indent); }
 .yawf-WBV7 .yawf-config-collection-submit,
 .yawf-WBV7 .yawf-config-key button { padding: 4px 16px; margin: 0 4px; vertical-align: bottom; }
@@ -1746,6 +1747,7 @@
 .yawf-WBV7 .yawf-config-item .woo-input-wrap select { vertical-align: bottom; }
 .yawf-WBV7 .yawf-config-item .yawf-config-select .woo-input-wrap { padding-right: 36px; position: relative; }
 .yawf-WBV7 .yawf-config-item .yawf-config-select .woo-input-wrap::before { content: " "; display: block; width: 0; height: 0; border-top: 4px solid currentColor; border-left: 4px solid transparent; border-right: 4px solid transparent; position: absolute; right: 14px; top: calc(50% - 2px); }
+.yawf-WBV7 .yawf-config-text .woo-input-wrap { width: 520px; height: auto; padding: 0; }
 `);
 
 }());

@@ -149,5 +149,30 @@
     },
   });
 
+  Object.assign(i18n, {
+    feedLinkNewTab: {
+      cn: '在新标签页打开以下链接 {{i}}||{{author}}作者/原作者|{{mention}}提到|{{topic}}话题||{{detail}}微博详情（发布时间）|{{comments}}全部评论',
+    },
+    feedLinkNewTabDetail: {
+      cn: '按住 Ctrl 也可临时在新标签页打开。此功能依赖于 [[feed_render]]。',
+    },
+  });
+
+  details.feedLinkNewTab = rule.Rule({
+    weiboVersion: 7,
+    id: 'feed_link_new_tab',
+    version: 80,
+    parent: details.details,
+    template: () => i18n.feedLinkNewTab,
+    ref: {
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.feedLinkNewTabDetail },
+      author: { type: 'boolean', initial: true },
+      mention: { type: 'boolean', initial: true },
+      topic: { type: 'boolean', initial: true },
+      detail: { type: 'boolean', initial: true },
+      comments: { type: 'boolean', initial: true },
+    },
+    // 实现在 render 里
+  });
 
 }());
