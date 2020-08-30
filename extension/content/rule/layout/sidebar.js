@@ -392,4 +392,59 @@
   });
 
 
+  Object.assign(i18n, {
+    leftSidebarUseLink: { cn: '导航栏使用链接' },
+  });
+
+  sidebar.leftSidebarUseLink = rule.Rule({
+    weiboVersion: 7,
+    id: 'side_left_use_link',
+    version: 81,
+    parent: sidebar.sidebar,
+    template: () => i18n.leftSidebarUseLink,
+    ainit() {
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        vueSetup.transformComponentsRenderByTagName('home', function (nodeStruct, Nodes) {
+          const { h, wrapNode, vNode } = Nodes;
+
+          const items = nodeStruct.querySelectorAll('x-nav-item');
+
+          const leftTabs = this.leftTabs || [];
+          const customTabs = (this.customTabs || {}).list || [];
+          const tabs = leftTabs.concat(customTabs);
+
+          [...items].forEach((item, index) => {
+            const tab = tabs[index];
+            if (!tab || !tab.gid) return;
+            const href = tab.gid === '10001' + tab.uid ? 'https://weibo.com/' : 'https://weibo.com/mygroups?gid=' + tab.gid;
+            const linkVNode = h('a', {
+              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+              attrs: { href },
+            });
+            wrapNode(item, linkVNode);
+          });
+        });
+
+        vueSetup.transformComponentsRenderByTagName('messages', function (nodeStruct, Nodes) {
+          const { h, wrapNode, vNode } = Nodes;
+
+          const items = nodeStruct.querySelectorAll('x-nav-item');
+
+          [...items].forEach((item, index) => {
+            const message = this.messageList[index];
+            if (!message || !message.name) return;
+            const linkVNode = h('a', {
+              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+              attrs: { href: this.$router.resolve({ name: message.name }).href },
+            });
+            wrapNode(item, linkVNode);
+          });
+        });
+      }, util.inject.rootKey);
+    },
+  });
+
 }());

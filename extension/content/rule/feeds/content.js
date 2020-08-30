@@ -89,6 +89,8 @@
 .yawf-feed-original span, .yawf-feed-content-retweet, .yawf-feed-comment-text, .yawf-feed-comment-more, .yawf-feed-repost-text { font-size: ${fs2}px !important; line-height: ${lh2}px !important; }
 .yawf-feed-content img, .yawf-feed-content .icon-link { height: ${fs}px !important; width: ${fs}px !important; }
 .yawf-feed-content-retweet img, .yawf-feed-content-retweet .icon-link { height: ${fs2}px !important; width: ${fs2}px !important; }
+
+.wbpv-big-play-button { z-index: 99; }
 `);
       }
     },
@@ -144,7 +146,7 @@
           }(vm.$http.get));
           const text = vm.data.longTextContent_raw;
           if (!text) return;
-          const len = Math.ceil(text.length - text.match(/[\u0020-\u00fe]/g).length / 2);
+          const len = Math.ceil(text.length - (text.match(/[\u0020-\u00fe]/g) || []).length / 2);
           const remLen = len + (text.split('\n').length - 1) * (br - 1);
           if (expand && remLen < count) {
             vm.handleExpand();

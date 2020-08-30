@@ -366,14 +366,16 @@
     dropAreaContent.innerHTML = '<div class="yawf-drop-title"></div><div class="yawf-drop-text"></div>';
 
     init.onLoad(function addDropArea() {
-      const reference = document.querySelector('.yawf-gn_set_list');
-      if (!reference) {
-        setTimeout(addDropArea, 100);
-        return;
+      if (yawf.WEIBO_VERSION === 6) {
+        const reference = document.querySelector('.yawf-gn_set_list');
+        if (!reference) {
+          setTimeout(addDropArea, 100);
+          return;
+        }
+        dropAreaContent.querySelector('.yawf-drop-title').textContent = i18n.dropAreaTitle;
+        dropAreaContent.querySelector('.yawf-drop-text').textContent = i18n.dropAreaContent;
+        reference.appendChild(dropArea);
       }
-      dropAreaContent.querySelector('.yawf-drop-title').textContent = i18n.dropAreaTitle;
-      dropAreaContent.querySelector('.yawf-drop-text').textContent = i18n.dropAreaContent;
-      reference.appendChild(dropArea);
     });
 
   }());

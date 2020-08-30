@@ -160,4 +160,55 @@
     },
   });
 
+  Object.assign(i18n, {
+    navUseLink: { cn: '导航栏使用链接' },
+  });
+
+  navbar.navUseLink = rule.Rule({
+    weiboVersion: 7,
+    id: 'nav_use_link',
+    version: 81,
+    parent: navbar.navbar,
+    template: () => i18n.navUseLink,
+    ainit() {
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        // 顶部导航栏也叫 nav
+        // 左侧那个玩意儿也叫 nav
+        // 大概是用 compontent 挂出来的，这个没办法
+        vueSetup.transformComponentsRenderByTagName('nav', function (nodeStruct, Nodes) {
+          const { h, wrapNode, vNode } = Nodes;
+
+          if (!nodeStruct.firstChild) return;
+          if (((vNode(nodeStruct.firstChild).data || {}).attrs || {}).role !== 'navigation') return;
+
+          const navIcon = nodeStruct.querySelector('span');
+          if (navIcon) {
+            const linkVNode = h('a', {
+              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+              attrs: { href: 'https://weibo.com/' },
+            });
+            wrapNode(navIcon, linkVNode);
+          }
+        });
+
+        vueSetup.transformComponentsRenderByTagName('ctrls', function (nodeStruct, Nodes) {
+          const { h, wrapNode, vNode } = Nodes;
+
+          const items = nodeStruct.querySelectorAll('x-woo-tab-item > x-woo-box ');
+          [...items].forEach((item, index) => {
+            if (!this.navItems[index].link) return;
+            const linkVNode = h('a', {
+              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+              attrs: { href: this.navItems[index].link },
+            });
+            wrapNode(item, linkVNode);
+          });
+        });
+      }, util.inject.rootKey);
+    },
+  });
+
 }());

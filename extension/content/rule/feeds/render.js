@@ -54,16 +54,15 @@
       if (!vnode.data.on) vnode.data.on = {};
       vnode.data.on.click = onclick;
     };
-    const muteClickHandler = function (vnode, test) {
+    const muteClickHandler = function (vnode) {
       const onclick = removeClickHandler(vnode);
       if (!onclick) return;
       addClickHandler(vnode, function (event) {
-        if (test(event)) return;
+        if (event.ctrlKey || event.shiftKey || event.metaKey || event.altKey) return;
         event.preventDefault();
         onclick(event);
       });
     };
-    const eventWithKeys = event => event.ctrlKey || event.shiftKey || event.metaKey || event.altKey;
     const configClickHandler = function (vnode, link, newTab) {
       if (newTab) {
         removeClickHandler(vnode);
@@ -71,7 +70,7 @@
         if (!link.data.attrs) link.data.attrs = {};
         link.data.attrs.target = '_blank';
       } else {
-        muteClickHandler(vnode, eventWithKeys);
+        muteClickHandler(vnode);
       }
     };
 
@@ -81,8 +80,11 @@
       const link = target.closest('.yawf-feed-content-handler a[href]');
       if (!link) return;
       if (eventWithKeys(event)) event.stopPropagation();
+      const isPicture = link.hasAttribute('data-pid');
       const isMention = link.getAttribute('href').startsWith('/n/');
-      if (isMention ? newTab.mention : newTab.topic) event.stopPropagation();
+      if (isPicture ? newTab.picture : isMention ? newTab.mention : newTab.topic) {
+        event.stopPropagation();
+      }
     }, { capture: true });
 
     // 给提到和话题的链接加上新标签页打开的标记
@@ -92,8 +94,11 @@
       const wrap = new DOMParser().parseFromString(`<${tag}>` + content.data.domProps.innerHTML, 'text/html').querySelector(tag);
       [...wrap.querySelectorAll('a')].forEach(link => {
         if (link.target === '_blank') return;
+        const isPicture = link.hasAttribute('data-pid');
         const isMention = link.getAttribute('href').startsWith('/n/');
-        if (isMention ? newTab.mention : newTab.topic) link.target = '_blank';
+        if (isPicture ? newTab.picture : isMention ? newTab.mention : newTab.topic) {
+          link.target = '_blank';
+        }
       });
       Object.assign(content.data.domProps, { innerHTML: wrap.innerHTML });
     };
@@ -450,7 +455,7 @@
       const configs = {};
 
       configs.smallImage = feeds.layout.smallImage.getConfig();
-      configs.newTab = Object.assign(...['author', 'mention', 'topic', 'detail', 'comments'].map(id => ({
+      configs.newTab = Object.assign(...'author,mention,topic,detail,comments,picture'.split(',').map(id => ({
         [id]: feeds.details.feedLinkNewTab.getConfig() && feeds.details.feedLinkNewTab.ref[id].getConfig(),
       })));
       util.debug('render config: %o', configs);

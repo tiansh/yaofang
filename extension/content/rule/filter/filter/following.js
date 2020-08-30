@@ -60,17 +60,21 @@
         return value.lock;
       },
       normalize(value) {
-        if (!value) return {};
-        if (!value.timestamp) return {};
-        if (value.timestamp > Date.now() + 60e3) return {};
-        if (value.timestamp < Date.now() - 86400e3 * 7) return {};
-        if (value.allPages && !value.startTime) {
-          value.startTime = Date.now();
-        }
-        if (value.pendingPages) {
-          if (!Array.isArray(value.list)) return {};
-        }
-        return value;
+        const base = (function () {
+          if (!value) return {};
+          if (!value.timestamp) return {};
+          if (value.timestamp > Date.now() + 60e3) return {};
+          if (value.timestamp < Date.now() - 86400e3 * 7) return {};
+          if (value.allPages && !value.startTime) {
+            value.startTime = Date.now();
+          }
+          if (value.pendingPages) {
+            if (!Array.isArray(value.list)) return {};
+          }
+          return value;
+        }());
+        base.weiboVersion = yawf.WEIBO_VERSION;
+        return base;
       },
     });
     const lastList = new rule.class.OffscreenConfigItem({
@@ -212,6 +216,11 @@
       }, 600e3);
       reportUpdateStatus('pending');
       return;
+    }
+
+    // 如果之前获取数据使用的微博版本和现在不一样，那么数据要丢弃
+    if (fetchData.getConfig().weiboVersion !== yawf.WEIBO_VERSION) {
+      fetchData.setConfig({});
     }
 
     try {
@@ -415,6 +424,7 @@
   };
 
   following.autoCheckFollowing = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_follow_check',
     version: 1,
     parent: following.following,
@@ -440,14 +450,22 @@
           const fetchData = this.getConfig();
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
-          buttonArea.innerHTML = '<span class="yawf-following-checking"></span><a href="javascript:;" class="W_btn_b yawf-following-check-now"><span class="W_f14"></span></a>';
+          if (yawf.WEIBO_VERSION === 6) {
+            buttonArea.innerHTML = '<span class="yawf-following-checking"></span><a href="javascript:;" class="W_btn_b yawf-following-check-now"><span class="W_f14"></span></a>';
+          } else {
+            buttonArea.innerHTML = '<span class="yawf-following-checking"></span><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-check-now"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
+          }
           const checkingText = buttonArea.querySelector('.yawf-following-checking');
           const checkNowButton = buttonArea.querySelector('.yawf-following-check-now');
           checkNowButton.addEventListener('click', event => {
             if (!event.isTrusted) return;
             updateFollowList();
           });
-          checkNowButton.querySelector('span').textContent = i18n.autoCheckFollowingNow;
+          if (yawf.WEIBO_VERSION === 6) {
+            checkNowButton.querySelector('span').textContent = i18n.autoCheckFollowingNow;
+          } else {
+            checkNowButton.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingNow;
+          }
           this.renderValue(buttonArea);
           return buttonArea;
         },
@@ -490,13 +508,22 @@
         render() {
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
-          buttonArea.innerHTML = '<span class="yawf-following-last-text"></span><span class="yawf-following-last-time"></span><a href="javascript:;" class="W_btn_b yawf-following-export" style="margin-left:1em;"><span class="W_f14"></span></a><a href="javascript:;" class="W_btn_b yawf-following-clear" style="margin-left:1em;"><span class="W_f14"></span></a>';
+          if (yawf.WEIBO_VERSION === 6) {
+            buttonArea.innerHTML = '<span class="yawf-following-last-text"></span><span class="yawf-following-last-time"></span><a href="javascript:;" class="W_btn_b yawf-following-export" style="margin-left:1em;"><span class="W_f14"></span></a><a href="javascript:;" class="W_btn_b yawf-following-clear" style="margin-left:1em;"><span class="W_f14"></span></a>';
+          } else {
+            buttonArea.innerHTML = '<span class="yawf-following-last-text"></span><span class="yawf-following-last-time"></span><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-export"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-clear"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
+          }
           const lastTimeText = buttonArea.querySelector('.yawf-following-last-text');
           const lastTime = buttonArea.querySelector('.yawf-following-last-time');
           const exportButton = buttonArea.querySelector('.yawf-following-export');
           const clearFollowing = buttonArea.querySelector('.yawf-following-clear');
-          exportButton.querySelector('span').textContent = i18n.autoCheckFollowingDownload;
-          clearFollowing.querySelector('span').textContent = i18n.autoCheckFollowingClean;
+          if (yawf.WEIBO_VERSION === 6) {
+            exportButton.querySelector('span').textContent = i18n.autoCheckFollowingDownload;
+            clearFollowing.querySelector('span').textContent = i18n.autoCheckFollowingClean;
+          } else {
+            exportButton.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingDownload;
+            clearFollowing.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingClean;
+          }
           exportButton.addEventListener('click', event => {
             if (!event.isTrusted) return;
             exportFollowList(this.getConfig());
@@ -553,13 +580,30 @@
   });
 
   css.append(`
-.yawf-following-add-title, .yawf-following-lost-title, .yawf-following-rename-title { font-weight: bold; margin: 10px 0 5px; } 
-.yawf-following-notice-header { padding: 20px; }
-.yawf-following-notice-body { padding: 0 20px; width: 600px; max-height: 320px; overflow: auto; } 
-.yawf-following-notice-footer { padding: 20px; } 
-.yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
-.yawf-following-rename .yawf-config-user-name, .yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
-.yawf-config-user-avatar-img { max-width: 50px; max-height: 50px; }
+.yawf-WBV6 .yawf-following-add-title,
+.yawf-WBV6 .yawf-following-lost-title,
+.yawf-WBV6 .yawf-following-rename-title { font-weight: bold; margin: 10px 0 5px; } 
+.yawf-WBV6 .yawf-following-notice-header { padding: 20px; }
+.yawf-WBV6 .yawf-following-notice-body { padding: 0 20px; width: 600px; max-height: 320px; overflow: auto; } 
+.yawf-WBV6 .yawf-following-notice-footer { padding: 20px; } 
+.yawf-WBV6 .yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
+.yawf-WBV6 .yawf-following-rename .yawf-config-user-name,
+.yawf-WBV6 .yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
+.yawf-WBV6 .yawf-config-user-avatar-img { max-width: 50px; max-height: 50px; }
+`);
+
+  css.append(`
+.yawf-WBV7 #yawf-follow-change .woo-dialog-title { margin-bottom: 0; }
+.yawf-WBV7 #yawf-follow-change .woo-dialog-body { padding: 0; }
+.yawf-WBV7 .yawf-following-add-title,
+.yawf-WBV7 .yawf-following-lost-title,
+.yawf-WBV7 .yawf-following-rename-title { font-weight: bold; margin: 10px 0 5px; } 
+.yawf-WBV7 .yawf-following-notice-header { padding: 20px; }
+.yawf-WBV7 .yawf-following-notice-body { padding: 0 20px; width: 600px; max-height: 320px; overflow: auto; } 
+.yawf-WBV7 .yawf-following-notice-footer { padding: 20px; } 
+.yawf-WBV7 .yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
+.yawf-WBV7 .yawf-following-rename .yawf-config-user-name,
+.yawf-WBV7 .yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
 `);
 
   i18n.uncheckFollowPresenter = {

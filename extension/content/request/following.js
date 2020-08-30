@@ -13,7 +13,7 @@
     }
   };
 
-  const getFollowingPage = async function (uid, pageUrl) {
+  const getFollowingPageV6 = async function (uid, pageUrl) {
     const url = pageUrl || `https://weibo.com/${uid}/myfollow`;
     util.debug('Fetch Follow: fetch page %s', url);
     util.debug('fetch url %s', url);
@@ -115,6 +115,41 @@
 
     return { allPages, followInPage };
   };
-  request.getFollowingPage = getFollowingPage;
+
+  const getFollowingPageV7 = async function (uid, page) {
+    const url = `https://weibo.com/ajax/friendships/friends?page=${page || 1}&uid=${uid}`;
+    util.debug('Fetch Follow: fetch page %s', url);
+    util.debug('fetch url %s', url);
+    const resp = await network.fetchJson(url);
+    if (!resp || !Array.isArray(resp.users) || !resp.users.length) {
+      return {
+        allPages: [],
+        followInPage: [],
+      };
+    }
+    const pages = resp.next_cursor ? Math.ceil(resp.total_number / (resp.next_cursor - resp.previous_cursor)) : page;
+    const allPages = Array.from(Array(pages)).map((_, i) => i + 1);
+    // V7 的关注列表现在只能看到用户
+    const followInPage = resp.users.map(user => {
+      return {
+        id: `user-${user.idstr}`,
+        type: 'user',
+        user: user.idstr,
+        url: new URL(user.profile_url, 'https://weibo.com/').href,
+        avatar: user.avatar_large,
+        name: user.screen_name,
+        description: '@' + user.screen_name,
+      };
+    });
+    return { allPages, followInPage };
+  };
+
+  request.getFollowingPage = function (uid, page = null) {
+    if (yawf.WEIBO_VERSION === 6) {
+      return getFollowingPageV6(uid, page);
+    } else {
+      return getFollowingPageV7(uid, page);
+    }
+  };
 
 }());

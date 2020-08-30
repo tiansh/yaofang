@@ -475,6 +475,22 @@
       });
     };
 
+    document.documentElement.addEventListener('click', function (event) {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const mfsp = target.closest('a.yawf-link-mfsp');
+      if (mfsp) {
+        if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) {
+          event.stopPropagation();
+        }
+      }
+      const nmfpd = target.closest('a.yawf-link-nmfpd');
+      if (nmfpd) {
+        if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey)) {
+          event.preventDefault();
+        }
+      }
+    }, { capture: true });
   }, util.inject.rootKey, key);
 }());
 
