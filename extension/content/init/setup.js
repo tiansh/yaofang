@@ -475,18 +475,23 @@
       });
     };
 
+    const isSimpleClick = function (event) {
+      if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return false;
+      if (event.which !== 1) return false;
+      return true;
+    };
     document.documentElement.addEventListener('click', function (event) {
       const target = event.target;
       if (!(target instanceof Element)) return;
       const mfsp = target.closest('a.yawf-link-mfsp');
       if (mfsp) {
-        if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) {
+        if (!isSimpleClick(event)) {
           event.stopPropagation();
         }
       }
       const nmfpd = target.closest('a.yawf-link-nmfpd');
       if (nmfpd) {
-        if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey)) {
+        if (isSimpleClick(event)) {
           event.preventDefault();
         }
       }

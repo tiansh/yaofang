@@ -170,7 +170,7 @@
         };
         const text = JSON.stringify(data, null, 2);
         const blob = new Blob([text], { type: 'application/json' });
-        const username = init.page.$CONFIG.nick;
+        const username = yawf.WEIBO_VERSION === 6 ? init.page.$CONFIG.nick : init.page.config.user.screen_name;
         const date = new Date();
         const dateStr = date.toISOString().replace(/-|T.*/g, '');
         const filename = download.filename(`${username}-${i18n.configFilename}-${dateStr}.json`);

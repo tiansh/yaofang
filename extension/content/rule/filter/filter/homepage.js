@@ -96,7 +96,7 @@
   // 因为 YAWF 脚本用的 -1，这里为了避免可能的冲突（虽然别的功能还是会冲突），所以用 -2
   const CUSTOM_GID = -2;
 
-  const fixHomeUrl = function (target) {
+  const fixHomeUrlV6 = function (target) {
     const setParam = function (url) {
       if (target === 'newest') {
         url.searchParams.delete('gid');
@@ -153,7 +153,39 @@
     observer.dom.add(updateHomeLinks);
   };
 
+  const fixHomeUrlV7 = function (config) {
+    util.inject(function (rootKey, { gid, name, api, index, source }) {
+      const yawf = window[rootKey];
+      const vueSetup = yawf.vueSetup;
+
+      const root = vueSetup.getRootVm();
+      const router = root.$router;
+      router.beforeEach((to, from, next) => {
+        if (to.name === 'home') {
+          next('mygroups?gid=' + gid);
+        } else {
+          next();
+        }
+      });
+      if (router.currentRoute.name === 'home') {
+        router.replace('mygroups?gid=' + gid);
+      }
+
+      const bus = root.$Bus;
+      bus.$on('handleHomeNav', function (data) {
+        if (data.gid.startsWith('10001')) {
+          bus.$emit('handleHomeNav', { gid, title: name, api, yawf_Trigger: true }, index, source);
+        } else if (data.yawf_Trigger) {
+          vueSetup.eachComponentVM('home', function (vm) {
+            if (vm.getCurIndex) vm.getCurIndex(); // 别信他叫 get，要调他来更新当前高亮元素
+          }, { watch: false });
+        }
+      });
+    }, util.inject.rootKey, config);
+  };
+
   homepage.newestFeeds = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_homepage_newest_feeds',
     version: 21,
     parent: homepage.homepage,
@@ -167,7 +199,18 @@
       });
     },
     ainit() {
-      fixHomeUrl('newest');
+      if (yawf.WEIBO_VERSION === 6) {
+        fixHomeUrlV6('newest');
+      } else {
+        const uid = init.page.config.user.idstr;
+        fixHomeUrlV7({
+          gid: '11000' + uid,
+          api: '/ajax/feed/friendstimeline',
+          name: '最新微博',
+          index: 1,
+          source: 'left',
+        });
+      }
     },
   });
 
@@ -179,6 +222,7 @@
     return groups.map(({ name, id }) => ({ text: name, value: id }));
   });
   homepage.singleGroup = rule.Rule({
+    // weiboVersion: [6, 7],
     id: 'filter_homepage_single_group',
     version: 1,
     parent: homepage.homepage,
@@ -203,12 +247,39 @@
       });
     },
     async ainit() {
-      let group = this.ref.group.getConfig();
-      if (group == null) {
-        await groupListLazyPromise;
-        group = this.ref.group.getConfig();
+      if (yawf.WEIBO_VERSION === 6) {
+        let group = this.ref.group.getConfig();
+        if (group == null) {
+          await groupListLazyPromise;
+          group = this.ref.group.getConfig();
+        }
+        fixHomeUrlV6(group);
+      } else {
+        const group = this.ref.group.getConfig();
+        const groups = (await request.groupList()).slice(1);
+        const index = groups.length;
+        if (group === 'whisper') {
+          const uid = init.page.config.user.idstr;
+          fixHomeUrlV7({
+            gid: '10005' + uid,
+            api: '/ajax/feed/groupstimeline',
+            name,
+            index: index,
+            source: 'custom',
+          });
+        } else {
+          const gid = group.slice(1);
+          const index = groups.findIndex(g => g.id === group);
+          const name = groups[index].name;
+          fixHomeUrlV7({
+            gid,
+            api: '/ajax/feed/groupstimeline',
+            name,
+            index: index,
+            source: 'custom',
+          });
+        }
       }
-      fixHomeUrl(group);
     },
   });
 
@@ -260,7 +331,7 @@
 
       if (groups.length === 0) return;
 
-      fixHomeUrl('custom');
+      fixHomeUrlV6('custom');
 
       // 检查当前页面是否需要启用分组拼凑首页功能
       const checkPage = function checkMultiGroupPage() {

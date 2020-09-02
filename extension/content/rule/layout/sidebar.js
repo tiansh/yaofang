@@ -393,7 +393,7 @@
 
 
   Object.assign(i18n, {
-    leftSidebarUseLink: { cn: '导航栏使用链接' },
+    leftSidebarUseLink: { cn: '左侧边栏使用链接' },
   });
 
   sidebar.leftSidebarUseLink = rule.Rule({

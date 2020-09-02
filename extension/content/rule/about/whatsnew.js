@@ -36,7 +36,7 @@
     updateSuccessTitle: { cn: '药方 (YAWF) 新功能提示', tw: '藥方 (YAWF) 新功能提示', en: "YAWF What's New" },
     updateSuccessHeader: { cn: '药方 (YAWF) 扩展已更新', tw: '藥方 (YAWF) 擴充套件已更新', en: 'Your YAWF extension has been updated' },
     updateSuccessDetail: { cn: '当前版本添加或更新了以下 {{count}} 项功能', tw: '當前版本添加或更新了以下 {{count}} 項功能', en: 'The current version has added or updated the following {{count}} feature(s)' },
-    weiboVersionTitle: { cn: '微博新版（V7）' },
+    weiboVersionTitle: { cn: '微博新版（V7） - 药方 (YAWF)' },
     weiboVersion6To7: { cn: '您已更换到微博新版（V7），您可以在右上角齿轮图标的菜单中找到药方（YAWF）的设置。还请注意药方（YAWF）目前大部分功能无法支持新版。此外如果您希望药方（YAWF）能尽快更新支持新版，欢迎到项目主页贡献代码。' },
     weiboVersion7To6: { cn: '您已退回到微博旧版（V6）。如果您对药方（YAWF）有任何问题，您可以联系 @YAWF脚本 ，此外欢迎到项目主页贡献代码。' },
   });

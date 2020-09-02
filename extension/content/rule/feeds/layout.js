@@ -441,9 +441,9 @@ ${[0, 1, 2, 3, 4].map(index => `
           const selector = {
             pop: '',
             favorite: '',
-            forward: '.yawf-toolbar-retweet',
-            comment: '.yawf-toolbar-comment',
-            like: '.yawf-toolbar-like',
+            forward: '.yawf-feed-toolbar-retweet',
+            comment: '.yawf-feed-toolbar-comment',
+            like: '.yawf-feed-toolbar-like',
           }[config];
           if (selector) css.append(`${selector} { order: ${index} }`);
         });

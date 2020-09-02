@@ -59,6 +59,7 @@
       if (!onclick) return;
       addClickHandler(vnode, function (event) {
         if (event.ctrlKey || event.shiftKey || event.metaKey || event.altKey) return;
+        if (event.buttons !== 1) return;
         event.preventDefault();
         onclick(event);
       });
@@ -77,9 +78,11 @@
     document.documentElement.addEventListener('click', function (event) {
       const target = event.target;
       if (!(target instanceof Element)) return;
-      const link = target.closest('.yawf-feed-content-handler a[href]');
+      const link = target.closest('.yawf-feed-detail-content-handler a[href]');
       if (!link) return;
-      if (eventWithKeys(event)) event.stopPropagation();
+      if (event.ctrlKey || event.shiftKey || event.metaKey || event.altKey) {
+        event.stopPropagation();
+      }
       const isPicture = link.hasAttribute('data-pid');
       const isMention = link.getAttribute('href').startsWith('/n/');
       if (isPicture ? newTab.picture : isMention ? newTab.mention : newTab.topic) {
@@ -197,6 +200,11 @@
           headInfoVNode.componentOptions.propsData.source = this.data.source;
         }
       }
+
+      addClass(nodeStruct, 'yawf-feed-content');
+      if (headInfo) {
+        addClass(nodeStruct, 'yawf-feed-content-retweet');
+      }
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-detail', function (nodeStruct, Nodes) {
@@ -217,12 +225,12 @@
 
       // 内容
       if (content && content.nodeType !== Node.COMMENT_NODE) {
-        addClass(content, 'yawf-feed-content');
+        addClass(content, 'yawf-feed-detail-content');
         if (this.repost) {
-          addClass(content, 'yawf-feed-content-retweet');
+          addClass(content, 'yawf-feed-detail-content-retweet');
         }
         handleContentRender(vNode(content));
-        addClass(content, 'yawf-feed-content-handler');
+        addClass(content, 'yawf-feed-detail-content-handler');
       }
     });
 
@@ -275,13 +283,15 @@
     vueSetup.transformComponentsRenderByTagName('feed-toolbar', function (nodeStruct, Nodes) {
       const { addClass } = Nodes;
 
+      addClass(nodeStruct, 'yawf-feed-toolbar');
+
       // 操作按钮
       const buttons = [...nodeStruct.querySelectorAll('x-woo-box-item')];
       if (buttons.length === 3) {
         const [retweet, comment, like] = buttons;
-        addClass(retweet, 'yawf-toolbar-retweet');
-        addClass(comment, 'yawf-toolbar-comment');
-        addClass(like, 'yawf-toolbar-like');
+        addClass(retweet, 'yawf-feed-toolbar-retweet');
+        addClass(comment, 'yawf-feed-toolbar-comment');
+        addClass(like, 'yawf-feed-toolbar-like');
       }
     });
 
@@ -373,7 +383,7 @@
         addClass(content, 'yawf-feed-comment-content');
         addClass(content.parentNode, 'yawf-feed-comment-text');
         handleContentRender(vNode(content));
-        addClass(content, 'yawf-feed-content-handler');
+        addClass(content, 'yawf-feed-detail-content-handler');
       });
 
       // 带图评论
@@ -419,7 +429,7 @@
         addClass(content, 'yawf-feed-repost-content');
         addClass(content.parentNode, 'yawf-feed-repost-text');
         handleContentRender(vNode(content));
-        addClass(content, 'yawf-feed-content-handler');
+        addClass(content, 'yawf-feed-detail-content-handler');
       }
 
       // 转发微博原来点哪里都可以，我们让他只点时间
@@ -468,6 +478,8 @@
 .yawf-feed-repost.yawf-feed-repost { cursor: auto; }
 .yawf-feed-repost-time { cursor: pointer; color: var(--w-sub); }
 .yawf-feed-source:hover, .yawf-feed-repost-time:hover { color: var(--w-brand); }
+.yawf-feed-head-info-retweet { overflow: hidden; }
+.yawf-feed-head-info-retweet ~ .yawf-feed-toolbar { flex-shrink: 0; }
 `);
 
     },

@@ -131,6 +131,11 @@
     friends,
   }, function (options) {
     if (yawf.WEIBO_VERSION !== 7) return;
+
+    if (yawf.rules.filter.homepage.newestFeeds.getConfig()) {
+      options.new_feed = false;
+    }
+
     util.inject(function (rootKey, options) {
       const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;
