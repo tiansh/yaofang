@@ -42,6 +42,7 @@
     cleanFeedLikeComment: { cn: '赞 - 评论', tw: '讚 - 評論', en: 'Like - Comment' },
     cleanFeedLikeAttitude: { cn: '赞 - 表情', tw: '讚 - 表情', en: 'Like - Attitude' },
     cleanFeedForward: { cn: '转发', tw: '轉發', en: 'Forward' },
+    cleanFeedFastRepost: { cn: '快转' },
     cleanFeedFavorite: { cn: '收藏', tw: '收藏', en: 'Favorite' },
     cleanFeedPromoteOther: { cn: '帮上头条', tw: '帮上头条', en: '帮上头条' },
     cleanFeedReport: { cn: '举报', hk: '舉報', tw: '舉報/檢舉', en: 'Report' },
@@ -100,41 +101,52 @@
   });
   clean.CleanRule('source', () => i18n.cleanFeedSource, 1, {
     acss: `
-.WB_feed_detail .WB_from { height: 26px; overflow: hidden; }
-.WB_feed_detail .WB_feed_expand .WB_from { height: 16px; }
-.WB_feed_detail .WB_from::before { content: " "; display: block; float: left; width: 100%; height: 30px; }
-.WB_feed_detail .WB_from a[date],
-.WB_feed_detail .WB_from a[yawf-date],
-.WB_feed_detail .WB_from span[title],
-.WB_feed_detail .WB_from .yawf-edited { float: left; position: relative; top: -30px; }
-.WB_feed_detail .WB_from a[date]::after,
-.WB_feed_detail .WB_from a[yawf-date]::after { content: " "; }
+.yawf-WBV7 .yawf-feed-source-container { display: none !important; }
+
+.yawf-WBV6 .WB_feed_detail .WB_from { height: 26px; overflow: hidden; }
+.yawf-WBV6 .WB_feed_detail .WB_feed_expand .WB_from { height: 16px; }
+.yawf-WBV6 .WB_feed_detail .WB_from::before { content: " "; display: block; float: left; width: 100%; height: 30px; }
+.yawf-WBV6 .WB_feed_detail .WB_from a[date],
+.yawf-WBV6 .WB_feed_detail .WB_from a[yawf-date],
+.yawf-WBV6 .WB_feed_detail .WB_from span[title],
+.yawf-WBV6 .WB_feed_detail .WB_from .yawf-edited { float: left; position: relative; top: -30px; }
+.yawf-WBV6 .WB_feed_detail .WB_from a[date]::after,
+.yawf-WBV6 .WB_feed_detail .WB_from a[yawf-date]::after { content: " "; }
 `,
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanFeedSourceDetail } },
+    weiboVersion: [6, 7],
   });
   clean.CleanRule('pop', () => i18n.cleanFeedPop, 1, `
 .WB_feed_datail a[action-type="fl_pop"], .WB_feed_datail a[action-type="fl_pop"]+.S_txt3, 
 .WB_handle li[yawf-handle-type="fl_pop"] { display: none !important; }`);
   clean.CleanRule('like', () => i18n.cleanFeedLike, 1, `
-a[action-type="feed_list_like"],
-a[action-type="feed_list_like"]+.S_txt3, 
-[node-type="multi_image_like"],
-[action-type="feed_list_image_like"], 
-[action-type="object_like"], [action-type="like_object"], 
-.WB_feed_datail a[action-type="fl_like"],
-.WB_feed_datail a[action-type="fl_like"]+.S_txt3, 
-.WB_expand .WB_handle.W_fr li:nth-child(3), 
-.WB_handle li[yawf-handle-type="fl_like"],
-.WB_handle li[yawf-handle-type="like"] .layer_multipic_preview .pos_icon { display: none !important; }`);
-  clean.CleanRule('like_comment', () => i18n.cleanFeedLikeComment, 1, '.WB_handle li[yawf-comment-handle-type="like"] { display: none !important; }');
+.yawf-WBV7 .yawf-feed-toolbar-like { display: none !important; }
+
+.yawf-WBV6 a[action-type="feed_list_like"],
+.yawf-WBV6 a[action-type="feed_list_like"]+.S_txt3, 
+.yawf-WBV6 [node-type="multi_image_like"],
+.yawf-WBV6 [action-type="feed_list_image_like"], 
+.yawf-WBV6 [action-type="object_like"], [action-type="like_object"], 
+.yawf-WBV6 .WB_feed_datail a[action-type="fl_like"],
+.yawf-WBV6 .WB_feed_datail a[action-type="fl_like"]+.S_txt3, 
+.yawf-WBV6 .WB_expand .WB_handle.W_fr li:nth-child(3), 
+.yawf-WBV6 .WB_handle li[yawf-handle-type="fl_like"],
+.yawf-WBV6 .WB_handle li[yawf-handle-type="like"] .layer_multipic_preview .pos_icon { display: none !important; }`, { weiboVersion: [6, 7] });
+  clean.CleanRule('like_comment', () => i18n.cleanFeedLikeComment, 1, `
+.yawf-WBV7 .yawf-feed-comment-icon-list [yawf-icon-list-name="like"] { display: none !important; }
+
+.yawf-WBV6 .WB_handle li[yawf-comment-handle-type="like"] { display: none !important; }`, { weiboVersion: [6, 7] });
   clean.CleanRule('like_attitude', () => i18n.cleanFeedLikeAttitude, 1, '.W_layer_attitude { display: none !important; }');
   clean.CleanRule('forward', () => i18n.cleanFeedForward, 1, `
-a[action-type="feed_list_forward"], a[action-type="feed_list_forward"]+.S_txt3,
-.WB_media_expand .WB_handle a.S_func4[href$="?type=repost"], .WB_media_expand .WB_handle a.S_func4[href$="?type=repost"]+.S_txt3, 
-.WB_feed_datail a[action-type="fl_forward"], .WB_feed_datail a[action-type="fl_forward"]+.S_txt3, 
-.WB_expand .WB_handle.W_fr li:nth-child(1), 
-.WB_handle li[yawf-handle-type="fl_forward"], .WB_handle li[yawf-handle-type="tab"]:nth-child(2) 
-{ display: none !important; }`);
+.yawf-WBV7 .yawf-feed-toolbar-retweet { display: none !important; }
+
+.yawf-WBV6 a[action-type="feed_list_forward"], a[action-type="feed_list_forward"]+.S_txt3,
+.yawf-WBV6 .WB_media_expand .WB_handle a.S_func4[href$="?type=repost"], .WB_media_expand .WB_handle a.S_func4[href$="?type=repost"]+.S_txt3, 
+.yawf-WBV6 .WB_feed_datail a[action-type="fl_forward"], .WB_feed_datail a[action-type="fl_forward"]+.S_txt3, 
+.yawf-WBV6 .WB_expand .WB_handle.W_fr li:nth-child(1), 
+.yawf-WBV6 .WB_handle li[yawf-handle-type="fl_forward"], .WB_handle li[yawf-handle-type="tab"]:nth-child(2) 
+.yawf-WBV6 { display: none !important; }`, { weiboVersion: [6, 7] });
+  clean.CleanRule('fast_repost', () => i18n.cleanFeedFastRepost, 83, { weiboVersion: 7 }); // 实现在 render
   clean.CleanRule('favorite', () => i18n.cleanFeedFavorite, 1, `
 a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3,
 .WB_feed_datail a[action-type="fl_favorite"], .WB_feed_datail a[action-type="fl_favorite"]+.S_txt3, 

@@ -428,10 +428,10 @@
       node.className = removed;
     };
     const addClass = function (node, ...classNames) {
-      classModify(node, classNames, []);
+      classModify(node, classNames.filter(x => x && typeof x === 'string'), []);
     };
     const removeClass = function (node, ...classNames) {
-      classModify(node, [], classNames);
+      classModify(node, [], classNames.filter(x => x && typeof x === 'string'));
     };
     const transformSlot = function (node, slotName, transformer) {
       const vnode = vNode(node);

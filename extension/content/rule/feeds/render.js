@@ -5,6 +5,7 @@
   const rule = yawf.rule;
 
   const feeds = yawf.rules.feeds;
+  const clean = yawf.rules.clean;
 
   const i18n = util.i18n;
   const css = util.css;
@@ -191,7 +192,8 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-content', function (nodeStruct, Nodes) {
-      const { vNode, addClass } = Nodes;
+      const { vNode, addClass, wrapNode, h } = Nodes;
+
       const headInfo = nodeStruct.querySelector('x-feed-head-info');
       if (headInfo) {
         addClass(headInfo, 'yawf-feed-head-info yawf-feed-head-info-retweet');
@@ -204,6 +206,19 @@
       addClass(nodeStruct, 'yawf-feed-content');
       if (headInfo) {
         addClass(nodeStruct, 'yawf-feed-content-retweet');
+      }
+
+      const tip = nodeStruct.querySelector('x-woo-tip');
+      if (tip) {
+        addClass(tip, 'yawf-feed-content-tip');
+        if (this.data.complaint && this.data.complaint.url) {
+          const linkVNode = h('a', {
+            class: 'yawf-feed-content-tip-link yawf-extra-link',
+            attrs: { href: absoluteUrl(this.data.complaint.url) },
+          });
+          wrapNode(tip, linkVNode);
+          configClickHandler(vNode(tip), linkVNode, true);
+        }
       }
     });
 
@@ -280,8 +295,18 @@
       addClass(content, 'yawf-feed-card-content');
     });
 
-    vueSetup.transformComponentsRenderByTagName('feed-toolbar', function (nodeStruct, Nodes) {
+    vueSetup.transformComponentsRenderByTagName('feed-card-article', function (nodeStruct, Nodes) {
       const { addClass } = Nodes;
+      addClass(nodeStruct, 'yawf-feed-card-article');
+    });
+
+    vueSetup.transformComponentsRenderByTagName('feed-card-vote', function (nodeStruct, Nodes) {
+      const { addClass } = Nodes;
+      addClass(nodeStruct, 'yawf-feed-card-vote');
+    });
+
+    vueSetup.transformComponentsRenderByTagName('feed-toolbar', function (nodeStruct, Nodes) {
+      const { addClass, vNode, removeChild, insertBefore } = Nodes;
 
       addClass(nodeStruct, 'yawf-feed-toolbar');
 
@@ -292,6 +317,25 @@
         addClass(retweet, 'yawf-feed-toolbar-retweet');
         addClass(comment, 'yawf-feed-toolbar-comment');
         addClass(like, 'yawf-feed-toolbar-like');
+
+        if (configs.hideFastRepost) {
+          try {
+            const pop = retweet.querySelector('x-woo-pop');
+            const popVNode = vNode(pop);
+            const retweetButton = popVNode.data.scopedSlots.ctrl()[0];
+            const oriRetweetButton = pop.querySelector('x-woo-pop-item:nth-child(2)');
+            const retweetOnClick = vNode(oriRetweetButton).data.nativeOn.click;
+            if (!retweetButton.data) retweetButton.data = {};
+            if (!retweetButton.data.on) retweetButton.data.on = {};
+            if (!retweetButton.data.nativeOn) retweetButton.data.nativeOn = {};
+            retweetButton.data.on.click = retweetButton.data.nativeOn.click = retweetOnClick;
+            const contain = pop.parentNode;
+            insertBefore(contain.parentNode, retweetButton, contain);
+            removeChild(contain.parentNode, contain);
+          } catch (e) {
+            // ignore
+          }
+        }
       }
     });
 
@@ -395,6 +439,9 @@
       if (moreIcon) {
         addClass(moreIcon.parentNode, 'yawf-feed-comment-more');
       }
+
+      const iconList = nodeStruct.querySelector('x-icon-list');
+      if (iconList) addClass(iconList, 'yawf-feed-comment-icon-list');
     };
     vueSetup.transformComponentsRenderByTagName('comment', function (nodeStruct, Nodes) {
       commentRenderTransformHelper(nodeStruct, this.item, Nodes);
@@ -449,6 +496,19 @@
         configClickHandler(vNode(time), linkVNode, newTab.detail);
       }
     });
+
+    vueSetup.transformComponentsRenderByTagName('icon-list', function (nodeStruct, Nodes) {
+      const { vNode } = Nodes;
+
+      const iconsName = this.iconsName;
+      const iconsNode = Array.from(nodeStruct.childNodes);
+      if (!Array.isArray(iconsName)) return;
+      if (iconsName.length !== iconsNode.length) return;
+      iconsNode.forEach((node, index) => {
+        const vnode = vNode(node);
+        vnode.data.attrs['yawf-icon-list-name'] = iconsName[index].name;
+      });
+    });
   };
 
   render.feedRenderFix = rule.Rule({
@@ -469,6 +529,7 @@
         [id]: feeds.details.feedLinkNewTab.getConfig() && feeds.details.feedLinkNewTab.ref[id].getConfig(),
       })));
       util.debug('render config: %o', configs);
+      configs.hideFastRepost = clean.feed.fast_repost.getConfig();
 
       util.inject(renderModify, util.inject.rootKey, configs);
 
