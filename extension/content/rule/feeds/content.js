@@ -15,6 +15,7 @@
   const i18n = util.i18n;
   const css = util.css;
   const ui = util.ui;
+  const strings = util.strings;
 
   const content = feeds.content = {};
 
@@ -316,6 +317,7 @@
   });
 
   content.showVoteResult = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'show_vote_result',
     version: 46,
     parent: content.content,
@@ -324,60 +326,61 @@
       i: { type: 'bubble', icon: 'warn', template: () => i18n.showVoteResultDetail },
     },
     ainit() {
-      const updateVoteByLike = function (feedlike) {
-        const like = feedlike.querySelector('[action-type="fl_like"]');
-        const liked = like.querySelector('[node-type="like_status"]').matches('.UI_ani_praised');
-        const items = feedlike.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]');
-        Array.from(items).forEach(item => {
-          item.setAttribute('action-type', liked ? 'feed_list_vote' : 'yawf-feed_list_vote');
+      if (yawf.WEIBO_VERSION === 6) {
+        const updateVoteByLike = function (feedlike) {
+          const like = feedlike.querySelector('[action-type="fl_like"]');
+          const liked = like.querySelector('[node-type="like_status"]').matches('.UI_ani_praised');
+          const items = feedlike.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]');
+          Array.from(items).forEach(item => {
+            item.setAttribute('action-type', liked ? 'feed_list_vote' : 'yawf-feed_list_vote');
+          });
+        };
+        const showVoteResult = async function (vote) {
+          const voteButtons = Array.from(vote.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]'));
+          if (!voteButtons.length) return;
+          const voteId = new URLSearchParams(voteButtons[0].getAttribute('action-data')).get('vote_id');
+          if (!voteId) return;
+          const voteResult = await request.voteDetail(voteId);
+          voteButtons.forEach(button => {
+            const actionData = new URLSearchParams(button.getAttribute('action-data'));
+            const id = actionData.get('vote_items');
+            const item = voteResult.vote_info.option_list.find(item => item.id === id);
+            button.dataset.partNum = item.part_num.replace('票', '人');
+            button.dataset.partRatio = item.part_ratio;
+            button.style.setProperty('--part-ratio', item.part_ratio / 100);
+          });
+          const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
+          updateVoteByLike(feedlike);
+        };
+        const watchLike = function (/** @type {HTMLElement} */vote) {
+          const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
+          const like = feedlike.querySelector('[action-type="fl_like"]');
+          const observer = new MutationObserver(() => { updateVoteByLike(feedlike); });
+          observer.observe(like, { subtree: true, attributes: true, attributeFilter: ['class'] });
+          updateVoteByLike(feedlike);
+        };
+        observer.dom.add(function updateVoteResult() {
+          const voteList = document.querySelectorAll('.WB_card_vote:not([yawf-card-vote])');
+          if (!voteList.length) return;
+          Array.from(voteList).forEach(vote => {
+            vote.setAttribute('yawf-card-vote', 'yawf-card-vote');
+            showVoteResult(vote);
+            watchLike(vote);
+          });
         });
-      };
-      const showVoteResult = async function (vote) {
-        const voteButtons = Array.from(vote.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]'));
-        if (!voteButtons.length) return;
-        const voteId = new URLSearchParams(voteButtons[0].getAttribute('action-data')).get('vote_id');
-        if (!voteId) return;
-        const voteResult = await request.voteDetail(voteId);
-        voteButtons.forEach(button => {
-          const actionData = new URLSearchParams(button.getAttribute('action-data'));
-          const id = actionData.get('vote_items');
-          const item = voteResult.vote_info.option_list.find(item => item.id === id);
-          button.dataset.partNum = item.part_num.replace('票', '人');
-          button.dataset.partRatio = item.part_ratio;
-          button.style.setProperty('--part-ratio', item.part_ratio / 100);
+        document.addEventListener('click', event => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) return;
+          const vote = target.closest('[action-type="yawf-feed_list_vote"]');
+          if (!vote) return;
+          ui.alert({
+            id: 'yawf-vote-block',
+            icon: 'warn',
+            title: i18n.voteTitle,
+            text: i18n.voteText,
+          });
         });
-        const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
-        updateVoteByLike(feedlike);
-      };
-      const watchLike = function (/** @type {HTMLElement} */vote) {
-        const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
-        const like = feedlike.querySelector('[action-type="fl_like"]');
-        const observer = new MutationObserver(() => { updateVoteByLike(feedlike); });
-        observer.observe(like, { subtree: true, attributes: true, attributeFilter: ['class'] });
-        updateVoteByLike(feedlike);
-      };
-      observer.dom.add(function updateVoteResult() {
-        const voteList = document.querySelectorAll('.WB_card_vote:not([yawf-card-vote])');
-        if (!voteList.length) return;
-        Array.from(voteList).forEach(vote => {
-          vote.setAttribute('yawf-card-vote', 'yawf-card-vote');
-          showVoteResult(vote);
-          watchLike(vote);
-        });
-      });
-      document.addEventListener('click', event => {
-        const target = event.target;
-        if (!(target instanceof HTMLElement)) return;
-        const vote = target.closest('[action-type="yawf-feed_list_vote"]');
-        if (!vote) return;
-        ui.alert({
-          id: 'yawf-vote-block',
-          icon: 'warn',
-          title: i18n.voteTitle,
-          text: i18n.voteText,
-        });
-      });
-      css.append(`
+        css.append(`
 .WB_card_vote.WB_card_vote .vote_con1 .item { position: relative; z-index: 1; overflow: hidden; text-align: left; }
 .WB_card_vote.WB_card_vote .vote_con1 .item::after { content: attr(data-part-num) ; float: right; }
 .WB_card_vote.WB_card_vote .vote_con1 .item::before { content: " "; width: calc(var(--part-ratio) * 100%); top: 0; left: 0; bottom: 0; margin: 0; position: absolute; z-index: -1; }
@@ -391,14 +394,55 @@
 .WB_card_vote.WB_card_vote .vote_con1 .item_rt.S_txt1 .bg,
 .WB_card_vote.WB_card_vote .vote_con1 .item::before { background-color: #80808022; }
 `);
-      const smallImage = feeds.layout.smallImage;
-      if (smallImage.isEnabled()) {
-        css.append(`
+        const smallImage = feeds.layout.smallImage;
+        if (smallImage.isEnabled()) {
+          css.append(`
 .WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn a { margin-right: -1px; }
 .WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn a { margin-left: -1px; }
 .WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn::after { left: 10px; }
 .WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn::after { right: 10px; }
 `);
+        }
+      } else {
+        const noticeKey = strings.randKey();
+
+        util.inject(function (rootKey, noticeKey) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
+
+          vueSetup.transformComponentsRenderByTagName('feed-card-vote', function (nodeStruct, Nodes) {
+            const { vNode, addClass, removeClass } = Nodes;
+
+            const options = Array.from(nodeStruct.querySelectorAll('x-woo-panel'));
+            options.forEach(option => {
+              addClass(option, this.$style.itemed);
+              removeClass(option, this.$style.itemAni);
+              const optionVNode = vNode(option);
+              if (optionVNode.data && optionVNode.data.on && optionVNode.data.on.click) {
+                const vote = this;
+                optionVNode.data.on.click = (function (onclick) {
+                  return function (...args) {
+                    if (!vote.isParted && vote.$parent && !vote.$parent.data.attitudes_status) {
+                      const event = new CustomEvent(noticeKey, {});
+                      window.dispatchEvent(event);
+                      return;
+                    }
+                    onclick(...args);
+                  };
+                }(optionVNode.data.on.click));
+              }
+            });
+          });
+        }, util.inject.rootKey, noticeKey);
+
+        window.addEventListener(noticeKey, function () {
+          ui.alert({
+            id: 'yawf-vote-block',
+            icon: 'warn',
+            title: i18n.voteTitle,
+            text: i18n.voteText,
+          });
+        });
       }
     },
   });
