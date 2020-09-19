@@ -6,6 +6,7 @@
   const yawf = window.yawf;
   const config = yawf.config;
 
+  /** @type {Promise} */
   const configPromise = config.init();
 
   const hideAll = document.createElement('style');
@@ -16,7 +17,7 @@ html { background: #f9f9fa; }
 `;
   document.documentElement.appendChild(hideAll);
 
-  window.addEventListener('DOMContentLoaded', event => {
+  const onLoad = function () {
     configPromise.then(() => {
       const useRedirect = config.global.key('short_url_wo_confirm').get();
       if (!useRedirect) return false;
@@ -43,9 +44,15 @@ html { background: #f9f9fa; }
       if (!/https?:\/\/.*/i.test(fixEncodingUrl)) return false;
       location.replace(fixEncodingUrl);
       return true;
-    }).then(redirect => {
+    }).then(r => r, () => false).then(redirect => {
       if (!redirect) hideAll.remove();
     });
-  });
+  };
+
+  if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
+    setTimeout(onLoad, 0);
+  } else {
+    document.addEventListener('DOMContentLoaded', onLoad);
+  }
 
 }());
