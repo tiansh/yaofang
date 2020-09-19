@@ -162,13 +162,13 @@
       const router = root.$router;
       router.beforeEach((to, from, next) => {
         if (to.name === 'home') {
-          next('mygroups?gid=' + gid);
+          next('/mygroups?gid=' + gid);
         } else {
           next();
         }
       });
       if (router.currentRoute.name === 'home') {
-        router.replace('mygroups?gid=' + gid);
+        router.replace('/mygroups?gid=' + gid);
       }
 
       const bus = root.$Bus;
@@ -218,11 +218,16 @@
   const groupListLazyPromise = new Promise(resolve => {
     groupListLazyPromiseResolve = resolve;
   }).then(async () => {
-    const groups = await request.groupList();
-    return groups.map(({ name, id }) => ({ text: name, value: id }));
+    if (yawf.WEIBO_VERSION === 6) {
+      const groups = await request.groupList();
+      return groups.map(({ name, id }) => ({ text: name, value: id }));
+    } else {
+      const groups = await request.groupListV7();
+      return groups.map(({ gid, title }) => ({ text: title, value: gid }));
+    }
   });
   homepage.singleGroup = rule.Rule({
-    // weiboVersion: [6, 7],
+    weiboVersion: [6, 7],
     id: 'filter_homepage_single_group',
     version: 1,
     parent: homepage.homepage,
@@ -255,30 +260,12 @@
         }
         fixHomeUrlV6(group);
       } else {
-        const group = this.ref.group.getConfig();
-        const groups = (await request.groupList()).slice(1);
-        const index = groups.length;
-        if (group === 'whisper') {
-          const uid = init.page.config.user.idstr;
-          fixHomeUrlV7({
-            gid: '10005' + uid,
-            api: '/ajax/feed/groupstimeline',
-            name,
-            index: index,
-            source: 'custom',
-          });
-        } else {
-          const gid = group.slice(1);
-          const index = groups.findIndex(g => g.id === group);
-          const name = groups[index].name;
-          fixHomeUrlV7({
-            gid,
-            api: '/ajax/feed/groupstimeline',
-            name,
-            index: index,
-            source: 'custom',
-          });
-        }
+        const gid = this.ref.group.getConfig();
+        const groups = await request.groupListV7();
+        const index = groups.findIndex(g => g.gid === gid);
+        const name = groups[index].title;
+        const api = '/ajax/feed/groupstimeline';
+        fixHomeUrlV7({ gid, api, name, index, source: 'custom' });
       }
     },
   });
@@ -308,7 +295,7 @@
         type: 'boolean',
       },
       groups: {
-        type: 'groups',
+        type: 'groups', // 不支持 V7
       },
       i: { type: 'bubble', icon: 'ask', template: () => i18n.feedsHomepageMultiGroupDetail },
       ii: { type: 'bubble', icon: 'warn', template: () => i18n.feedsHomepageMultiGroupDetail2 },
