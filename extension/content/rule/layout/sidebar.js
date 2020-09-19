@@ -381,14 +381,47 @@
   };
 
   sidebar.showAllGroups = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'layout_side_show_all_groups',
     version: 1,
     parent: sidebar.sidebar,
     template: () => i18n.showAllGroups,
-    acss: `
+    ainit() {
+      if (yawf.weiboVersion === 6) {
+        css.append(`
 .lev_Box .levmore { display: none !important; }
 .lev_Box [node-type="moreList"] { display: block !important; height: auto !important; }
-`,
+`);
+      } else {
+        util.inject(function (rootKey) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
+
+          const icons = {
+            navNew: 'new_feed',
+            navSpecial: 'special',
+            navMutual: 'friends',
+          };
+          vueSetup.eachComponentVM('home', function (vm) {
+            if (Array.isArray(vm.customList)) {
+              vm.$watch(function () { return this.customTabs; }, function () {
+                if (vm.customTabs && Array.isArray(vm.customTabs.list)) {
+                  vm.customList = [...vm.customTabs.list];
+                }
+              }, { immediate: true });
+              vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+                const { removeChild } = Nodes;
+
+                const moreButton = nodeStruct.querySelector('x-woo-box:last-child');
+                if (nodeStruct.lastChild === moreButton) {
+                  removeChild(nodeStruct, moreButton);
+                }
+              });
+            }
+          });
+        }, util.inject.rootKey);
+      }
+    },
   });
 
 
