@@ -183,11 +183,10 @@
 
   const i18n = util.i18n;
 
-  const showRuleDialog = function (event, tab = null) {
+  const showRuleDialog = function (tab = null) {
     try {
       rule.dialog(tab);
     } catch (e) { util.debug('Error while prompting dialog: %o', e); }
-    event.preventDefault();
   };
   document.documentElement.addEventListener('yawf-showRuleDialog', function () {
     showRuleDialog();

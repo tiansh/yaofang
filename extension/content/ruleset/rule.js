@@ -1431,6 +1431,7 @@
   rule.class.TopicCollectionConfigItem = TopicCollectionConfigItem;
   rule.types.topics = TopicCollectionConfigItem;
 
+  // 这个目前不支持 V7
   class GroupIdCollectionConfigItem extends CollectionConfigItem {
     normalizeItem(value) {
       if (!value || typeof value !== 'object') return null;
