@@ -262,7 +262,7 @@
         icon.classList.add('S_ficon_dis');
       };
 
-      // 检查展开的图片，添加查看原图和下载的链接
+      // 检查展开的图片，添加图片翻转、查看原图和下载的链接
       const addImageHandlerLink = function addImageHandlerLink() {
         const viewLargeLinks = Array.from(document.querySelectorAll([
           // 微博配图
@@ -274,6 +274,10 @@
           viewLargeLink.setAttribute('yawf-view-ori', '');
           const disabled = viewLargeLink.classList.contains('S_ficon_dis');
           const li = viewLargeLink.closest('li');
+          
+          const button = rotateYButton(viewLargeLink);
+          li.after(button);
+          
           if (downloadEnabled) {
             const button = downloadButton(viewLargeLink);
             if (disabled) disableButton(button);
