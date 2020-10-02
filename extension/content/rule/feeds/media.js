@@ -45,6 +45,7 @@
     viewOriginalPage: { cn: '包含原图的网页', tw: '包含原圖的網頁', en: 'page with original picture' },
     viewOriginalImage: { cn: '原图', tw: '原圖', en: 'original picture' },
     viewOriginalText: { cn: '查看原图', tw: '查看原圖', en: 'Original Picture' },
+    rotateYText: { cn: '左右翻转', tw: '左右翻轉', en: 'rotateY'},
   });
 
   const getImageUrl = function (img, large) {
@@ -142,6 +143,44 @@
 
       if (!viewEnabled && !downloadEnabled) return;
 
+      // 添加一个左右翻转的按钮（在查看大图旁边）
+      const rotateYButton = viewLargeLink => {
+        const rotateYLinkContainer = document.createElement('ul');
+        rotateYLinkContainer.innerHTML = '<li><span class="line S_line1"><a class="S_txt1" href="javascript:;" target="_blank"><i class="W_ficon ficon_search S_ficon">l</i></a></span></li>';
+        rotateYLinkContainer.querySelector('i').after(i18n.rotateYText);
+        const link = rotateYLinkContainer.querySelector('a');
+
+        let current;
+        const update = function() {
+
+          let ref = viewLargeLink, container, img;
+          if (ref.matches('.WB_detail .WB_expand_media *')) {
+
+            // 已经展开详情的图片
+            container = ref.closest('.WB_detail');
+            img = container.querySelector('.media_show_box img') ||
+              container.querySelector('.current img');
+          } else if (ref.matches('.WB_expand_media .tab_feed_a *')) {
+            // 已经展开详情的评论配图
+            container = ref.closest('.WB_expand_media');
+            img = container.querySelector('.artwork_box img');
+          }
+
+          current = img;
+        };
+        link.addEventListener('click', event => {
+          rotateY(current);
+          event.preventDefault();
+
+        });
+        (new MutationObserver(update)).observe(link, {
+          attributes: true
+        });
+        update();
+
+        return rotateYLinkContainer.firstChild;
+      };      
+      
       // 查看原图
       const showOriginalPage = function ({ images, current }) {
         if (viewType !== 'image') {
