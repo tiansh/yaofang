@@ -442,7 +442,7 @@
           });
         });
         vueSetup.eachComponentVM('scroll', function (vm) {
-          if (['repost-comment-list', 'feed-scroll'].some(id => vueSetup.closest(id))) {
+          if (['repost-comment-list', 'feed-scroll'].some(id => vueSetup.closest(vm, id))) {
             // vm.__proto__.sizeDependencies 里面存的是原本关心的属性
             // 那个没什么统一的好办法给改过来，但是我们可以在 vm 自己身上设置这个属性来覆盖它
             // 因为设置的这个属性我们并不期望以后还有变化，所以我们不需要让它过 Vue 的生命周期 $forceUpdate 就是了

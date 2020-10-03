@@ -404,45 +404,55 @@
 `);
         }
       } else {
-        const noticeKey = strings.randKey();
-
-        util.inject(function (rootKey, noticeKey) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
-
-          vueSetup.transformComponentsRenderByTagName('feed-card-vote', function (nodeStruct, Nodes) {
-            const { vNode, addClass, removeClass } = Nodes;
-
-            const options = Array.from(nodeStruct.querySelectorAll('x-woo-panel'));
-            options.forEach(option => {
-              addClass(option, this.$style.itemed);
-              removeClass(option, this.$style.itemAni);
-              const optionVNode = vNode(option);
-              if (optionVNode.data && optionVNode.data.on && optionVNode.data.on.click) {
-                const vote = this;
-                optionVNode.data.on.click = (function (onclick) {
-                  return function (...args) {
-                    if (!vote.isParted && vote.$parent && !vote.$parent.data.attitudes_status) {
-                      const event = new CustomEvent(noticeKey, {});
-                      window.dispatchEvent(event);
-                      return;
-                    }
-                    onclick(...args);
-                  };
-                }(optionVNode.data.on.click));
-              }
-            });
-          });
-        }, util.inject.rootKey, noticeKey);
-
-        window.addEventListener(noticeKey, function () {
+        const voteBlock = function () {
           ui.alert({
             id: 'yawf-vote-block',
             icon: 'warn',
             title: i18n.voteTitle,
             text: i18n.voteText,
           });
-        });
+        };
+
+        util.inject(function (rootKey, voteBlock) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
+
+          vueSetup.eachComponentVM('feed-card-vote', function (vm) {
+
+            debugger;
+            vueSetup.transformComponentRender(vm, function (render) {
+              return function (createElement, { builder }) {
+                if (this.voteObject.parted) {
+                  return render.call(this, createElement);
+                }
+                debugger;
+                const wrap = Object.create(this, {
+                  isParted: { value: true },
+                  firstParted: { value: true },
+                  voteObject: {
+                    value: Object.create(this.voteObject, {
+                      parted: { value: 1 },
+                    }),
+                  },
+                });
+                this.constructor.options.methods
+                // getAniStyle: { value: this.constructor.options.methods.getAniStyle },
+                wrap.getAniStyle = wrap.getAniStyle.bind(wrap);
+                this.cancelVote = function () {
+
+                };
+                const { nodeStruct, Nodes, getRoot } = builder(render.call(wrap, createElement));
+                const { removeChild } = Nodes;
+                const share = nodeStruct.querySelector(`[class|="${this.$style.btnB}"]`);
+                removeChild(share.parentNode, share);
+                return getRoot();
+              };
+            }, { raw: true });
+
+            vm.$forceUpdate();
+          });
+        }, util.inject.rootKey, voteBlock);
+
       }
     },
   });

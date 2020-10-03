@@ -174,12 +174,16 @@
       });
     };
 
+    const getTag = function (vm) {
+      const name = kebabCase(vm.$options.name || vm.$options._componentTag);
+      return name;
+    };
     /** @type {WeakMap<Object, Node>} */
     const vmToHtmlNode = new WeakMap();
     const seenElement = new WeakSet();
     const markElement = function (node, vm) {
       if (!vm || vm.$el !== node) return;
-      const tag = kebabCase((vm.$options || {})._componentTag);
+      const tag = getTag(vm);
       if (tag && node instanceof Element) {
         if (node.hasAttribute('yawf-component-tag')) {
           const tags = [...new Set([...node.getAttribute('yawf-component-tag').split(' '), tag]).values()].join(' ');
@@ -272,7 +276,7 @@
         if (seen.has(target)) return;
         seen.add(target);
         for (let vm of eachVmForNode(target)) {
-          if (kebabCase(vm.$options._componentTag) === kebabCase(tag)) callback(vm);
+          if (getTag(vm) === kebabCase(tag)) callback(vm);
         }
       };
       if (watch) {
@@ -293,7 +297,7 @@
 
     vueSetup.closest = function (vm, tag) {
       for (let p = vm; p; p = p.$parent) {
-        if (kebabCase((p.$options || {})._componentTag) === kebabCase(tag)) {
+        if (getTag(p) === kebabCase(tag)) {
           return p;
         }
       }
@@ -328,11 +332,11 @@
       }
       return '';
     };
-    const buildResult = function buildResult(vnode) {
+    const buildNodes = function buildNodes(vnode) {
       if (Array.isArray(vnode)) {
         const fragment = document.createElement('x-yawf-fragment');
         fragment.__vnode__ = vnode;
-        vnode.forEach(child => { fragment.appendChild(buildResult(child)); });
+        vnode.forEach(child => { fragment.appendChild(buildNodes(child)); });
         return fragment;
       }
       const tag = vnode.componentOptions ? 'x-' + kebabCase(vnode.componentOptions.tag) : vnode.tag;
@@ -355,7 +359,7 @@
       if (staticClassName) node.className += ' ' + staticClassName;
       const children = childArray(vnode);
       if (children) children.forEach(vnode => {
-        node.appendChild(buildResult(vnode));
+        node.appendChild(buildNodes(vnode));
       });
       return node;
     };
@@ -366,7 +370,7 @@
       if (refNode === null) {
         return appendChild(parentNode, newVNode);
       }
-      if (newNode == null) newNode = buildResult(newVNode);
+      if (newNode == null) newNode = buildNodes(newVNode);
       const refVNode = vNode(refNode);
       const parentVNode = vNode(parentNode);
       const children = childArray(parentVNode);
@@ -378,7 +382,7 @@
     const appendChild = function (parentNode, newVNode, newNode) {
       const parentVNode = vNode(parentNode);
       const children = childArray(parentVNode, true);
-      if (newNode == null) newNode = buildResult(newVNode);
+      if (newNode == null) newNode = buildNodes(newVNode);
       children.push(newVNode);
       parentNode.appendChild(newNode);
       return newNode;
@@ -394,7 +398,7 @@
     };
     const wrapNode = function (chroot) {
       return function (refNode, newVNode) {
-        const newNode = buildResult(newVNode);
+        const newNode = buildNodes(newVNode);
         const refVNode = vNode(refNode);
         const parentNode = refNode.parentNode;
         if (!parentNode) {
@@ -439,38 +443,54 @@
       if (!slots || !slots[slotName]) return;
       slots[slotName] = transformRender(slots[slotName], transformer);
     };
+    const builder = function (createElement) {
+      return function (root) {
+        const replaceRoot = newRoot => { root = newRoot; };
+        const nodeStruct = buildNodes(root);
+        const Nodes = {
+          vNode,
+          replaceRoot,
+          insertBefore,
+          removeChild,
+          appendChild,
+          wrapNode: wrapNode(replaceRoot),
+          unwrapNode: changeRoot(replaceRoot),
+          addClass,
+          removeClass,
+          createElement,
+          h: createElement,
+          transformSlot,
+        };
+        return {
+          nodeStruct,
+          Nodes,
+          getRoot: () => root,
+        };
+      };
+    };
 
-    const transformRender = function (render, transformer) {
+    const transformRender = function (render, transformer, { raw = false } = {}) {
+      if (raw) {
+        return function (createElement) {
+          return transformer(render).call(this, createElement, { builder: builder(createElement) });
+        };
+      }
       return function (createElement) {
-        let vdom = render.call(this, createElement);
-        const chroot = root => { vdom = root; };
-        const nodeStruct = buildResult(vdom);
+        const { nodeStruct, Nodes, getRoot } = builder(createElement)(render.call(this, createElement));
         try {
-          transformer.call(this, nodeStruct, {
-            vNode,
-            insertBefore,
-            removeChild,
-            appendChild,
-            wrapNode: wrapNode(chroot),
-            unwrapNode: changeRoot(chroot),
-            addClass,
-            removeClass,
-            createElement,
-            h: createElement,
-            transformSlot,
-          });
+          transformer.call(this, nodeStruct, Nodes);
         } catch (e) {
           console.error('YAWF Error while inject render: %o', e);
         }
-        return vdom;
+        return getRoot();
       };
     };
-    const transformComponentRender = vueSetup.transformComponentRender = function (vm, transformer) {
-      vm.$options.render = transformRender(vm.$options.render, transformer);
+    const transformComponentRender = vueSetup.transformComponentRender = function (vm, transformer, configs = {}) {
+      vm.$options.render = transformRender(vm.$options.render, transformer, configs);
     };
-    vueSetup.transformComponentsRenderByTagName = function (tag, transformer) {
+    vueSetup.transformComponentsRenderByTagName = function (tag, transformer, configs = {}) {
       eachComponentVM(tag, function (vm) {
-        transformComponentRender(vm, transformer);
+        transformComponentRender(vm, transformer, configs);
         vm.$forceUpdate();
       });
     };

@@ -175,14 +175,8 @@
         const yawf = window[rootKey];
         const vueSetup = yawf.vueSetup;
 
-        // 顶部导航栏也叫 nav
-        // 左侧那个玩意儿也叫 nav
-        // 大概是用 compontent 挂出来的，这个没办法
-        vueSetup.transformComponentsRenderByTagName('nav', function (nodeStruct, Nodes) {
+        vueSetup.transformComponentsRenderByTagName('weibo-top-nav-base', function (nodeStruct, Nodes) {
           const { h, wrapNode, vNode } = Nodes;
-
-          if (!nodeStruct.firstChild) return;
-          if (((vNode(nodeStruct.firstChild).data || {}).attrs || {}).role !== 'navigation') return;
 
           const navIcon = nodeStruct.querySelector('span');
           if (navIcon) {

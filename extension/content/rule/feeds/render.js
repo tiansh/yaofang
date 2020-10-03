@@ -159,11 +159,11 @@
       }
 
       // 标记一下时间和来源
-      const headInfo = nodeStruct.querySelector('x-feed-head-info');
+      const headInfo = nodeStruct.querySelector('x-head-info');
       addClass(headInfo, 'yawf-feed-head-info');
     });
 
-    vueSetup.transformComponentsRenderByTagName('feed-head-info', function (nodeStruct, Nodes) {
+    vueSetup.transformComponentsRenderByTagName('head-info', function (nodeStruct, Nodes) {
       const { h, insertBefore, removeChild, addClass, vNode } = Nodes;
 
       // 微博详情
@@ -194,7 +194,7 @@
     vueSetup.transformComponentsRenderByTagName('feed-content', function (nodeStruct, Nodes) {
       const { vNode, addClass, wrapNode, h } = Nodes;
 
-      const headInfo = nodeStruct.querySelector('x-feed-head-info');
+      const headInfo = nodeStruct.querySelector('x-head-info');
       if (headInfo) {
         addClass(headInfo, 'yawf-feed-head-info yawf-feed-head-info-retweet');
         const headInfoVNode = vNode(headInfo);
@@ -276,7 +276,7 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-card-video', function (nodeStruct, Nodes) {
-      const { addClass } = Nodes;
+      const { addClass, removeChild, appendChild, h } = Nodes;
       // 视频
       addClass(nodeStruct, 'yawf-feed-video');
       if (this.isPlaying) {

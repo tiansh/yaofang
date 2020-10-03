@@ -37,12 +37,18 @@
         }
       });
       util.inject(function (url, callback, key) {
-        window[callback] = function (data) {
-          const event = new CustomEvent(key, {
-            detail: { data: JSON.stringify(data) },
-          });
-          window.dispatchEvent(event);
-        };
+        Object.defineProperty(window, callback, {
+          configurable: true,
+          enumerable: false,
+          writable: true,
+          value: function (data) {
+            const event = new CustomEvent(key, {
+              detail: { data: JSON.stringify(data) },
+            });
+            window.dispatchEvent(event);
+            delete window[callback];
+          },
+        });
         const reject = function () {
           const event = new CustomEvent(key, { detail: { } });
           window.dispatchEvent(event);

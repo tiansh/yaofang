@@ -387,7 +387,7 @@
     parent: sidebar.sidebar,
     template: () => i18n.showAllGroups,
     ainit() {
-      if (yawf.weiboVersion === 6) {
+      if (yawf.WEIBO_VERSION === 6) {
         css.append(`
 .lev_Box .levmore { display: none !important; }
 .lev_Box [node-type="moreList"] { display: block !important; height: auto !important; }
@@ -402,22 +402,20 @@
             navSpecial: 'special',
             navMutual: 'friends',
           };
-          vueSetup.eachComponentVM('home', function (vm) {
-            if (Array.isArray(vm.customList)) {
-              vm.$watch(function () { return this.customTabs; }, function () {
-                if (vm.customTabs && Array.isArray(vm.customTabs.list)) {
-                  vm.customList = [...vm.customTabs.list];
-                }
-              }, { immediate: true });
-              vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
-                const { removeChild } = Nodes;
-
-                const moreButton = nodeStruct.querySelector('x-woo-box:last-child');
-                if (nodeStruct.lastChild === moreButton) {
-                  removeChild(nodeStruct, moreButton);
-                }
-              });
+          vueSetup.eachComponentVM('left-nav-home', function (vm) {
+            if (!Array.isArray(vm.customList)) return;
+            vm.customShowCount = Infinity;
+            if (vm.customTabs && Array.isArray(vm.customTabs.list)) {
+              vm.customList = [...vm.customTabs.list];
             }
+            vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+              const { removeChild } = Nodes;
+
+              const moreButton = nodeStruct.querySelector('x-woo-box:last-child');
+              if (nodeStruct.lastChild === moreButton) {
+                removeChild(nodeStruct, moreButton);
+              }
+            });
           });
         }, util.inject.rootKey);
       }
@@ -440,7 +438,7 @@
         const yawf = window[rootKey];
         const vueSetup = yawf.vueSetup;
 
-        vueSetup.transformComponentsRenderByTagName('home', function (nodeStruct, Nodes) {
+        vueSetup.transformComponentsRenderByTagName('left-nav-home', function (nodeStruct, Nodes) {
           const { h, wrapNode, vNode } = Nodes;
 
           const items = nodeStruct.querySelectorAll('x-nav-item');

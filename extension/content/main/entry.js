@@ -188,20 +188,12 @@
       rule.dialog(tab);
     } catch (e) { util.debug('Error while prompting dialog: %o', e); }
   };
-  document.documentElement.addEventListener('yawf-showRuleDialog', function () {
-    showRuleDialog();
-  });
 
   init.onLoad(() => {
     if (yawf.WEIBO_VERSION !== 7) return;
-    util.inject(function (rootKey) {
+    util.inject(function (rootKey, showRuleDialog) {
       const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;
-
-      const showRuleDialog = function () {
-        const event = new CustomEvent('yawf-showRuleDialog');
-        document.documentElement.dispatchEvent(event);
-      };
 
       vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
         vm.configs.splice(-1, 0, {
@@ -221,7 +213,7 @@
           }.bind(vm);
         }(vm.configHandle));
       });
-    }, util.inject.rootKey);
+    }, util.inject.rootKey, showRuleDialog);
   });
 
 }());
