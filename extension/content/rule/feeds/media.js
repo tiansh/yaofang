@@ -640,6 +640,7 @@
   });
 
   media.useBuiltInVideoPlayer = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'feed_built_in_video_player',
     version: 60,
     parent: media.media,
@@ -658,77 +659,78 @@
       i: { type: 'bubble', icon: 'warn', template: () => i18n.useBuiltInVideoPlayerDetail },
     },
     ainit() {
-      const rule = this;
-      const getVideoSource = function (videoSources) {
-        const videoSourceData = new URLSearchParams(videoSources);
-        const quality = rule.ref.quality.getConfig();
-        const qualityTypes = [];
-        const allKeys = Array.from(videoSourceData).map(([key]) => key);
-        if (quality === 'best') {
-          const available = allKeys.filter(Number).sort((x, y) => y - x);
-          qualityTypes.push(...available.map(q => String(q)));
-        }
-        qualityTypes.push(videoSourceData.get('qType'), ...allKeys);
-        const qualityType = qualityTypes.find(q => /^https?(?::|%3A)/i.test(videoSourceData.get(q)));
-        let videoSource = videoSourceData.get(qualityType);
-        // 有时候会被转义两次，所以要再额外处理一次，原因不明
-        if (/^https?%3A/i.test(videoSource)) {
-          videoSource = decodeURIComponent(videoSource);
-        }
-        // http 会直接被浏览器拦掉，但是有的历史数据是 http
-        videoSource = videoSource.replace(/^http:/, 'https:');
-        return videoSource;
-      };
-      const replaceWeiboVideoPlayer = function replaceWeiboVideoPlayer() {
-        const containers = document.querySelectorAll('li.WB_video[node-type="fl_h5_video"][video-sources]');
-        containers.forEach(function (container) {
-          const smallImage = yawf.rules.feeds.layout.smallImage.getConfig();
-          const cover = container.querySelector('[node-type="fl_h5_video_pre"] img');
-          if (!cover) return;
-          const video = container.querySelector('video');
-          if (video) video.src = 'data:text/plain,42';
-          const videoSource = getVideoSource(container.getAttribute('video-sources'));
-          const newContainer = document.createElement('li');
-          newContainer.className = container.className;
-          newContainer.classList.add('yawf-WB_video');
-          const newVideo = document.createElement('video');
-          newVideo.poster = cover.src;
-          newVideo.src = videoSource;
-          newVideo.preload = 'none';
-          newVideo.controls = !smallImage;
-          newVideo.autoplay = false;
-          const updatePlayState = function () {
-            const isPlaying = !newVideo.paused || newVideo.seeking;
-            if (isPlaying) newContainer.setAttribute('yawf-video-play', '');
-            else newContainer.removeAttribute('yawf-video-play');
-            if (smallImage) newVideo.controls = isPlaying;
-          };
-          newVideo.addEventListener('play', updatePlayState);
-          newVideo.addEventListener('pause', updatePlayState);
-          if (smallImage) {
-            newContainer.addEventListener('click', () => {
-              if (!newContainer.hasAttribute('yawf-video-play')) newVideo.play();
-            });
-            const tip = document.createElement('i');
-            tip.className = 'W_icon_tag_v2';
-            tip.textContent = i18n.mediaVideoType;
-            newContainer.appendChild(tip);
+      if (yawf.WEIBO_VERSION === 6) {
+        const rule = this;
+        const getVideoSource = function (videoSources) {
+          const videoSourceData = new URLSearchParams(videoSources);
+          const quality = rule.ref.quality.getConfig();
+          const qualityTypes = [];
+          const allKeys = Array.from(videoSourceData).map(([key]) => key);
+          if (quality === 'best') {
+            const available = allKeys.filter(Number).sort((x, y) => y - x);
+            qualityTypes.push(...available.map(q => String(q)));
           }
-          newVideo.volume = rule.ref.volume.getConfig() / 100;
-          if (rule.ref.memorize.getConfig()) {
-            newVideo.addEventListener('volumechange', () => {
-              rule.ref.volume.setConfig(Math.round(newVideo.volume * 100));
-            });
-            newVideo.addEventListener('play', () => {
-              newVideo.volume = rule.ref.volume.getConfig() / 100;
-            });
+          qualityTypes.push(videoSourceData.get('qType'), ...allKeys);
+          const qualityType = qualityTypes.find(q => /^https?(?::|%3A)/i.test(videoSourceData.get(q)));
+          let videoSource = videoSourceData.get(qualityType);
+          // 有时候会被转义两次，所以要再额外处理一次，原因不明
+          if (/^https?%3A/i.test(videoSource)) {
+            videoSource = decodeURIComponent(videoSource);
           }
-          newContainer.appendChild(newVideo);
-          container.parentNode.replaceChild(newContainer, container);
-        });
-      };
-      observer.dom.add(replaceWeiboVideoPlayer);
-      css.append(`
+          // http 会直接被浏览器拦掉，但是有的历史数据是 http
+          videoSource = videoSource.replace(/^http:/, 'https:');
+          return videoSource;
+        };
+        const replaceWeiboVideoPlayer = function replaceWeiboVideoPlayer() {
+          const containers = document.querySelectorAll('li.WB_video[node-type="fl_h5_video"][video-sources]');
+          containers.forEach(function (container) {
+            const smallImage = yawf.rules.feeds.layout.smallImage.getConfig();
+            const cover = container.querySelector('[node-type="fl_h5_video_pre"] img');
+            if (!cover) return;
+            const video = container.querySelector('video');
+            if (video) video.src = 'data:text/plain,42';
+            const videoSource = getVideoSource(container.getAttribute('video-sources'));
+            const newContainer = document.createElement('li');
+            newContainer.className = container.className;
+            newContainer.classList.add('yawf-WB_video');
+            const newVideo = document.createElement('video');
+            newVideo.poster = cover.src;
+            newVideo.src = videoSource;
+            newVideo.preload = 'none';
+            newVideo.controls = !smallImage;
+            newVideo.autoplay = false;
+            const updatePlayState = function () {
+              const isPlaying = !newVideo.paused || newVideo.seeking;
+              if (isPlaying) newContainer.setAttribute('yawf-video-play', '');
+              else newContainer.removeAttribute('yawf-video-play');
+              if (smallImage) newVideo.controls = isPlaying;
+            };
+            newVideo.addEventListener('play', updatePlayState);
+            newVideo.addEventListener('pause', updatePlayState);
+            if (smallImage) {
+              newContainer.addEventListener('click', () => {
+                if (!newContainer.hasAttribute('yawf-video-play')) newVideo.play();
+              });
+              const tip = document.createElement('i');
+              tip.className = 'W_icon_tag_v2';
+              tip.textContent = i18n.mediaVideoType;
+              newContainer.appendChild(tip);
+            }
+            newVideo.volume = rule.ref.volume.getConfig() / 100;
+            if (rule.ref.memorize.getConfig()) {
+              newVideo.addEventListener('volumechange', () => {
+                rule.ref.volume.setConfig(Math.round(newVideo.volume * 100));
+              });
+              newVideo.addEventListener('play', () => {
+                newVideo.volume = rule.ref.volume.getConfig() / 100;
+              });
+            }
+            newContainer.appendChild(newVideo);
+            container.parentNode.replaceChild(newContainer, container);
+          });
+        };
+        observer.dom.add(replaceWeiboVideoPlayer);
+        css.append(`
 li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video_pre"],
 li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video_disp"] { display: none !important; }
 .yawf-WB_video { transition: width, height 0.2s; }
@@ -737,30 +739,109 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
 .yawf-WB_video .W_icon_tag_v2 { z-index: 1; }
 .WB_video[yawf-video-play] .W_icon_tag_v2 { display: none !important; }
 `);
-      util.inject(function () {
-        const FakeVideoPlayer = function e() { };
-        FakeVideoPlayer.prototype.thumbnail = function () { };
-        FakeVideoPlayer.prototype.playStatus = function () { };
-        if (window.VideoPlayer) {
-          window.VideoPlayer = FakeVideoPlayer;
-          return;
-        }
-        let globalVideoPlayer = void 0;
-        Object.defineProperty(window, 'VideoPlayer', {
-          get() { return globalVideoPlayer; },
-          set(_) { globalVideoPlayer = FakeVideoPlayer; },
-          enumerable: true,
-          configurable: false,
+        util.inject(function () {
+          const FakeVideoPlayer = function e() { };
+          FakeVideoPlayer.prototype.thumbnail = function () { };
+          FakeVideoPlayer.prototype.playStatus = function () { };
+          if (window.VideoPlayer) {
+            window.VideoPlayer = FakeVideoPlayer;
+            return;
+          }
+          let globalVideoPlayer = void 0;
+          Object.defineProperty(window, 'VideoPlayer', {
+            get() { return globalVideoPlayer; },
+            set(_) { globalVideoPlayer = FakeVideoPlayer; },
+            enumerable: true,
+            configurable: false,
+          });
         });
-      });
-      // 这几行分别是不显示视频弹层按钮，显示全屏按钮，以及点视频时不弹层
-      // 因为直播视频没办法替换成原生播放器，所以这两个功能还需要保留
-      // 这里直接把这几个功能放在这里，不单独做一个功能了
-      css.append(`
+        // 这几行分别是不显示视频弹层按钮，显示全屏按钮，以及点视频时不弹层
+        // 因为直播视频没办法替换成原生播放器，所以这两个功能还需要保留
+        // 这里直接把这几个功能放在这里，不单独做一个功能了
+        css.append(`
 .wbv-pop-control { display: none !important; }
 .wbv-fullscreen-control { display: block !important; }
 .wbv-pop-layer { display: none !important; }
 `);
+      } else {
+        const configs = {
+          memorize: this.ref.memorize.getConfig(),
+          volume: this.ref.volume.getConfig(),
+          quality: this.ref.quality.getConfig(),
+        };
+
+        const updateVolume = function (volume) {
+          if (typeof volume !== 'number') return;
+          if (volume < 0 || volume > 100 || !Number.isFinite(volume)) return;
+          this.ref.volume.setConfig(Math.round(volume));
+        };
+
+        util.inject(function (rootKey, configs, updateVolume) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
+
+          const { quality, memorize } = configs;
+          let volume = configs.volume;
+
+          const setVolume = function (video) {
+            const target = Math.round(volume) / 100;
+            if (video.paused && video.volume !== target) {
+              video.volume = target;
+            }
+          };
+          const onPlay = function (event) {
+            setVolume(event.target);
+          };
+          const onVolumechange = function (event) {
+            if (!memorize) return;
+            const video = event.target;
+            volume = Math.round(video.volume * 100);
+            updateVolume(volume);
+            Array.from(document.querySelectorAll('.yawf-feed-video')).forEach(setVolume);
+          };
+          const onLoadstart = function (event) {
+            setVolume(event.target);
+          };
+
+          vueSetup.transformComponentsRenderByTagName('feed-card-video', function (nodeStruct, Nodes) {
+            const { removeChild, appendChild, h } = Nodes;
+
+            // 去掉原本渲染的视频播放器
+            while (nodeStruct.firstChild) {
+              removeChild(nodeStruct, nodeStruct.firstChild);
+            }
+            // 我们自己画一个视频播放器上去
+            const playback = this.playbackList.find(x => x.play_info && x.play_info.url);
+            const url = quality === 'best' && playback ? playback.play_info.url : this.videoSrc;
+            const videoWrap = h('div', {
+              ref: 'videoWrapper',
+              class: [this.$style.videoBox],
+            }, [h('div', {
+              ref: 'videoContainer',
+              class: [this.$style.placeholder],
+            }, [h('div', {
+              class: [this.$style.video, 'wbp-video'],
+            }, [h('video', {
+              ref: 'video',
+              class: ['yawf-video', 'yawf-feed-video', 'wbpv-tech'],
+              attrs: {
+                src: url,
+                poster: this.thumbnail,
+                preloat: 'meta',
+                controls: true,
+              },
+              on: {
+                play: onPlay,
+                volumechange: onVolumechange,
+                loadstart: onLoadstart,
+              },
+            })])])]);
+            appendChild(nodeStruct, videoWrap);
+          });
+
+        }, util.inject.rootKey, configs, updateVolume);
+
+      }
     },
   });
 
