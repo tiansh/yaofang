@@ -340,16 +340,26 @@
 
           let lastHeight = element.offsetHeight, newHeight = null;
           let dirty = false;
-          vm.$set(vm[attr], '_yawf_Size', lastHeight);
+          const sizeUnderHook = new WeakSet();
+          // 因为不同元素会复用这个 sensor，所以要根据是否 _yawf_Size 属性可响应使用不同的方式设置
+          const setAttr = function (height) {
+            if (sizeUnderHook.has(vm[attr])) {
+              vm[attr]._yawf_Size = height;
+            } else {
+              vm.$set(vm[attr], '_yawf_Size', height);
+              sizeUnderHook.add(vm);
+            }
+          };
+          setAttr(lastHeight);
           const reset = function () {
-            expand.scrollTop = 1e6;
-            shrink.scrollTop = 1e6;
+            expand.scrollTop = 1e5;
+            shrink.scrollTop = 1e5;
           };
           reset();
           const onResized = function () {
             if (lastHeight === newHeight) return;
             lastHeight = newHeight;
-            vm[attr]._yawf_Size = newHeight;
+            setAttr(lastHeight);
             reset();
           };
           const onScroll = function () {
@@ -364,11 +374,11 @@
           expand.addEventListener('scroll', onScroll);
           shrink.addEventListener('scroll', onScroll);
         };
-        const addResizeSensor = function (vdom, h) {
+        const addResizeSensor = function (vdom, id, h) {
           // 在末尾插入一个用来侦测元素高度的元素
           const children = vdom.children || vdom.componentOptions.children;
           if (Array.isArray(children)) {
-            const resizeSensor = h('div', { key: 'yawf-resize-sensor', class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
+            const resizeSensor = h('div', { key: 'yawf-resize-sensor-' + id, class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
               h('div', { class: 'yawf-resize-sensor-expand', ref: 'yawf_resize_sensor_expand' }, [
                 h('div', { class: 'yawf-resize-sensor-child' }),
               ]),
@@ -407,7 +417,7 @@
                 result.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
               }
               if (scrollItem) {
-                addResizeSensor(result, createElement);
+                addResizeSensor(result, result.data.id, createElement);
               }
               return result;
             };
@@ -428,7 +438,7 @@
               return function (createElement) {
                 const result = render.call(this, createElement);
                 if (scrollItem) {
-                  addResizeSensor(result, createElement);
+                  addResizeSensor(result, vm.item.id, createElement);
                 }
                 return result;
               };
@@ -517,7 +527,7 @@
 .yawf-WBV7 .yawf-resize-sensor,
 .yawf-WBV7 .yawf-resize-sensor-expand,
 .yawf-WBV7 .yawf-resize-sensor-shrink { position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; z-index: -1; visibility: hidden; }
-.yawf-WBV7 .yawf-resize-sensor-expand .yawf-resize-sensor-child { width: 1000000px; height: 1000000px; }
+.yawf-WBV7 .yawf-resize-sensor-expand .yawf-resize-sensor-child { width: 100000px; height: 100000px; }
 .yawf-WBV7 .yawf-resize-sensor-shrink .yawf-resize-sensor-child { width: 200%; height: 200%; }
 .yawf-WBV7 .yawf-resize-sensor-child { position: absolute; top: 0; left: 0; transition: 0s; }
 `);

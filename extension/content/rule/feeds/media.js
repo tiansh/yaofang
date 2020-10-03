@@ -764,6 +764,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
 .wbv-pop-layer { display: none !important; }
 `);
       } else {
+        const rule = this;
         const configs = {
           memorize: this.ref.memorize.getConfig(),
           volume: this.ref.volume.getConfig(),
@@ -773,7 +774,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
         const updateVolume = function (volume) {
           if (typeof volume !== 'number') return;
           if (volume < 0 || volume > 100 || !Number.isFinite(volume)) return;
-          this.ref.volume.setConfig(Math.round(volume));
+          rule.ref.volume.setConfig(Math.round(volume));
         };
 
         util.inject(function (rootKey, configs, updateVolume) {
@@ -790,6 +791,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
             }
           };
           const onPlay = function (event) {
+            this.isPlaying = true;
             setVolume(event.target);
           };
           const onVolumechange = function (event) {
@@ -803,7 +805,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
             setVolume(event.target);
           };
 
-          vueSetup.transformComponentsRenderByTagName('feed-card-video', function (nodeStruct, Nodes) {
+          vueSetup.transformComponentsRenderByTagName('feed-video', function (nodeStruct, Nodes) {
             const { removeChild, appendChild, h } = Nodes;
 
             // 去掉原本渲染的视频播放器
@@ -827,13 +829,13 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
               attrs: {
                 src: url,
                 poster: this.thumbnail,
-                preloat: 'meta',
+                preload: 'auto',
                 controls: true,
               },
               on: {
-                play: onPlay,
-                volumechange: onVolumechange,
-                loadstart: onLoadstart,
+                play: onPlay.bind(this),
+                volumechange: onVolumechange.bind(this),
+                loadstart: onLoadstart.bind(this),
               },
             })])])]);
             appendChild(nodeStruct, videoWrap);

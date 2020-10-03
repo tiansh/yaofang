@@ -159,7 +159,7 @@
       }
 
       // 标记一下时间和来源
-      const headInfo = nodeStruct.querySelector('x-head-info');
+      const headInfo = nodeStruct.querySelector('x-feed-head-info');
       addClass(headInfo, 'yawf-feed-head-info');
     });
 
@@ -275,7 +275,7 @@
       }
     });
 
-    vueSetup.transformComponentsRenderByTagName('feed-card-video', function (nodeStruct, Nodes) {
+    vueSetup.transformComponentsRenderByTagName('feed-video', function (nodeStruct, Nodes) {
       const { addClass, removeChild, appendChild, h } = Nodes;
       // 视频
       addClass(nodeStruct, 'yawf-feed-video');
@@ -295,12 +295,12 @@
       addClass(content, 'yawf-feed-card-content');
     });
 
-    vueSetup.transformComponentsRenderByTagName('feed-card-article', function (nodeStruct, Nodes) {
+    vueSetup.transformComponentsRenderByTagName('feed-article', function (nodeStruct, Nodes) {
       const { addClass } = Nodes;
       addClass(nodeStruct, 'yawf-feed-card-article');
     });
 
-    vueSetup.transformComponentsRenderByTagName('feed-card-vote', function (nodeStruct, Nodes) {
+    vueSetup.transformComponentsRenderByTagName('feed-vote', function (nodeStruct, Nodes) {
       const { addClass } = Nodes;
       addClass(nodeStruct, 'yawf-feed-card-vote');
     });

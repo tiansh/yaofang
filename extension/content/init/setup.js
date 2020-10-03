@@ -480,7 +480,7 @@
         try {
           transformer.call(this, nodeStruct, Nodes);
         } catch (e) {
-          console.error('YAWF Error while inject render: %o', e);
+          console.error('YAWF Error while inject render [%o]: %o', transformer, e);
         }
         return getRoot();
       };
