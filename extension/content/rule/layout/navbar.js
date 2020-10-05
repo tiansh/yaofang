@@ -193,12 +193,28 @@
 
           const items = nodeStruct.querySelectorAll('x-woo-tab-item > x-woo-box ');
           [...items].forEach((item, index) => {
-            if (!this.navItems[index].link) return;
+            const navItem = this.navItems[index];
+            let url = navItem.link;
+            if (!url && navItem.name === 'profile') {
+              url = `/u/${this.$root.config.uid}`;
+            }
+            if (!url) return;
             const linkVNode = h('a', {
               class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
-              attrs: { href: this.navItems[index].link },
+              attrs: { href: url },
             });
             wrapNode(item, linkVNode);
+          });
+        });
+        vueSetup.transformComponentsRenderByTagName('links', function (nodeStruct, Nodes) {
+          const { vNode } = Nodes;
+          const items = nodeStruct.querySelectorAll('a');
+          [...items].forEach((item, index) => {
+            const linkItem = this.linkItems[index];
+            const vnode = vNode(item);
+            if (!vnode.data) vnode.data = {};
+            if (!vnode.data.atttrs) vnode.data.atttrs = {};
+            vnode.data.attrs.href = linkItem.href;
           });
         });
       }, util.inject.rootKey);

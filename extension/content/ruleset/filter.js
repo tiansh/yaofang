@@ -163,6 +163,39 @@
    */
   observer.comment = new FilterObserver();
 
+  const hideFeedCss = css.add(`
+.yawf-WBV6 [action-type="feed_list_item"]:not([yawf-feed]),
+.yawf-WBV6 [node-type="feed_list"] .WB_feed_type:not([yawf-feed]),
+.yawf-WBV6 .list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment]),
+.yawf-WBV6 .list_ul[node-type="comment_list"] .list_li:not([yawf-comment])
+.yawf-WBV6 { visibility: hidden; opacity: 0; }
+.yawf-WBV6 [action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
+.yawf-WBV6 [yawf-feed]:not([yawf-feed-display]), [yawf-comment]:not([yawf-comment-display]) { visibility: hidden; opacity: 0; }
+.yawf-WBV6 [yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }
+.yawf-WBV6 [yawf-feed-display="fold"] { position: relative; }
+.yawf-WBV6 [yawf-feed-display="fold"] > * { display: none; }
+.yawf-WBV6 [yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; line-height: 16px; }
+.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: none; }
+.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { display: block; overflow: hidden; padding: 0 20px 27px; }
+.yawf-WBV6 .WB_feed.WB_feed_v3 .WB_feed_type[yawf-feed-display="fold"].WB_feed_vipcover:hover .WB_feed_detail { padding-top: 0; }
+.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
+
+.yawf-WBV7 .yawf-feed-filter-loading,
+.yawf-WBV7 .yawf-feed-filter-running { visibility: hidden; }
+.yawf-WBV7 .yawf-resize-sensor,
+.yawf-WBV7 .yawf-resize-sensor-expand,
+.yawf-WBV7 .yawf-resize-sensor-shrink { position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; z-index: -1; visibility: hidden; }
+.yawf-WBV7 .yawf-resize-sensor-expand .yawf-resize-sensor-child { width: 100000px; height: 100000px; }
+.yawf-WBV7 .yawf-resize-sensor-shrink .yawf-resize-sensor-child { width: 200%; height: 200%; }
+.yawf-WBV7 .yawf-resize-sensor-child { position: absolute; top: 0; left: 0; transition: 0s; }
+`);
+
+  init.onLoad(function () {
+    css.append(`.yawf-WBV6 [yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);
+  });
+  init.onDeinit(() => {
+    hideFeedCss.remove();
+  });
 
   init.onLoad(function () {
     if (yawf.WEIBO_VERSION === 6) {
@@ -333,65 +366,8 @@
             vm.data.splice(index, 1);
           }
         };
-        const setupSizeSensor = function (vm, attr) {
-          const element = vm.$refs.yawf_resize_sensor_element;
-          const expand = vm.$refs.yawf_resize_sensor_expand;
-          const shrink = vm.$refs.yawf_resize_sensor_shrink;
-
-          let lastHeight = element.offsetHeight, newHeight = null;
-          let dirty = false;
-          const sizeUnderHook = new WeakSet();
-          // 因为不同元素会复用这个 sensor，所以要根据是否 _yawf_Size 属性可响应使用不同的方式设置
-          const setAttr = function (height) {
-            if (sizeUnderHook.has(vm[attr])) {
-              vm[attr]._yawf_Size = height;
-            } else {
-              vm.$set(vm[attr], '_yawf_Size', height);
-              sizeUnderHook.add(vm);
-            }
-          };
-          setAttr(lastHeight);
-          const reset = function () {
-            expand.scrollTop = 1e5;
-            shrink.scrollTop = 1e5;
-          };
-          reset();
-          const onResized = function () {
-            if (lastHeight === newHeight) return;
-            lastHeight = newHeight;
-            setAttr(lastHeight);
-            reset();
-          };
-          const onScroll = function () {
-            newHeight = element.offsetHeight;
-            if (dirty) return;
-            dirty = true;
-            requestAnimationFrame(function () {
-              dirty = false;
-              onResized();
-            });
-          };
-          expand.addEventListener('scroll', onScroll);
-          shrink.addEventListener('scroll', onScroll);
-        };
-        const addResizeSensor = function (vdom, id, h) {
-          // 在末尾插入一个用来侦测元素高度的元素
-          const children = vdom.children || vdom.componentOptions.children;
-          if (Array.isArray(children)) {
-            const resizeSensor = h('div', { key: 'yawf-resize-sensor-' + id, class: 'yawf-resize-sensor', ref: 'yawf_resize_sensor_element' }, [
-              h('div', { class: 'yawf-resize-sensor-expand', ref: 'yawf_resize_sensor_expand' }, [
-                h('div', { class: 'yawf-resize-sensor-child' }),
-              ]),
-              h('div', { class: 'yawf-resize-sensor-shrink', ref: 'yawf_resize_sensor_shrink' }, [
-                h('div', { class: 'yawf-resize-sensor-child' }),
-              ]),
-            ]);
-            children.push(resizeSensor);
-          }
-        };
         vueSetup.eachComponentVM('feed', function (vm) {
           const feedScroll = vueSetup.closest(vm, 'feed-scroll');
-          const scrollItem = vueSetup.closest(vm, 'scroll');
 
           // 在渲染一条 feed 时，额外插入过滤状态的标识
           vm.$options.render = (function (render) {
@@ -416,49 +392,94 @@
               if (this.data._yawf_FilterReason) {
                 result.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
               }
-              if (scrollItem) {
-                addResizeSensor(result, result.data.id, createElement);
-              }
               return result;
             };
           }(vm.$options.render));
           vm.$forceUpdate();
-          // 每次高度变化时更新 _yawf_Size 属性
+          // 每次高度变化时更新 _yawf_Height 属性
           // 我也不知道这段代码怎么工作起来的，反正网上的代码就这逻辑，然后也真的能用
-          if (scrollItem) {
-            vm.$nextTick(function () {
-              setupSizeSensor(vm, 'data');
-            });
-          }
-        });
-        ['comment', 'repost', 'reply'].forEach(componentName => {
-          vueSetup.eachComponentVM(componentName, function (vm) {
-            const scrollItem = vueSetup.closest(vm, 'scroll');
-            vm.$options.render = (function (render) {
-              return function (createElement) {
-                const result = render.call(this, createElement);
-                if (scrollItem) {
-                  addResizeSensor(result, vm.item.id, createElement);
-                }
-                return result;
-              };
-            }(vm.$options.render));
-            vm.$forceUpdate();
-            if (scrollItem) {
-              vm.$nextTick(function () {
-                setupSizeSensor(vm, 'item');
-              });
-            }
-          });
         });
         vueSetup.eachComponentVM('scroll', function (vm) {
-          if (['repost-comment-list', 'feed-scroll'].some(id => vueSetup.closest(vm, id))) {
-            // vm.__proto__.sizeDependencies 里面存的是原本关心的属性
-            // 那个没什么统一的好办法给改过来，但是我们可以在 vm 自己身上设置这个属性来覆盖它
-            // 因为设置的这个属性我们并不期望以后还有变化，所以我们不需要让它过 Vue 的生命周期 $forceUpdate 就是了
-            Object.defineProperty(vm, 'sizeDependencies', { value: ['_yawf_Size'], configurable: true, enumerable: true, writable: true });
-            vm.$forceUpdate();
-          }
+          const wrapRaf = function (f) {
+            let dirty = false;
+            return function () {
+              if (dirty) return;
+              dirty = true;
+              requestAnimationFrame(function () {
+                dirty = false;
+                f();
+              });
+            };
+          };
+          // vm.__proto__.sizeDependencies 里面存的是原本关心的属性
+          // 那个没什么统一的好办法给改过来，但是我们可以在 vm 自己身上设置这个属性来覆盖它
+          // 因为设置的这个属性我们并不期望以后还有变化，所以我们不需要让它过 Vue 的生命周期 $forceUpdate 就是了
+          Object.defineProperty(vm, 'sizeDependencies', { value: ['_yawf_Height'], configurable: true, enumerable: true, writable: true });
+          const onScroll = function (index) {
+            return wrapRaf(function () {
+              const container = vm.$refs['yawf_resize_sensor_element_' + index];
+              if (!container) return;
+              vm.data[index]._yawf_Height = container.clientHeight;
+              const [expand, shrink] = container.children;
+              expand.scrollTop = 1e5;
+              shrink.scrollTop = 1e5;
+            });
+          };
+          const updateSensor = wrapRaf(function () {
+            const allSensor = Object.keys(vm.$refs).filter(key => key.startsWith('yawf_resize_sensor_element_'));
+            allSensor.forEach(key => {
+              const container = vm.$refs[key];
+              if (!container) return;
+              const [expand, shrink] = container.children;
+              if (expand.scrollTop !== 0 && shrink.scrollTop !== 0) return;
+              const index = Number.parseInt(key.slice('yawf_resize_sensor_element_'.length), 10);
+              expand.scrollTop = 1e5;
+              shrink.scrollTop = 1e5;
+              vm.data[index]._yawf_Height = container.clientHeight;
+            });
+          });
+          vm.$scopedSlots.content = (function (content) {
+            return function (data) {
+              const createElement = vm._self._c, h = createElement;
+              const raw = content.call(this, data);
+              const { index } = data;
+              const resizeSensor = h('div', {
+                class: 'yawf-resize-sensor',
+                ref: 'yawf_resize_sensor_element_' + index,
+              }, [
+                h('div', {
+                  class: 'yawf-resize-sensor-expand',
+                  on: { scroll: onScroll(index) },
+                }, [
+                  h('div', { class: 'yawf-resize-sensor-child' }),
+                ]),
+                h('div', {
+                  class: 'yawf-resize-sensor-shrink',
+                  on: { scroll: onScroll(index) },
+                }, [
+                  h('div', { class: 'yawf-resize-sensor-child' }),
+                ]),
+              ]);
+              const result = Array.isArray(raw) ? raw : [raw];
+              result.push(resizeSensor);
+              updateSensor();
+              return result;
+            };
+          }(vm.$scopedSlots.content));
+          vm.$watch(function () { return this.data; }, function () {
+            if (!Array.isArray(vm.data)) return;
+            vm.data.forEach(item => {
+              const descriptor = Object.getOwnPropertyDescriptor(item, '_yawf_Height');
+              if (!descriptor) {
+                vm.$set(item, '_yawf_Height', 0);
+              } else if (!descriptor.set) {
+                const size = vm._yawf_Height;
+                delete vm._yawf_Height;
+                vm.$set(item, '_yawf_Height', size);
+              }
+            });
+          });
+          vm.$forceUpdate();
         });
         window.addEventListener(key, function (event) {
           const detail = JSON.parse(event.detail);
@@ -504,39 +525,6 @@
     tw: '"已折疊 @" attr(yawf-feed-author) " 的一條微博"',
     en: '"A feed posted by @" attr(yawf-feed-author)',
   };
-
-  const hideFeedCss = css.add(`
-.yawf-WBV6 [action-type="feed_list_item"]:not([yawf-feed]),
-.yawf-WBV6 [node-type="feed_list"] .WB_feed_type:not([yawf-feed]),
-.yawf-WBV6 .list_ul[node-type="feed_list_commentList"] .list_li:not([yawf-comment]),
-.yawf-WBV6 .list_ul[node-type="comment_list"] .list_li:not([yawf-comment])
-.yawf-WBV6 { visibility: hidden; opacity: 0; }
-.yawf-WBV6 [action-type="feed_list_item"]:not([yawf-feed]) [node-type="feed_list"] .WB_feed_type:not([yawf-feed]) { display: none; }
-.yawf-WBV6 [yawf-feed]:not([yawf-feed-display]), [yawf-comment]:not([yawf-comment-display]) { visibility: hidden; opacity: 0; }
-.yawf-WBV6 [yawf-comment-display="hide"], [yawf-feed-display="hide"] { display: none; }
-.yawf-WBV6 [yawf-feed-display="fold"] { position: relative; }
-.yawf-WBV6 [yawf-feed-display="fold"] > * { display: none; }
-.yawf-WBV6 [yawf-feed-display="fold"]::before { text-align: center; padding: 10px 20px; display: block; opacity: 0.6; line-height: 16px; }
-.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_detail { display: none; }
-.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"]:hover .WB_feed_detail:not(:hover) { display: block; overflow: hidden; padding: 0 20px 27px; }
-.yawf-WBV6 .WB_feed.WB_feed_v3 .WB_feed_type[yawf-feed-display="fold"].WB_feed_vipcover:hover .WB_feed_detail { padding-top: 0; }
-.yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
-
-.yawf-WBV7 .yawf-feed-filter-loading,
-.yawf-WBV7 .yawf-feed-filter-running { visibility: hidden; }
-.yawf-WBV7 .yawf-resize-sensor,
-.yawf-WBV7 .yawf-resize-sensor-expand,
-.yawf-WBV7 .yawf-resize-sensor-shrink { position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; z-index: -1; visibility: hidden; }
-.yawf-WBV7 .yawf-resize-sensor-expand .yawf-resize-sensor-child { width: 100000px; height: 100000px; }
-.yawf-WBV7 .yawf-resize-sensor-shrink .yawf-resize-sensor-child { width: 200%; height: 200%; }
-.yawf-WBV7 .yawf-resize-sensor-child { position: absolute; top: 0; left: 0; transition: 0s; }
-`);
-  init.onLoad(function () {
-    css.append(`.yawf-WBV6 [yawf-feed-display="fold"]::before { content: ${i18n.foldReason}; }`);
-  });
-  init.onDeinit(() => {
-    hideFeedCss.remove();
-  });
 
   // 单条微博页面永远不应当隐藏微博
   observer.feed.filter(function singleWeiboPageUnsetRule() {

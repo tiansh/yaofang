@@ -159,13 +159,14 @@
       }
 
       // 标记一下时间和来源
-      const headInfo = nodeStruct.querySelector('x-feed-head-info');
+      const headInfo = nodeStruct.querySelector('x-head-info');
       addClass(headInfo, 'yawf-feed-head-info');
     });
 
     vueSetup.transformComponentsRenderByTagName('head-info', function (nodeStruct, Nodes) {
       const { h, insertBefore, removeChild, addClass, vNode } = Nodes;
 
+      addClass(nodeStruct, 'yawf-head-info');
       // 微博详情
       const link = nodeStruct.querySelector('a');
       addClass(link, 'yawf-feed-time');

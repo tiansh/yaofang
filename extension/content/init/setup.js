@@ -332,6 +332,12 @@
       }
       return '';
     };
+    const getVNodeTag = function (vnode) {
+      if (!vnode.componentOptions) return vnode.tag;
+      const opt = vnode.componentOptions;
+      const tag = opt.Ctor && opt.Ctor.options && opt.Ctor.options.name || opt.tag;
+      return 'x-' + kebabCase(tag);
+    };
     const buildNodes = function buildNodes(vnode) {
       if (Array.isArray(vnode)) {
         const fragment = document.createElement('x-yawf-fragment');
@@ -339,7 +345,7 @@
         vnode.forEach(child => { fragment.appendChild(buildNodes(child)); });
         return fragment;
       }
-      const tag = vnode.componentOptions ? 'x-' + kebabCase(vnode.componentOptions.tag) : vnode.tag;
+      const tag = getVNodeTag(vnode);
       if (tag == null && vnode.text) {
         const node = document.createTextNode(vnode.text);
         node.__vnode__ = vnode;

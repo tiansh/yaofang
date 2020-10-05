@@ -790,6 +790,11 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
               video.volume = target;
             }
           };
+          const onClick = function (event) {
+            this.isPlaying = true;
+            setVolume(event.target);
+            this.$refs.video.play();
+          };
           const onPlay = function (event) {
             this.isPlaying = true;
             setVolume(event.target);
@@ -808,6 +813,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
           vueSetup.transformComponentsRenderByTagName('feed-video', function (nodeStruct, Nodes) {
             const { removeChild, appendChild, h } = Nodes;
 
+            const isPlaying = this.isPlaying;
             // 去掉原本渲染的视频播放器
             while (nodeStruct.firstChild) {
               removeChild(nodeStruct, nodeStruct.firstChild);
@@ -827,12 +833,13 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
               ref: 'video',
               class: ['yawf-video', 'yawf-feed-video', 'wbpv-tech'],
               attrs: {
-                src: url,
-                poster: this.thumbnail,
+                src: url.replace(/^https?:\/\//, '//'),
+                poster: this.thumbnail.replace(/^https?:\/\//, '//'),
                 preload: 'auto',
-                controls: true,
+                controls: isPlaying ? true : false,
               },
               on: {
+                click: isPlaying ? null : onClick.bind(this),
                 play: onPlay.bind(this),
                 volumechange: onVolumechange.bind(this),
                 loadstart: onLoadstart.bind(this),
@@ -842,6 +849,11 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
           });
 
         }, util.inject.rootKey, configs, updateVolume);
+
+        css.append(String.raw`
+.yawf-feed-video:not(.yawf-feed-video-actived) .wbp-video::before { content: "\e001"; font-family: krvdficon; font-weight: 400; font-style: normal; font-size: 36px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; opacity: 0.85; text-shadow: 0 2px 4px rgba(0,0,0,.2); pointer-events: none; }
+.yawf-feed-video:not(.yawf-feed-video-actived) .wbp-video:hover::before { color: #ff8200; }
+`);
 
       }
     },
