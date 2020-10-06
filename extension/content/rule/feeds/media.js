@@ -587,7 +587,6 @@
           const vueSetup = yawf.vueSetup;
 
           vueSetup.eachComponentVM('feed-picture', function (vm) {
-            console.log('feed-picture: %o [%o]', vm, vm.$parent);
             Object.defineProperty(vm, 'inlineNum', {
               get: function () {
                 return [1, 1, 3, 3, 4, 4, 3, 4, 4, 3][vm.pic_num] || configs.col;
