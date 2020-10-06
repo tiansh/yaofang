@@ -273,10 +273,12 @@
     const eachComponentVM = vueSetup.eachComponentVM = function (tag, callback, { mounted = true, watch = true } = {}) {
       const seen = new WeakSet();
       const found = function (target) {
-        if (seen.has(target)) return;
-        seen.add(target);
         for (let vm of eachVmForNode(target)) {
-          if (getTag(vm) === kebabCase(tag)) callback(vm);
+          if (getTag(vm) === kebabCase(tag)) {
+            if (seen.has(vm)) continue;
+            seen.add(vm);
+            callback(vm);
+          }
         }
       };
       if (watch) {

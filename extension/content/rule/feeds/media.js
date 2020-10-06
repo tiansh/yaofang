@@ -393,6 +393,7 @@
   });
 
   media.imagePreviewAll = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'image_preview_all',
     version: 50,
     parent: media.media,
@@ -432,119 +433,120 @@
       });
     },
     ainit() {
-      const previewSize = this.ref.count.getConfig();
-      const previewWidth = +previewSize[0];
-      const previewCount = previewSize[0] * previewSize[2] || Infinity;
-      const lastImageMask = this.ref.more.getConfig() === 'mask';
+      if (yawf.WEIBO_VERSION === 6) {
+        const previewSize = this.ref.count.getConfig();
+        const previewWidth = +previewSize[0];
+        const previewCount = previewSize[0] * previewSize[2] || Infinity;
+        const lastImageMask = this.ref.more.getConfig() === 'mask';
 
-      observer.feed.onAfter(async function (/** @type {HTMLElement} */feed) {
-        // 收藏页面目前原生不支持，原因不明
-        const officialNotSupport = init.page.type() === 'fav';
-        // 单条微博页面已经预先展开了，所以不能再继续操作了
-        if (document.querySelector('[id^="Pl_Official_WeiboDetail__"]')) return;
-        const ul = feed.querySelector('ul[node-type="fl_pic_list"]');
-        // 如果没有图片，或者已经有第十张图片了，那我们应该不工作
-        if (!ul || ul.querySelector('.li_10')) return;
-        // 首页等官方支持的页面，会标记 over9pic，我们用这个属性来判断
-        if (!officialNotSupport && !ul.getAttribute('action-data').includes('over9pic=1')) return;
-        // 目前部分页面没有支持，我们只能看到满 9 张图，就去检查是不是有第十张
-        if (officialNotSupport && !ul.querySelector('.li_9')) return;
-        const mid = (feedParser.isForward(feed) ? feedParser.omid : feedParser.mid)(feed);
-        const [author] = feedParser.author.id(feed);
-        const original = feedParser.isForward(feed) ? feedParser.original.id(feed) : author;
-        ul.classList.add('yawf-WB_media_a_m9p_loading');
-        /** @type {string[]} */
-        const allImages = await request.getAllImages(original, mid);
-        ul.classList.remove('yawf-WB_media_a_m9p_loading');
-        if (!allImages || !allImages.length) return;
-        const imageCount = allImages.length;
-        if (imageCount === 9 && officialNotSupport) return;
-        const pids = allImages.map(img => img.replace(/^.*\/(.*)\..*$/, '$1'));
-        const imgType = type => img => img.replace(/^(.*\/).*(\/.*)$/, (_, d, n) => d + type + n);
-        // 最后一个图片的格式和别人不一样，如果我们要显示的不是9个，就会很奇怪，所以我们删掉再自己加一遍
-        ul.removeChild(ul.querySelector('.li_9'));
-        allImages.forEach((image, index) => {
-          if (index < 8) return;
-          const pid = pids[index];
-          const li = document.createElement('li');
-          li.className = `WB_pic li_${index + 1} S_bg1 S_line2 bigcursor li_focus yawf-li_more`;
-          li.setAttribute('action-data', `isPrivate=0&relation=0&pic_id=${pid}`);
-          li.setAttribute('action-type', 'fl_pics');
-          li.setAttribute('suda-uatrack', `key=tblog_newimage_feed&value=image_feed_unfold:${mid}:${pid}:${author}:0`);
-          const img = li.appendChild(document.createElement('img'));
-          // 因为不知道总宽比的时候不太方便处理 orj360，所以用 thumb300 代替一下
-          img.src = imgType('thumb300')(image);
-          img.style = 'height:110px;width:110px;top:0;left:0;';
-          ul.appendChild(li);
-          if (image.endsWith('.gif')) {
-            const tip = document.createElement('i');
-            tip.className = 'W_icon_tag_v2';
-            tip.textContent = i18n.animatedImage;
-            li.appendChild(tip);
+        observer.feed.onAfter(async function (/** @type {HTMLElement} */feed) {
+          // 收藏页面目前原生不支持，原因不明
+          const officialNotSupport = init.page.type() === 'fav';
+          // 单条微博页面已经预先展开了，所以不能再继续操作了
+          if (document.querySelector('[id^="Pl_Official_WeiboDetail__"]')) return;
+          const ul = feed.querySelector('ul[node-type="fl_pic_list"]');
+          // 如果没有图片，或者已经有第十张图片了，那我们应该不工作
+          if (!ul || ul.querySelector('.li_10')) return;
+          // 首页等官方支持的页面，会标记 over9pic，我们用这个属性来判断
+          if (!officialNotSupport && !ul.getAttribute('action-data').includes('over9pic=1')) return;
+          // 目前部分页面没有支持，我们只能看到满 9 张图，就去检查是不是有第十张
+          if (officialNotSupport && !ul.querySelector('.li_9')) return;
+          const mid = (feedParser.isForward(feed) ? feedParser.omid : feedParser.mid)(feed);
+          const [author] = feedParser.author.id(feed);
+          const original = feedParser.isForward(feed) ? feedParser.original.id(feed) : author;
+          ul.classList.add('yawf-WB_media_a_m9p_loading');
+          /** @type {string[]} */
+          const allImages = await request.getAllImages(original, mid);
+          ul.classList.remove('yawf-WB_media_a_m9p_loading');
+          if (!allImages || !allImages.length) return;
+          const imageCount = allImages.length;
+          if (imageCount === 9 && officialNotSupport) return;
+          const pids = allImages.map(img => img.replace(/^.*\/(.*)\..*$/, '$1'));
+          const imgType = type => img => img.replace(/^(.*\/).*(\/.*)$/, (_, d, n) => d + type + n);
+          // 最后一个图片的格式和别人不一样，如果我们要显示的不是9个，就会很奇怪，所以我们删掉再自己加一遍
+          ul.removeChild(ul.querySelector('.li_9'));
+          allImages.forEach((image, index) => {
+            if (index < 8) return;
+            const pid = pids[index];
+            const li = document.createElement('li');
+            li.className = `WB_pic li_${index + 1} S_bg1 S_line2 bigcursor li_focus yawf-li_more`;
+            li.setAttribute('action-data', `isPrivate=0&relation=0&pic_id=${pid}`);
+            li.setAttribute('action-type', 'fl_pics');
+            li.setAttribute('suda-uatrack', `key=tblog_newimage_feed&value=image_feed_unfold:${mid}:${pid}:${author}:0`);
+            const img = li.appendChild(document.createElement('img'));
+            // 因为不知道总宽比的时候不太方便处理 orj360，所以用 thumb300 代替一下
+            img.src = imgType('thumb300')(image);
+            img.style = 'height:110px;width:110px;top:0;left:0;';
+            ul.appendChild(li);
+            if (image.endsWith('.gif')) {
+              const tip = document.createElement('i');
+              tip.className = 'W_icon_tag_v2';
+              tip.textContent = i18n.animatedImage;
+              li.appendChild(tip);
+            }
+          });
+
+          if (imageCount < 10) return;
+          // 同时保留 WB_media_a_m9
+          ul.classList.add('yawf-WB_media_a_m' + imageCount, 'yawf-WB_media_a_m9p');
+          // 不能用 URLSearchParams 来处理 actionData，因为它需要项目间的逗号不被转义才能正常工作
+          const actionData = ul.getAttribute('action-data').split('&');
+          const setActionData = (key, value) => {
+            const newValue = key + '=' + value.map(encodeURIComponent).join(',');
+            const item = actionData.findIndex(item => item.startsWith(key + '='));
+            if (item !== -1) actionData[item] = newValue;
+            else actionData.push(newValue);
+          };
+          setActionData('clear_picSrc', allImages.map(imgType('mw690')));
+          setActionData('thumb_picSrc', allImages.map(imgType('orj360')));
+          setActionData('pic_ids', pids);
+          setActionData('object_ids', pids.map(pid => '1042018:' + pid));
+          // 微博自己判断的是 over9pic == 1，所以我们用图片数量代替一下这个值
+          // 这样既包括 "over9pic=1" 子串，也保持了 truthy，同时还不是 1
+          setActionData('over9pic', [allImages.length]);
+          // GIF 对应的视频 id 拿不到，所以就不更新了，反正也就是动图放不了罢了
+          ul.setAttribute('action-data', actionData.join('&'));
+
+          if (imageCount > previewCount) {
+            /** @type {HTMLDivElement} */
+            const mediaWrap = ul.closest('.WB_media_wrap');
+            if (lastImageMask) {
+              const lastImage = ul.querySelectorAll('.WB_pic')[previewCount - 1];
+              const mask = document.createElement('span');
+              mask.className = 'yawf-W_icon_tag_9p W_icon_tag_9p';
+              mask.textContent = '+' + (imageCount - previewCount);
+              lastImage.appendChild(mask);
+            } else {
+              // 类似超过 140 字的展开全文一样，我们显示一个查看所有图片的按钮
+              const foldContainer = document.createElement('div');
+              foldContainer.className = 'yawf-WB_media_a_ctrl yawf-WB_text_size';
+              foldContainer.innerHTML = '<a href="javascript:;" class="yawf-WB_media_a_show"><i class="W_ficon ficon_arrow_down">c</i></a><a href="javascript:;" class="yawf-WB_media_a_fold"><i class="W_ficon ficon_arrow_up">d</i></a>';
+              const showButton = foldContainer.querySelector('.yawf-WB_media_a_show');
+              const showText = i18n.previewAllShow.replace('{1}', () => imageCount);
+              showButton.insertBefore(document.createTextNode(showText), showButton.firstChild);
+              const foldButton = foldContainer.querySelector('.yawf-WB_media_a_fold');
+              const foldText = i18n.previewAllFold;
+              foldButton.insertBefore(document.createTextNode(foldText), foldButton.firstChild);
+              showButton.addEventListener('click', () => {
+                mediaWrap.classList.add('yawf-WB_media_a_all');
+              });
+              foldButton.addEventListener('click', () => {
+                const oldHeight = mediaWrap.clientHeight;
+                const oldScrollTop = document.documentElement.scrollTop;
+                mediaWrap.classList.remove('yawf-WB_media_a_all');
+                // 调整滚动条以适应高度变化
+                requestAnimationFrame(function () {
+                  const newHeight = mediaWrap.clientHeight;
+                  document.documentElement.scrollTop = oldScrollTop - oldHeight + newHeight;
+                });
+              });
+              mediaWrap.appendChild(foldContainer);
+            }
           }
         });
 
-        if (imageCount < 10) return;
-        // 同时保留 WB_media_a_m9
-        ul.classList.add('yawf-WB_media_a_m' + imageCount, 'yawf-WB_media_a_m9p');
-        // 不能用 URLSearchParams 来处理 actionData，因为它需要项目间的逗号不被转义才能正常工作
-        const actionData = ul.getAttribute('action-data').split('&');
-        const setActionData = (key, value) => {
-          const newValue = key + '=' + value.map(encodeURIComponent).join(',');
-          const item = actionData.findIndex(item => item.startsWith(key + '='));
-          if (item !== -1) actionData[item] = newValue;
-          else actionData.push(newValue);
-        };
-        setActionData('clear_picSrc', allImages.map(imgType('mw690')));
-        setActionData('thumb_picSrc', allImages.map(imgType('orj360')));
-        setActionData('pic_ids', pids);
-        setActionData('object_ids', pids.map(pid => '1042018:' + pid));
-        // 微博自己判断的是 over9pic == 1，所以我们用图片数量代替一下这个值
-        // 这样既包括 "over9pic=1" 子串，也保持了 truthy，同时还不是 1
-        setActionData('over9pic', [allImages.length]);
-        // GIF 对应的视频 id 拿不到，所以就不更新了，反正也就是动图放不了罢了
-        ul.setAttribute('action-data', actionData.join('&'));
-
-        if (imageCount > previewCount) {
-          /** @type {HTMLDivElement} */
-          const mediaWrap = ul.closest('.WB_media_wrap');
-          if (lastImageMask) {
-            const lastImage = ul.querySelectorAll('.WB_pic')[previewCount - 1];
-            const mask = document.createElement('span');
-            mask.className = 'yawf-W_icon_tag_9p W_icon_tag_9p';
-            mask.textContent = '+' + (imageCount - previewCount);
-            lastImage.appendChild(mask);
-          } else {
-            // 类似超过 140 字的展开全文一样，我们显示一个查看所有图片的按钮
-            const foldContainer = document.createElement('div');
-            foldContainer.className = 'yawf-WB_media_a_ctrl yawf-WB_text_size';
-            foldContainer.innerHTML = '<a href="javascript:;" class="yawf-WB_media_a_show"><i class="W_ficon ficon_arrow_down">c</i></a><a href="javascript:;" class="yawf-WB_media_a_fold"><i class="W_ficon ficon_arrow_up">d</i></a>';
-            const showButton = foldContainer.querySelector('.yawf-WB_media_a_show');
-            const showText = i18n.previewAllShow.replace('{1}', () => imageCount);
-            showButton.insertBefore(document.createTextNode(showText), showButton.firstChild);
-            const foldButton = foldContainer.querySelector('.yawf-WB_media_a_fold');
-            const foldText = i18n.previewAllFold;
-            foldButton.insertBefore(document.createTextNode(foldText), foldButton.firstChild);
-            showButton.addEventListener('click', () => {
-              mediaWrap.classList.add('yawf-WB_media_a_all');
-            });
-            foldButton.addEventListener('click', () => {
-              const oldHeight = mediaWrap.clientHeight;
-              const oldScrollTop = document.documentElement.scrollTop;
-              mediaWrap.classList.remove('yawf-WB_media_a_all');
-              // 调整滚动条以适应高度变化
-              requestAnimationFrame(function () {
-                const newHeight = mediaWrap.clientHeight;
-                document.documentElement.scrollTop = oldScrollTop - oldHeight + newHeight;
-              });
-            });
-            mediaWrap.appendChild(foldContainer);
-          }
-        }
-      });
-
-      if (Number.isFinite(previewCount)) css.append(`.yawf-WB_media_a_m9p .li_${previewCount} ~ .WB_pic { display: none; }`);
-      css.append(`
+        if (Number.isFinite(previewCount)) css.append(`.yawf-WB_media_a_m9p .li_${previewCount} ~ .WB_pic { display: none; }`);
+        css.append(`
 .yawf-WB_media_a_m9p_loading { visibility: hidden; opacity: 0; }
 .yawf-WB_media_a_all .yawf-W_icon_tag_9p { display: none; }
 .yawf-WB_media_a_all .yawf-WB_media_a_m9p .WB_pic { display: block; }
@@ -554,25 +556,101 @@
 .yawf-WB_media_a_all .yawf-WB_media_a_show { display: none; }
 .yawf-WB_media_a_ctrl { clear: both; margin-left: 10px; padding-top: 4px; }
 `);
-      if (previewWidth === 4) {
-        const smallImage = feeds.layout.smallImage.isEnabled();
-        if (smallImage) {
-          css.append('.WB_feed_v3 .WB_media_a.yawf-WB_media_a_m9p { width: 345px; }');
-        } else {
-          css.append('.WB_feed_v3 .WB_media_a.yawf-WB_media_a_m9p { width: 456px; }');
+        if (previewWidth === 4) {
+          const smallImage = feeds.layout.smallImage.isEnabled();
+          if (smallImage) {
+            css.append('.WB_feed_v3 .WB_media_a.yawf-WB_media_a_m9p { width: 345px; }');
+          } else {
+            css.append('.WB_feed_v3 .WB_media_a.yawf-WB_media_a_m9p { width: 456px; }');
+          }
         }
-      }
 
-      if (lastImageMask) {
-        document.addEventListener('click', event => {
-          const target = event.target;
-          if (!(target instanceof Element)) return;
-          const mask = target.closest('.yawf-W_icon_tag_9p');
-          if (!mask) return;
-          const mediaWrap = mask.closest('.WB_media_wrap');
-          mediaWrap.classList.add('yawf-WB_media_a_all');
-          event.stopPropagation();
-        }, true);
+        if (lastImageMask) {
+          document.addEventListener('click', event => {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            const mask = target.closest('.yawf-W_icon_tag_9p');
+            if (!mask) return;
+            const mediaWrap = mask.closest('.WB_media_wrap');
+            mediaWrap.classList.add('yawf-WB_media_a_all');
+            event.stopPropagation();
+          }, true);
+        }
+      } else {
+        const configs = {
+          col: Number(this.ref.count.getConfig().split('x')[0]),
+          row: Number(this.ref.count.getConfig().split('x')[1]) || Infinity,
+          more: this.ref.more.getConfig(),
+        };
+        util.inject(function (rootKey, configs) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
+
+          vueSetup.eachComponentVM('feed-picture', function (vm) {
+            console.log('feed-picture: %o [%o]', vm, vm.$parent);
+            Object.defineProperty(vm, 'inlineNum', {
+              get: function () {
+                return [1, 1, 3, 3, 4, 4, 3, 4, 4, 3][vm.pic_num] || configs.col;
+              },
+              set: function (v) { },
+              enumerable: true,
+              configurable: true,
+            });
+            Object.defineProperty(vm, 'newPics', {
+              get: function () {
+                if (vm.$parent.data._yawf_ExpandPicture) return vm.pics.slice(0);
+                return vm.pics.slice(0, configs.col * configs.row);
+              },
+              set: function (v) { },
+              enumerable: true,
+              configurable: true,
+            });
+
+            if (!Object.getOwnPropertyDescriptor(vm.$parent.data, '_yawf_ExpandPicture')) {
+              vm.$parent.$set(vm.$parent.data, '_yawf_ExpandPicture', false);
+            }
+
+            const expand = function (event) {
+              vm.$parent.data._yawf_ExpandPicture = true;
+              event.stopPropagation();
+            };
+
+            vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+              const { removeChild, appendChild, h } = Nodes;
+              const moreIcon = nodeStruct.querySelector('x-woo-box-item x-woo-box');
+              if (moreIcon) {
+                removeChild(moreIcon.parentNode, moreIcon);
+              }
+              if (vm.$parent.data._yawf_ExpandPicture) {
+                // pass
+              } else if (this.pic_num > configs.col * configs.row) {
+                if (configs.more === 'mask') {
+                  const lastPic = nodeStruct.querySelector('x-woo-box-item:last-child');
+                  const mask = h('woo-box', {
+                    class: [this.$style.mask, this.$style.focusImg],
+                    attrs: { align: 'center', justify: 'center' },
+                  }, [
+                    h('span', {
+                      class: this.$style.picNum,
+                      on: { click: expand },
+                    }, ['+' + (this.pic_num - configs.col * configs.row)]),
+                  ]);
+                  appendChild(lastPic, mask);
+                } else {
+                  const more = h('div', {}, [
+                    h('a', {
+                      class: 'viewpic yawf-feed-detail-content-retweet-size',
+                      on: { click: expand },
+                    }, [`查看全部图片（共 ${this.pic_num} 张）`]),
+                  ]);
+                  appendChild(nodeStruct, more);
+                }
+              }
+            });
+
+            vm.$forceUpdate();
+          });
+        }, util.inject.rootKey, configs);
       }
     },
   });
