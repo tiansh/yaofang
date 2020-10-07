@@ -286,6 +286,36 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .yawf-feed-comment-picture { max-width: 80px; }
 .yawf-feed-card-article { max-width: 240px; }
 `);
+        util.inject(function (rootKey) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
+
+          // 我们需要他不复用视频组件
+          vueSetup.transformComponentsRenderByTagName('feed-content', function (nodeStruct, Nodes) {
+            const video = nodeStruct.querySelectorAll('x-feed-video');
+            if (video && !video.key) video.key = this.data.id; // 用 mid 很方便
+          });
+          vueSetup.eachComponentVM('feed-video', function (vm) {
+            // 这个变量要存下来，不然到 beforeDestroy 的时候他爹就不是现在这个了
+            const feed = vm.$parent.data;
+            if (!vm.isPlaying && feed._yawf_VideoTouched) {
+              vm.isPlaying = true;
+              vm.$forceUpdate();
+            }
+            vm.$on('hook:beforeDestroy', function () {
+              feed._yawf_VideoTouched = vm.isPlaying;
+            });
+            vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+              const { addClass, vNode } = Nodes;
+              if (this.isPlaying) {
+                addClass(nodeStruct, 'yawf-feed-video-actived');
+              } else {
+                addClass(nodeStruct, 'yawf-feed-video-inactive');
+              }
+            });
+          });
+
+        }, util.inject.rootKey);
       }
     },
   });

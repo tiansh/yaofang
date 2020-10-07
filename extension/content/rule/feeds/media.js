@@ -597,7 +597,7 @@
             });
             Object.defineProperty(vm, 'newPics', {
               get: function () {
-                if (vm.$parent.data._yawf_ExpandPicture) return vm.pics.slice(0);
+                if (vm.$parent.data._yawf_PictureShowAll) return vm.pics.slice(0);
                 return vm.pics.slice(0, configs.col * configs.row);
               },
               set: function (v) { },
@@ -605,12 +605,12 @@
               configurable: true,
             });
 
-            if (!Object.getOwnPropertyDescriptor(vm.$parent.data, '_yawf_ExpandPicture')) {
-              vm.$parent.$set(vm.$parent.data, '_yawf_ExpandPicture', false);
+            if (!Object.getOwnPropertyDescriptor(vm.$parent.data, '_yawf_PictureShowAll')) {
+              vm.$parent.$set(vm.$parent.data, '_yawf_PictureShowAll', false);
             }
 
             const expand = function (event) {
-              vm.$parent.data._yawf_ExpandPicture = true;
+              vm.$parent.data._yawf_PictureShowAll = true;
               event.stopPropagation();
             };
 
@@ -620,7 +620,7 @@
               if (moreIcon) {
                 removeChild(moreIcon.parentNode, moreIcon);
               }
-              if (vm.$parent.data._yawf_ExpandPicture) {
+              if (vm.$parent.data._yawf_PictureShowAll) {
                 // pass
               } else if (this.pic_num > configs.col * configs.row) {
                 if (configs.more === 'mask') {

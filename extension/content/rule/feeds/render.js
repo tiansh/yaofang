@@ -276,15 +276,10 @@
       }
     });
 
+    // 视频
     vueSetup.transformComponentsRenderByTagName('feed-video', function (nodeStruct, Nodes) {
-      const { addClass, removeChild, appendChild, h } = Nodes;
-      // 视频
+      const { addClass } = Nodes;
       addClass(nodeStruct, 'yawf-feed-video');
-      if (this.isPlaying) {
-        addClass(nodeStruct, 'yawf-feed-video-actived');
-      } else {
-        addClass(nodeStruct, 'yawf-feed-video-inactive');
-      }
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-card-link', function (nodeStruct, Nodes) {
