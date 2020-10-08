@@ -438,42 +438,56 @@
         const yawf = window[rootKey];
         const vueSetup = yawf.vueSetup;
 
-        vueSetup.transformComponentsRenderByTagName('left-nav-home', function (nodeStruct, Nodes) {
-          const { h, wrapNode, vNode } = Nodes;
+        const fixLeftNav = function (type) {
+          return function (nodeStruct, Nodes) {
+            const { h, wrapNode, vNode } = Nodes;
+            const createLink = function (href, newTab = false) {
+              return h('a', {
+                class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+                attrs: Object.assign({ href }, newTab ? { target: '_blank' } : {}),
+              });
+            };
 
-          const items = nodeStruct.querySelectorAll('x-nav-item');
+            const items = Array.from(nodeStruct.querySelectorAll('x-nav-item'));
 
-          const leftTabs = this.leftTabs || [];
-          const customTabs = (this.customTabs || {}).list || [];
-          const tabs = leftTabs.concat(customTabs);
+            if (type === 'home') {
+              const leftTabs = this.leftTabs || [];
+              const customTabs = (this.customTabs || {}).list || [];
+              const tabs = leftTabs.concat(customTabs);
 
-          [...items].forEach((item, index) => {
-            const tab = tabs[index];
-            if (!tab || !tab.gid) return;
-            const href = tab.gid === '10001' + tab.uid ? 'https://weibo.com/' : 'https://weibo.com/mygroups?gid=' + tab.gid;
-            const linkVNode = h('a', {
-              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
-              attrs: { href },
-            });
-            wrapNode(item, linkVNode);
-          });
-        });
-
-        vueSetup.transformComponentsRenderByTagName('messages', function (nodeStruct, Nodes) {
-          const { h, wrapNode, vNode } = Nodes;
-
-          const items = nodeStruct.querySelectorAll('x-nav-item');
-
-          [...items].forEach((item, index) => {
-            const message = this.messageList[index];
-            if (!message || !message.name) return;
-            const linkVNode = h('a', {
-              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
-              attrs: { href: this.$router.resolve({ name: message.name }).href },
-            });
-            wrapNode(item, linkVNode);
-          });
-        });
+              items.forEach((item, index) => {
+                const tab = tabs[index];
+                if (!tab || !tab.gid) return;
+                const href = tab.gid === '10001' + tab.uid ? 'https://weibo.com/' : 'https://weibo.com/mygroups?gid=' + tab.gid;
+                const linkVNode = createLink(href);
+                wrapNode(item, linkVNode);
+              });
+            } else if (type === 'common' && this.messageList) {
+              items.forEach((item, index) => {
+                const message = this.messageList[index];
+                if (!message || !message.name) return;
+                const url = {
+                  groupchat: 'https://api.weibo.com/chat/#/chat?to_uid=-101',
+                  privateChat: 'https://api.weibo.com/chat',
+                }[message.name] || this.$router.resolve({ name: message.name }).href;
+                const newTab = ['groupchat', 'privateChat'].includes(message.name);
+                const linkVNode = createLink(url, newTab);
+                wrapNode(item, linkVNode);
+              });
+            } else if (type === 'common' && this.hotList || type === 'profile') {
+              const list = this.hotList || this.profileList;
+              items.forEach((item, index) => {
+                const profileItem = list[index];
+                if (!profileItem || !profileItem.type) return;
+                const linkVNode = createLink(this.$router.resolve({ name: profileItem.type }).href);
+                wrapNode(item, linkVNode);
+              });
+            }
+          };
+        };
+        vueSetup.transformComponentsRenderByTagName('left-nav-home', fixLeftNav('home'));
+        vueSetup.transformComponentsRenderByTagName('nav-left-hot', fixLeftNav('common'));
+        vueSetup.transformComponentsRenderByTagName('nav-left-profile', fixLeftNav('profile'));
       }, util.inject.rootKey);
     },
   });
