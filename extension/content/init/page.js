@@ -60,6 +60,7 @@
     page.route = route;
   };
   page.typeV7 = function () {
+    if (location.pathname.startsWith('/tv/')) return 'tv';
     const route = page.route;
     if (route.name === 'profile') return 'profile';
     if (route.name === 'like') return 'like';

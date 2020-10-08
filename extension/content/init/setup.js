@@ -134,14 +134,14 @@
       node.dispatchEvent(event);
     };
     const routeReportObject = function (vm) {
-      return {
+      return vm.$route ? {
         name: vm.$route.name,
         fullPath: vm.$route.fullPath,
         path: vm.$route.path,
         params: JSON.parse(JSON.stringify(vm.$route.params)),
         query: JSON.parse(JSON.stringify(vm.$route.query)),
         meta: JSON.parse(JSON.stringify(vm.$route.meta)),
-      };
+      } : null;
     };
     // 发现 Vue 根元素的时候启动脚本的初始化
     const reportRootNode = function (node) {
@@ -477,14 +477,14 @@
       };
     };
 
-    const transformRender = function (render, transformer, { raw = false } = {}) {
+    const transformRender = function (originalRender, transformer, { raw = false } = {}) {
       if (raw) {
         return function (createElement) {
-          return transformer(render).call(this, createElement, { builder: builder(createElement) });
+          return transformer(originalRender).call(this, createElement, { builder: builder(createElement) });
         };
       }
-      return function (createElement) {
-        const { nodeStruct, Nodes, getRoot } = builder(createElement)(render.call(this, createElement));
+      const wrapped = function render(createElement) {
+        const { nodeStruct, Nodes, getRoot } = builder(createElement)(originalRender.call(this, createElement));
         try {
           transformer.call(this, nodeStruct, Nodes);
         } catch (e) {
@@ -492,6 +492,8 @@
         }
         return getRoot();
       };
+      wrapped.originalRender = originalRender;
+      return wrapped;
     };
     const transformComponentRender = vueSetup.transformComponentRender = function (vm, transformer, configs = {}) {
       vm.$options.render = transformRender(vm.$options.render, transformer, configs);
