@@ -112,6 +112,85 @@
   });
 
   Object.assign(i18n, {
+    sidebarShowLiked: { cn: '在首页左侧栏增加 (V7)||{{fav}}我的收藏|{{like}}我的赞' },
+  });
+  sidebar.liked = rule.Rule({
+    weiboVersion: 7,
+    id: 'layout_left_liked',
+    version: 85,
+    parent: sidebar.sidebar,
+    template: () => i18n.sidebarShowLiked,
+    ref: {
+      fav: { type: 'boolean', initial() { return true; } },
+      like: { type: 'boolean', nitial() { return true; } },
+    },
+    ainit() {
+      const configs = {
+        fav: this.ref.fav.getConfig(),
+        like: this.ref.like.getConfig(),
+        link: sidebar.leftSidebarUseLink.getConfig(),
+      };
+      util.inject(function (rootKey, configs) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        vueSetup.transformComponentsRenderByTagName('left-nav-home', function (nodeStruct, Nodes) {
+          const { h, insertBefore } = Nodes;
+
+          const divider = nodeStruct.querySelector('x-woo-divider');
+          if (!divider) return;
+          const container = divider.parentNode;
+
+          const onClick = function (target) {
+            const vm = this;
+            return function () {
+              vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
+                const index = vm.channels.findIndex(item => item.name === 'profile');
+                if (index !== -1) vm.tapHandle(index);
+              }, { watch: false });
+              vueSetup.closest(vm, 'nav').getModule('profile'); // 强制更新左边栏  
+              vm.$router.push(target);
+            };
+          }.bind(this);
+
+          if (configs.fav) {
+            const target = { name: 'collect', params: { id: this.$root.config.uid } };
+            let navItem = h('nav-item', {
+              key: 'yawf-fav',
+              class: 'yawf-nav-item',
+              attrs: { icon: 'navCollect', text: '我的收藏' },
+              on: { click: onClick(target) },
+            });
+            if (configs.link) {
+              navItem = h('a', {
+                class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+                attrs: { href: this.$router.resolve(target).href },
+              }, [navItem]);
+            }
+            insertBefore(container, navItem, divider);
+          }
+          if (configs.like) {
+            const target = { name: 'like', params: { id: this.$root.config.uid } };
+            let navItem = h('nav-item', {
+              key: 'yawf-like',
+              class: 'yawf-nav-item',
+              attrs: { icon: 'navLike', text: '我的赞' },
+              on: { click: onClick(target) },
+            });
+            if (configs.link) {
+              navItem = h('a', {
+                class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+                attrs: { href: this.$router.resolve(target).href },
+              }, [navItem]);
+            }
+            insertBefore(container, navItem, divider);
+          }
+        });
+      }, util.inject.rootKey, configs);
+    },
+  });
+
+  Object.assign(i18n, {
     sidebarMerge: { cn: '合并左右边栏|到{{side}}{{i}}', hk: '合併左右邊欄|到{{side}}{{i}}', tw: '合併左右邊欄|到{{side}}{{i}}', en: 'Merge left &amp; right column | to {{side}}{{i}}' },
     sidebarMergeToLeft: { cn: '左侧', hk: '左側', tw: '左側', en: 'left side' },
     sidebarMergeToRight: { cn: '右侧', hk: '右側', tw: '右側', en: 'right side' },
@@ -448,7 +527,7 @@
               });
             };
 
-            const items = Array.from(nodeStruct.querySelectorAll('x-nav-item'));
+            const items = Array.from(nodeStruct.querySelectorAll('x-nav-item:not(.yawf-nav-item)'));
 
             if (type === 'home') {
               const leftTabs = this.leftTabs || [];
