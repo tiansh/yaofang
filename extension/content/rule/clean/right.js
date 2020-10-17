@@ -11,7 +11,7 @@
     cleanRightGroupTitle: { cn: '隐藏模块 - 右栏', tw: '隱藏模組 - 右欄', en: 'Hide modules - Right Column' },
     cleanRightInfo: { cn: '个人信息', tw: '个人信息', en: 'Personal Info' },
     cleanRightRanks: { cn: '榜单（新歌榜等）', tw: '榜單（新歌榜等）', en: 'Rank List (Song list, etc.)' },
-    cleanRightHotTopic: { cn: '热门话题', tw: '熱門話題', en: 'Hot Topic' },
+    cleanRightHotTopic: { cn: '热门话题 / 微博热搜', tw: '熱門話題', en: 'Hot Topic' },
     cleanRightInterest: { cn: '可能感兴趣的人', tw: '可能感興趣的人', en: 'You may know' },
     cleanRightMember: { cn: '会员专区', tw: '會員專區', en: 'Weibo VIP' },
     cleanRightGroups: { cn: '分组成员列表', tw: '分組成員列表', en: 'Members of group' },
@@ -62,7 +62,7 @@
       const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;
 
-      vueSetup.eachComponentVM('side-index', function (vm) {
+      vueSetup.eachComponentVM('side', function (vm) {
         vm.$watch(function () { return this.cardsData; }, function () {
           if (Array.isArray(vm.cardsData)) {
             for (let i = 0; i < vm.cardsData.length;) {

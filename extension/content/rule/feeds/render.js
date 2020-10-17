@@ -302,7 +302,7 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-toolbar', function (nodeStruct, Nodes) {
-      const { addClass, vNode, removeChild, insertBefore } = Nodes;
+      const { addClass, vNode, removeChild, insertBefore, addEventListener } = Nodes;
 
       addClass(nodeStruct, 'yawf-feed-toolbar');
 
@@ -318,15 +318,12 @@
           try {
             const pop = retweet.querySelector('x-woo-pop');
             const popVNode = vNode(pop);
-            const retweetButton = popVNode.data.scopedSlots.ctrl()[0];
+            const retweetButtonVNode = popVNode.data.scopedSlots.ctrl()[0];
             const oriRetweetButton = pop.querySelector('x-woo-pop-item:nth-child(2)');
-            const retweetOnClick = vNode(oriRetweetButton).data.nativeOn.click;
-            if (!retweetButton.data) retweetButton.data = {};
-            if (!retweetButton.data.on) retweetButton.data.on = {};
-            if (!retweetButton.data.nativeOn) retweetButton.data.nativeOn = {};
-            retweetButton.data.on.click = retweetButton.data.nativeOn.click = retweetOnClick;
+            retweetButtonVNode.data.on = vNode(oriRetweetButton).data.on;
+            retweetButtonVNode.data.nativeOn = vNode(oriRetweetButton).data.nativeOn;
             const contain = pop.parentNode;
-            insertBefore(contain.parentNode, retweetButton, contain);
+            insertBefore(contain.parentNode, retweetButtonVNode, contain);
             removeChild(contain.parentNode, contain);
           } catch (e) {
             // ignore
@@ -436,8 +433,10 @@
         addClass(moreIcon.parentNode, 'yawf-feed-comment-more');
       }
 
-      const iconList = nodeStruct.querySelector('x-icon-list');
-      if (iconList) addClass(iconList, 'yawf-feed-comment-icon-list');
+      const iconLists = Array.from(nodeStruct.querySelectorAll('x-icon-list'));
+      iconLists.forEach(iconList => {
+        addClass(iconList, 'yawf-feed-comment-icon-list');
+      });
     };
     vueSetup.transformComponentsRenderByTagName('comment', function (nodeStruct, Nodes) {
       commentRenderTransformHelper(nodeStruct, this.item, Nodes);
@@ -530,7 +529,7 @@
       util.inject(renderModify, util.inject.rootKey, configs);
 
       css.append(`
-.yawf-extra-link { all: inherit; display: contents; }
+.yawf-extra-link, .yawf-extra-box { all: inherit; display: contents; }
 .yawf-feed-source { cursor: default; }
 .yawf-feed-repost.yawf-feed-repost { cursor: auto; }
 .yawf-feed-repost-time { cursor: pointer; color: var(--w-sub); }

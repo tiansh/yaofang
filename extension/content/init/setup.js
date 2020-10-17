@@ -411,7 +411,7 @@
         const parentNode = refNode.parentNode;
         if (!parentNode) {
           chroot(newVNode);
-          appendChild(newNode, refNode);
+          appendChild(newNode, refVNode, refNode);
         } else {
           insertBefore(parentNode, newVNode, refNode, newNode);
           removeChild(parentNode, refNode);
@@ -445,6 +445,45 @@
     const removeClass = function (node, ...classNames) {
       classModify(node, [], classNames.filter(x => x && typeof x === 'string'));
     };
+    const addEventListener = function (node, name, callback, configs = {}, nativeOn = false) {
+      const vnode = vNode(node);
+      const onStr = nativeOn ? 'nativeOn' : 'on';
+      if (!vnode.data) vnode.data = {};
+      if (!vnode.data[onStr]) vnode.data[onStr] = {};
+      const on = vnode.data[onStr];
+      const vueName = (configs.passive ? '&' : '') + (configs.once ? '~' : '') + (configs.capture ? '!' : '') + name;
+      if (!on[vueName]) on[vueName] = callback;
+      else if (!Array.isArray(on[vueName])) on[vueName] = [on[vueName], callback];
+      else on[vueName].push(callback);
+    };
+    const removeEventListener = function (node, name, callback = null, configs = {}, nativeOn = false) {
+      const vnode = vNode(node);
+      const onStr = nativeOn ? 'nativeOn' : 'on';
+      if (!vnode.data) return;
+      if (!vnode.data[onStr]) return;
+      const on = vnode.data[onStr];
+      const vueName = (configs.passive ? '&' : '') + (configs.once ? '~' : '') + (configs.capture ? '!' : '') + name;
+      if (!on[vueName]) return;
+      if (callback == null) {
+        on[vueName] = (void 0);
+      } else {
+        if (!Array.isArray(on[vueName])) {
+          if (on[vueName] === callback) on[vueName] = (void 0);
+        } else {
+          on[vueName] = on[vueName].filter(c => c !== callback);
+        }
+      }
+    };
+    const getEventListener = function (node, name, configs = {}, nativeOn = false) {
+      const vnode = vNode(node);
+      const onStr = nativeOn ? 'nativeOn' : 'on';
+      if (!vnode.data) return null;
+      if (!vnode.data[onStr]) return null;
+      const on = vnode.data[onStr];
+      const vueName = (configs.passive ? '&' : '') + (configs.once ? '~' : '') + (configs.capture ? '!' : '') + name;
+      if (!on[vueName]) return null;
+      return on[vueName];
+    };
     const transformSlot = function (node, slotName, transformer) {
       const vnode = vNode(node);
       const slots = (vnode.data || {}).scopedSlots;
@@ -465,6 +504,9 @@
           unwrapNode: changeRoot(replaceRoot),
           addClass,
           removeClass,
+          getEventListener,
+          addEventListener,
+          removeEventListener,
           createElement,
           h: createElement,
           transformSlot,

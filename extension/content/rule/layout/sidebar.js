@@ -148,7 +148,7 @@
                 const index = vm.channels.findIndex(item => item.name === 'profile');
                 if (index !== -1) vm.tapHandle(index);
               }, { watch: false });
-              vueSetup.closest(vm, 'nav').getModule('profile'); // 强制更新左边栏  
+              vueSetup.closest(vm, 'nav').getModule('profile');
               vm.$router.push(target);
             };
           }.bind(this);
