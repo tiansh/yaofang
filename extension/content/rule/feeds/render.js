@@ -108,16 +108,20 @@
     };
 
     vueSetup.transformComponentsRenderByTagName('feed-head', function (nodeStruct, Nodes) {
-      const { h, wrapNode, vNode, addClass } = Nodes;
+      const { addClass, setAttribute } = Nodes;
 
       addClass(nodeStruct, 'yawf-feed-head');
 
       // 用户头像
       const avatar = nodeStruct.querySelector('x-woo-avatar').parentNode;
       if (avatar) addClass(avatar, 'yawf-feed-avatar');
+      if (newTab.author) {
+        if (avatar) setAttribute(avatar, 'target', '_blank');
+      }
       // 用户昵称
       const userLink = nodeStruct.querySelector('span').closest('x-a-link');
       if (userLink) addClass(userLink, 'yawf-feed-author');
+      if (newTab.author) setAttribute(userLink, 'target', '_blank');
       const userLine = nodeStruct.querySelector('span').closest('x-woo-box');
       if (userLine) {
         addClass(userLine, 'yawf-feed-author-line');
@@ -257,9 +261,10 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-card-link', function (nodeStruct, Nodes) {
-      const { addClass } = Nodes;
+      const { addClass, setAttribute } = Nodes;
       // 其他卡片
       addClass(nodeStruct, 'yawf-feed-card-link');
+      if (newTab.card) setAttribute(nodeStruct, 'target', '_blank');
       const card = nodeStruct.firstChild;
       addClass(card, 'yawf-feed-card');
       const [picture, content] = card.childNodes;
@@ -268,9 +273,10 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-article', function (nodeStruct, Nodes) {
-      const { addClass } = Nodes;
+      const { addClass, setAttribute } = Nodes;
       addClass(nodeStruct, 'yawf-feed-card-article-link');
       addClass(nodeStruct.firstChild, 'yawf-feed-card-article');
+      if (newTab.card) setAttribute(nodeStruct, 'target', '_blank');
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-vote', function (nodeStruct, Nodes) {
@@ -310,15 +316,15 @@
     });
 
     const repostCommentListRanderTransform = function (nodeStruct, Nodes) {
-      const { h, wrapNode, vNode, addClass } = Nodes;
+      const { h, wrapNode, vNode, addClass, setAttribute } = Nodes;
 
-      debugger;
       // 查看全部评论
       const more = nodeStruct.querySelector('x-woo-divider + x-woo-box');
       if (more) {
         if (more.matches('x-a-link, x-a-link *')) { // 回头看看他们加不加这个链接再决定怎么办
           const link = more.closest('x-a-link') || more;
           addClass(link, 'yawf-feed-comment-more');
+          if (newTab.comments) setAttribute(link, 'target', '_blank');
         } else {
           const linkVNode = h('a', {
             class: 'yawf-feed-comment-more yawf-extra-link',
@@ -336,7 +342,7 @@
 
     vueSetup.transformComponentsRenderByTagName('reply-modal', function (nodeStruct, Nodes) {
       const reply = this;
-      const { transformSlot, addClass } = Nodes;
+      const { transformSlot } = Nodes;
       transformSlot(nodeStruct, 'content', function (nodeStruct) {
         commentRenderTransformHelper(nodeStruct, reply.rootComment, Nodes);
       });
@@ -362,17 +368,19 @@
     });
 
     const commentRenderTransformHelper = function (nodeStruct, comment, Nodes) {
-      const { h, wrapNode, vNode, addClass } = Nodes;
+      const { vNode, addClass, setAttribute } = Nodes;
 
       addClass(nodeStruct, 'yawf-feed-comment');
 
       const [avatar, author, ...replyAuthors] = nodeStruct.querySelectorAll('x-a-link');
       if (avatar) {
         addClass(avatar, 'yawf-feed-comment-avatar');
+        if (newTab.comments) setAttribute(avatar, 'target', '_blank');
       }
       // 评论作者
       if (author) {
         addClass(author, 'yawf-feed-comment-author');
+        if (newTab.comments) setAttribute(author, 'target', '_blank');
       }
       // 二级评论作者
       if (replyAuthors && replyAuthors.length) {
@@ -489,11 +497,11 @@
       const configs = {};
 
       configs.smallImage = feeds.layout.smallImage.getConfig();
-      configs.newTab = Object.assign(...'author,mention,topic,detail,comments,picture'.split(',').map(id => ({
+      configs.newTab = Object.assign(...'author,mention,topic,detail,comments,picture,card'.split(',').map(id => ({
         [id]: feeds.details.feedLinkNewTab.getConfig() && feeds.details.feedLinkNewTab.ref[id].getConfig(),
       })));
-      util.debug('render config: %o', configs);
       configs.hideFastRepost = clean.feed.fast_repost.getConfig();
+      util.debug('render config: %o', configs);
 
       util.inject(renderModify, util.inject.rootKey, configs);
 
