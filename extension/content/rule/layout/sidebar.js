@@ -312,6 +312,7 @@
 [yawf-merge-left] .webim_chat_window .WB_webim_page .webim_contacts_mod,
 [yawf-merge-left] .webim_chat_window .WB_webim_page .webim_contacts_bd { max-height: none; }
 [yawf-merge-left] body .W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 260px) / 2); }
+[yawf-merge-left] .unlogin_left_nav .lev_Box { position: static !important; width: 230px; }
 [yawf-merge-left="left"] .WB_frame .WB_main_r { float: left; }
 [yawf-merge-left="left"] .WB_frame .WB_main_c { float: right; }
 
