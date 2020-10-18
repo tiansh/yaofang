@@ -465,10 +465,10 @@
       const vueName = (configs.passive ? '&' : '') + (configs.once ? '~' : '') + (configs.capture ? '!' : '') + name;
       if (!on[vueName]) return;
       if (callback == null) {
-        on[vueName] = (void 0);
+        delete on[vueName];
       } else {
         if (!Array.isArray(on[vueName])) {
-          if (on[vueName] === callback) on[vueName] = (void 0);
+          if (on[vueName] === callback) delete on[vueName];
         } else {
           on[vueName] = on[vueName].filter(c => c !== callback);
         }
@@ -483,6 +483,32 @@
       const vueName = (configs.passive ? '&' : '') + (configs.once ? '~' : '') + (configs.capture ? '!' : '') + name;
       if (!on[vueName]) return null;
       return on[vueName];
+    };
+    const hasAttribute = function (node, name) {
+      const vnode = vNode(node);
+      if (!vnode.data) return false;
+      if (!vnode.data.attrs) return false;
+      const value = vnode.data.attrs[name];
+      if (value === false || value == null) return false;
+      return true;
+    };
+    const getAttribute = function (node, name) {
+      const vnode = vNode(node);
+      if (!vnode.data) return null;
+      if (!vnode.data.attrs) return null;
+      return vnode.data.attrs[name];
+    };
+    const setAttribute = function (node, name, value) {
+      const vnode = vNode(node);
+      if (!vnode.data) return;
+      if (!vnode.data.attrs) return;
+      vnode.data.attrs[name] = value;
+    };
+    const removeAttribute = function (node, name) {
+      const vnode = vNode(node);
+      if (!vnode.data) return;
+      if (!vnode.data.attrs) return;
+      delete vnode.data.attrs[name];
     };
     const transformSlot = function (node, slotName, transformer) {
       const vnode = vNode(node);
@@ -507,6 +533,10 @@
           getEventListener,
           addEventListener,
           removeEventListener,
+          setAttribute,
+          hasAttribute,
+          getAttribute,
+          removeAttribute,
           createElement,
           h: createElement,
           transformSlot,

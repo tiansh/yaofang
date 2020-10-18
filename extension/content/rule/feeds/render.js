@@ -108,73 +108,50 @@
     };
 
     vueSetup.transformComponentsRenderByTagName('feed-head', function (nodeStruct, Nodes) {
-
       const { h, wrapNode, vNode, addClass } = Nodes;
 
       addClass(nodeStruct, 'yawf-feed-head');
 
-      // 用户头像得是链接
-      const avatar = nodeStruct.querySelector('x-woo-avatar');
-      const userAvatarLinkVNode = h('a', {
-        class: 'yawf-feed-avatar yawf-extra-link',
-        attrs: { href: absoluteUrl(this.userInfo.profile_url) },
-      });
-      wrapNode(avatar, userAvatarLinkVNode);
-      configClickHandler(vNode(avatar), userAvatarLinkVNode, newTab.author);
-
-      // 用户昵称更得是链接
-      const userSpan = nodeStruct.querySelector('span');
-      const userLinkVNode = h('a', {
-        class: 'yawf-feed-author yawf-extra-link',
-        attrs: { href: absoluteUrl(this.userInfo.profile_url) },
-      });
-      const userNode = wrapNode(userSpan, userLinkVNode);
-      configClickHandler(vNode(userSpan), userLinkVNode, newTab.author);
-      addClass(userNode.parentNode, 'yawf-feed-author-line');
-      addClass(userNode.parentNode.parentNode, 'yawf-feed-author-box');
-
-      // 快转的作者也是链接形式
-      if (Array.isArray(this.screen_name_suffix_new)) {
-        this.screen_name_suffix_new.forEach((item, index) => {
-          if (typeof item.scheme !== 'string') return;
-          if (!item.scheme.startsWith('sinaweibo://userinfo')) return;
-          const span = userNode.parentNode.childNodes[index];
-          if (!index || !span) return;
-          if (!item.scheme) return;
-          const refId = new URL(item.scheme).searchParams.get('uid');
-          const linkVNode = h('a', {
-            class: 'yawf-feed-fast-author yawf-extra-link',
-            attrs: { href: absoluteUrl(`/u/${refId}`) },
-          });
-          wrapNode(span, linkVNode);
-          configClickHandler(vNode(span), linkVNode, newTab.author);
-        });
+      // 用户头像
+      const avatar = nodeStruct.querySelector('x-woo-avatar').parentNode;
+      if (avatar) addClass(avatar, 'yawf-feed-avatar');
+      // 用户昵称
+      const userLink = nodeStruct.querySelector('span').closest('x-a-link');
+      if (userLink) addClass(userLink, 'yawf-feed-author');
+      const userLine = nodeStruct.querySelector('span').closest('x-woo-box');
+      if (userLine) {
+        addClass(userLine, 'yawf-feed-author-line');
+        addClass(userLine.parentNode, 'yawf-feed-author-box');
       }
-
-      // “被”和“快转了”几个字不应该点了跳转到错误页面
-      if (Array.isArray(this.screen_name_suffix_new)) {
-        Array.from(userNode.parentNode.children).forEach(item => {
-          removeClickHandler(vNode(item));
-        });
+      // 快转
+      if (Array.isArray(this.screen_name_suffix_new) && this.screen_name_suffix_new.length) {
+        // TODO 微博目前快转的作者名不是链接，估计是 bug，先等等再看怎么处理
       }
-
       // 标记一下时间和来源
       const headInfo = nodeStruct.querySelector('x-head-info');
       addClass(headInfo, 'yawf-feed-head-info');
     });
 
     vueSetup.transformComponentsRenderByTagName('head-info', function (nodeStruct, Nodes) {
-      const { h, insertBefore, removeChild, addClass, vNode } = Nodes;
+      const { h, insertBefore, removeChild, addClass, removeEventListener, setAttribute } = Nodes;
 
       addClass(nodeStruct, 'yawf-head-info');
       // 微博详情
+      /** @type {HTMLAnchorElement} */
       const link = nodeStruct.querySelector('a');
       addClass(link, 'yawf-feed-time');
-      configClickHandler(vNode(link), vNode(link), newTab.detail);
+      if (newTab.detail) {
+        removeEventListener(link, 'click');
+        setAttribute(link, 'target', '_blank');
+      }
 
-      // 来源用个 span 套起来
+      const tag = link.previousSibling;
+      if (tag) addClass(tag, 'yawf-feed-tag');
+
       const sourceBox = nodeStruct.querySelector('x-woo-box-item x-woo-box');
       const [source, edited] = sourceBox.childNodes;
+
+      // 替换掉原有的来源，保证来源本身有个标签，后续用来做拖拽过滤用
       if (source && source.nodeType !== Node.COMMENT_NODE) {
         const newSourceVNode = h('div', {
           class: [this.$style.source, 'yawf-feed-source-container'],
@@ -195,6 +172,7 @@
     vueSetup.transformComponentsRenderByTagName('feed-content', function (nodeStruct, Nodes) {
       const { vNode, addClass, wrapNode, h } = Nodes;
 
+      // 作者等
       const headInfo = nodeStruct.querySelector('x-head-info');
       if (headInfo) {
         addClass(headInfo, 'yawf-feed-head-info yawf-feed-head-info-retweet');
@@ -204,11 +182,13 @@
         }
       }
 
+      // 内容
       addClass(nodeStruct, 'yawf-feed-content');
       if (headInfo) {
         addClass(nodeStruct, 'yawf-feed-content-retweet');
       }
 
+      // 提示横幅
       const tip = nodeStruct.querySelector('x-woo-tip');
       if (tip) {
         addClass(tip, 'yawf-feed-content-tip');
@@ -225,18 +205,12 @@
 
     vueSetup.transformComponentsRenderByTagName('feed-detail', function (nodeStruct, Nodes) {
       const { h, wrapNode, vNode, addClass } = Nodes;
-      const [author, content] = nodeStruct.childNodes;
+      const [authorBox, content] = nodeStruct.childNodes;
 
-      // 原作者也是链接
-      if (author && author.nodeType !== Node.COMMENT_NODE) {
-        const span = author.querySelector('span');
-        const linkVNode = h('a', {
-          class: 'yawf-feed-original yawf-extra-link',
-          attrs: { href: absoluteUrl(this.user.profile_url) },
-        });
-        const userNode = wrapNode(span, linkVNode);
-        configClickHandler(vNode(span), linkVNode, newTab.author);
-        addClass(userNode.parentNode, 'yawf-feed-original-line');
+      // 原作者
+      if (authorBox && authorBox.nodeType !== Node.COMMENT_NODE) {
+        const author = authorBox.querySelector('x-a-link');
+        addClass(author, 'yawf-feed-original');
       }
 
       // 内容
@@ -285,15 +259,18 @@
     vueSetup.transformComponentsRenderByTagName('feed-card-link', function (nodeStruct, Nodes) {
       const { addClass } = Nodes;
       // 其他卡片
-      addClass(nodeStruct, 'yawf-feed-card');
-      const [picture, content] = nodeStruct.childNodes;
+      addClass(nodeStruct, 'yawf-feed-card-link');
+      const card = nodeStruct.firstChild;
+      addClass(card, 'yawf-feed-card');
+      const [picture, content] = card.childNodes;
       addClass(picture, 'yawf-feed-card-picture');
       addClass(content, 'yawf-feed-card-content');
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-article', function (nodeStruct, Nodes) {
       const { addClass } = Nodes;
-      addClass(nodeStruct, 'yawf-feed-card-article');
+      addClass(nodeStruct, 'yawf-feed-card-article-link');
+      addClass(nodeStruct.firstChild, 'yawf-feed-card-article');
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-vote', function (nodeStruct, Nodes) {
@@ -333,19 +310,25 @@
     });
 
     const repostCommentListRanderTransform = function (nodeStruct, Nodes) {
-      const { h, wrapNode, vNode } = Nodes;
+      const { h, wrapNode, vNode, addClass } = Nodes;
 
+      debugger;
       // 查看全部评论
       const more = nodeStruct.querySelector('x-woo-divider + x-woo-box');
       if (more) {
-        const linkVNode = h('a', {
-          class: 'yawf-feed-comment-more yawf-extra-link',
-          attrs: {
-            href: absoluteUrl(`/${this.data.user.id}/${this.data.mblogid}#${this.curTab}`),
-          },
-        });
-        wrapNode(more, linkVNode);
-        configClickHandler(vNode(more), linkVNode, newTab.comments);
+        if (more.matches('x-a-link, x-a-link *')) { // 回头看看他们加不加这个链接再决定怎么办
+          const link = more.closest('x-a-link') || more;
+          addClass(link, 'yawf-feed-comment-more');
+        } else {
+          const linkVNode = h('a', {
+            class: 'yawf-feed-comment-more yawf-extra-link',
+            attrs: {
+              href: absoluteUrl(`/${this.data.user.id}/${this.data.mblogid}#${this.curTab}`),
+            },
+          });
+          wrapNode(more, linkVNode);
+          configClickHandler(vNode(more), linkVNode, newTab.comments);
+        }
       }
     };
     vueSetup.transformComponentsRenderByTagName('repost-comment-feed', repostCommentListRanderTransform);
@@ -383,34 +366,20 @@
 
       addClass(nodeStruct, 'yawf-feed-comment');
 
-      const [author, ...replyAuthors] = nodeStruct.querySelectorAll('a');
+      const [avatar, author, ...replyAuthors] = nodeStruct.querySelectorAll('x-a-link');
+      if (avatar) {
+        addClass(avatar, 'yawf-feed-comment-avatar');
+      }
       // 评论作者
       if (author) {
-        const vnode = vNode(author);
-        setHref(vnode, absoluteUrl(comment.user.profile_url));
-        configClickHandler(vnode, vnode, newTab.author);
+        addClass(author, 'yawf-feed-comment-author');
       }
       // 二级评论作者
       if (replyAuthors && replyAuthors.length) {
         replyAuthors.forEach((author, index) => {
           if (!comment.comments || !comment.comments[index]) return;
-          const item = comment.comments[index];
-          const vnode = vNode(author);
-          setHref(vnode, absoluteUrl(item.user.profile_url));
-          configClickHandler(vnode, vnode, newTab.author);
+          addClass(author, 'yawf-feed-comment-author', 'yawf-feed-comment-reply-author');
         });
-      }
-
-      // 只有一级评论的作者有头像
-      const avatar = nodeStruct.querySelector('x-woo-avatar');
-      if (avatar) {
-        const vnode = vNode(avatar);
-        const linkVNode = h('a', {
-          class: 'yawf-feed-comment-avatar yawf-extra-link',
-          attrs: { href: absoluteUrl(comment.user.profile_url) },
-        });
-        wrapNode(avatar, linkVNode);
-        configClickHandler(vnode, vnode, newTab.author);
       }
 
       // 评论的内容
@@ -433,6 +402,7 @@
         addClass(moreIcon.parentNode, 'yawf-feed-comment-more');
       }
 
+      // 评论的操作按钮
       const iconLists = Array.from(nodeStruct.querySelectorAll('x-icon-list'));
       iconLists.forEach(iconList => {
         addClass(iconList, 'yawf-feed-comment-icon-list');
@@ -493,15 +463,14 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('icon-list', function (nodeStruct, Nodes) {
-      const { vNode } = Nodes;
+      const { setAttribute } = Nodes;
 
       const iconsName = this.iconsName;
       const iconsNode = Array.from(nodeStruct.childNodes);
       if (!Array.isArray(iconsName)) return;
       if (iconsName.length !== iconsNode.length) return;
       iconsNode.forEach((node, index) => {
-        const vnode = vNode(node);
-        vnode.data.attrs['yawf-icon-list-name'] = iconsName[index].name;
+        setAttribute(node, 'yawf-icon-list-name', iconsName[index].name);
       });
     });
   };
