@@ -901,7 +901,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
               const playback = this.infos.media_info.playback_list.find(x => x.play_info && x.play_info.url);
               url = playback.play_info.url;
             } catch (e) { /* ignore */ }
-            if (!url) url = this.infos.media_info.h5_url;
+            if (!url) url = this.infos.media_info.stream_url;
             const videoWrap = h('div', {
               ref: 'videoWrapper',
               class: [this.$style.videoBox, 'yawf-video-box'],
