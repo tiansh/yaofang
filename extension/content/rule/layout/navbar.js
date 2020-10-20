@@ -189,7 +189,6 @@
         const vueSetup = yawf.vueSetup;
 
         vueSetup.eachComponentVM('ctrls', function (vm) {
-          console.log(...vm.navItems);
           vm.$watch(function () { return this.navItems; }, function () {
             const profile = vm.navItems.find(item => item.name === 'profile');
             if (profile && profile.src) profile.src = '';
