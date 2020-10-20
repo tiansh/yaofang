@@ -128,7 +128,6 @@
       const configs = {
         fav: this.ref.fav.getConfig(),
         like: this.ref.like.getConfig(),
-        link: sidebar.leftSidebarUseLink.getConfig(),
       };
       util.inject(function (rootKey, configs) {
         const yawf = window[rootKey];
@@ -155,19 +154,17 @@
 
           if (configs.fav) {
             const target = { name: 'collect', params: { id: this.$root.config.uid } };
-            let navItem = h('nav-item', {
+            const navItem = h('nav-item', {
               key: 'yawf-fav',
               class: 'yawf-nav-item',
               attrs: { icon: 'navCollect', text: '我的收藏' },
               on: { click: onClick(target) },
             });
-            if (configs.link) {
-              navItem = h('a', {
-                class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
-                attrs: { href: this.$router.resolve(target).href },
-              }, [navItem]);
-            }
-            insertBefore(container, navItem, divider);
+            const navLink = h('a', {
+              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+              attrs: { href: this.$router.resolve(target).href },
+            }, [navItem]);
+            insertBefore(container, navLink, divider);
           }
           if (configs.like) {
             const target = { name: 'like', params: { id: this.$root.config.uid } };

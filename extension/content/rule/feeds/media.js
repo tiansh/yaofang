@@ -896,14 +896,20 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
               removeChild(nodeStruct, nodeStruct.firstChild);
             }
             // 我们自己画一个视频播放器上去
-            const playback = this.playbackList.find(x => x.play_info && x.play_info.url);
-            const url = quality === 'best' && playback ? playback.play_info.url : this.videoSrc;
+            let url = null;
+            if (quality === 'best') try {
+              const playback = this.infos.media_info.playback_list.find(x => x.play_info && x.play_info.url);
+              url = playback.play_info.url;
+            } catch (e) { /* ignore */ }
+            if (!url) url = this.infos.media_info.h5_url;
             const videoWrap = h('div', {
               ref: 'videoWrapper',
-              class: [this.$style.videoBox],
+              class: [this.$style.videoBox, 'yawf-video-box'],
             }, [h('div', {
               ref: 'videoContainer',
-              class: [this.$style.placeholder],
+              class: [this.$style.placeholder, 'yawf-video-placeholder'],
+            }, [h('div', {
+              class: [this.$style.video, 'yawf-video-container'],
             }, [h('div', {
               class: [this.$style.video, 'wbp-video'],
             }, [h('video', {
@@ -921,15 +927,17 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
                 volumechange: onVolumechange.bind(this),
                 loadstart: onLoadstart.bind(this),
               },
-            })])])]);
+            })])])])]);
             appendChild(nodeStruct, videoWrap);
           });
 
         }, util.inject.rootKey, configs, updateVolume);
 
         css.append(String.raw`
+.yawf-feed-video .wbp-video {width: 100%; height: 100%; }
 .yawf-feed-video:not(.yawf-feed-video-actived) .wbp-video::before { content: "\e001"; font-family: krvdficon; font-weight: 400; font-style: normal; font-size: 36px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; opacity: 0.85; text-shadow: 0 2px 4px rgba(0,0,0,.2); pointer-events: none; }
 .yawf-feed-video:not(.yawf-feed-video-actived) .wbp-video:hover::before { color: #ff8200; }
+.yawf-video-container { position: absolute; top: 0; right: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; overflow: hidden; }
 `);
 
       }

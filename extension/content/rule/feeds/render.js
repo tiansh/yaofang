@@ -319,22 +319,10 @@
       const { h, wrapNode, vNode, addClass, setAttribute } = Nodes;
 
       // 查看全部评论
-      const more = nodeStruct.querySelector('x-woo-divider + x-woo-box');
+      const more = nodeStruct.querySelector('x-woo-divider + x-a-link');
       if (more) {
-        if (more.matches('x-a-link, x-a-link *')) { // 回头看看他们加不加这个链接再决定怎么办
-          const link = more.closest('x-a-link') || more;
-          addClass(link, 'yawf-feed-comment-more');
-          if (newTab.comments) setAttribute(link, 'target', '_blank');
-        } else {
-          const linkVNode = h('a', {
-            class: 'yawf-feed-comment-more yawf-extra-link',
-            attrs: {
-              href: absoluteUrl(`/${this.data.user.id}/${this.data.mblogid}#${this.curTab}`),
-            },
-          });
-          wrapNode(more, linkVNode);
-          configClickHandler(vNode(more), linkVNode, newTab.comments);
-        }
+        addClass(more, 'yawf-feed-comment-more');
+        if (newTab.comments) setAttribute(more, 'target', '_blank');
       }
     };
     vueSetup.transformComponentsRenderByTagName('repost-comment-feed', repostCommentListRanderTransform);
