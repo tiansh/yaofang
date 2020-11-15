@@ -113,6 +113,11 @@
       })());
     });
 
+    if (!followInPage.length) {
+      throw Error('A page with no following items or empty notice.');
+    }
+    util.debug('Fetch follow: got %o in page', followInPage.length);
+
     return { allPages, followInPage };
   };
 
@@ -141,15 +146,29 @@
         description: '@' + user.screen_name,
       };
     });
+    util.debug('Fetch follow: got %o in page', followInPage.length);
     return { allPages, followInPage };
   };
 
-  request.getFollowingPage = function (uid, page = null) {
-    if (yawf.WEIBO_VERSION === 6) {
-      return getFollowingPageV6(uid, page);
-    } else {
-      return getFollowingPageV7(uid, page);
+  request.getFollowingPage = async function (uid, page = null) {
+    for (let attempt = 0; attempt < 16; attempt++) {
+      if (attempt !== 0) {
+        util.debug('Retry fetching user following data; attempt %d', attempt + 1);
+      }
+      try {
+        // 这的 await 不能省掉，不然 catch 就抓不住这个返回结果了
+        if (yawf.WEIBO_VERSION === 6) {
+          return await getFollowingPageV6(uid, page);
+        } else {
+          return await getFollowingPageV7(uid, page);
+        }
+      } catch (e) {
+        util.debug('Error while fetching user following data: %o', e);
+        await new Promise(resolve => { setTimeout(resolve, 30e3 * Math.min(8, attempt)); });
+      }
     }
+    util.debug('Aborted fetching user following data, too many failed attempts.');
+    throw Error('Network error while fetching following data');
   };
 
 }());
