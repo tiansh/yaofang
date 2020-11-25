@@ -16,7 +16,7 @@
     cleanIconsApprove: { cn: '个人认证', tw: '個人認證', en: 'Personal Authentication' },
     cleanIconsApproveCo: { cn: '机构认证', tw: '企業認證', en: 'Weibo Verification' },
     cleanIconsApproveDead: { cn: '失效认证', tw: '失效認證', en: 'Failed verification' },
-    cleanIconsBigFun: { cn: '铁粉', tw: '鐵粉', en: '铁粉 (big funs?)' },
+    cleanIconsBigFun: { cn: '铁粉', tw: '鐵粉', en: '铁粉 (big fans)' },
     cleanIconsClub: { cn: '微博达人', tw: '微博達人', en: 'Pioneer' },
     cleanIconsVGirl: { cn: '微博女郎', en: 'Weibo girl' },
     cleanIconsSupervisor: { cn: '微博监督员', tw: '微博監督員', en: 'Weibo Supervisor' },
@@ -52,7 +52,7 @@
   const approve = clean.CleanRule('approve', () => i18n.cleanIconsApprove, 1, '.approve, .icon_approve, .icon_pf_approve, .icon_approve_gold, .icon_pf_approve_gold { display: none !important; }', showIcons(['icon_approve', 'icon_approve_gold']), { weiboVersion: [6, 7] });
   const approveCo = clean.CleanRule('approve_co', () => i18n.cleanIconsApproveCo, 1, '.approve_co, .icon_approve_co, .icon_pf_approve_co, [class^="W_icon_co"], [class^=".icon_approve_co_"], [class^=".icon_pf_approve_co_"] { display: none !important; }', showIcons(['icon_approve_co']), { weiboVersion: [6, 7] });
   clean.CleanRule('approve_dead', () => i18n.cleanIconsApproveDead, 1, '.icon_approve_dead, .icon_pf_approve_dead { display: none !important; }', showIcons(['icon_approve_dead']));
-  clean.CleanRule('bigfun', () => i18n.cleanIconsBigFun, 26, '.W_icon_bf { display: none !important; }', showIcons([['W_icon_bf', 'icon_bigfans']]));
+  const bigFan = clean.CleanRule('bigfun', () => i18n.cleanIconsBigFun, 26, '.W_icon_bf { display: none !important; }', showIcons([['W_icon_bf', 'icon_bigfans']]), { weiboVersion: [6, 7] });
   const club = clean.CleanRule('club', () => i18n.cleanIconsClub, 1, '.ico_club, .icon_pf_club, .icon_club { display: none !important; }', showIcons(['icon_club']), { weiboVersion: [6, 7] });
   const vGirl = clean.CleanRule('v_girl', () => i18n.cleanIconsVGirl, 1, '.ico_vlady, .icon_pf_vlady, .icon_vlady { display: none !important; }', showIcons(['icon_vlady']), { weiboVersion: [6, 7] });
   clean.CleanRule('supervisor', () => i18n.cleanIconsSupervisor, 1, '.icon_supervisor { display: none !important; }', showIcons(['icon_supervisor']));
@@ -79,6 +79,7 @@
     vgirl: vGirl,
     club: club,
     'vip,vipex': member,
+    bigfan: bigFan,
   }, function (options) {
     if (yawf.WEIBO_VERSION !== 7) return;
     const hideSymbol = Object.keys(options).filter(key => options[key]).join(',').split(',');
@@ -101,6 +102,22 @@
       vueSetup.eachComponentVM('icon', vm => {
         if (Object.getPrototypeOf(vm) === wooIcon.prototype) vm.$forceUpdate();
       }, { watch: false });
+
+      const hideVip = hideSymbol.includes('vip');
+      const hideBigfan = hideSymbol.includes('bigfan');
+      if (hideVip || hideBigfan) {
+        vueSetup.eachComponentVM('icon-fans', function (vm) {
+          console.log('icon-fans: %o', vm);
+          if (hideVip) {
+            Object.defineProperties(vm, { isVip: { get: () => false } });
+          }
+          if (hideBigfan) {
+            Object.defineProperties(vm, { iconName: { get: () => null } });
+          }
+          vm.$forceUpdate();
+        });
+      }
+
     }, util.inject.rootKey, hideSymbol);
   });
 
