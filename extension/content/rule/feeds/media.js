@@ -911,7 +911,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
             }, [h('div', {
               class: [this.$style.video, 'yawf-video-container'],
             }, [h('div', {
-              class: [this.$style.video, 'wbp-video'],
+              class: [this.$style.video, 'wbp-video', isPlaying ? 'yawf-feed-video-actived' : null],
             }, [h('video', {
               ref: 'video',
               class: ['yawf-video', 'yawf-feed-video', 'wbpv-tech'],
@@ -935,8 +935,8 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
 
         css.append(String.raw`
 .yawf-feed-video .wbp-video {width: 100%; height: 100%; }
-.yawf-feed-video:not(.yawf-feed-video-actived) .wbp-video::before { content: "\e001"; font-family: krvdficon; font-weight: 400; font-style: normal; font-size: 36px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; opacity: 0.85; text-shadow: 0 2px 4px rgba(0,0,0,.2); pointer-events: none; }
-.yawf-feed-video:not(.yawf-feed-video-actived) .wbp-video:hover::before { color: #ff8200; }
+.yawf-feed-video .wbp-video:not(.yawf-feed-video-actived)::before { content: "\e001"; font-family: krvdficon; font-weight: 400; font-style: normal; font-size: 36px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; opacity: 0.85; text-shadow: 0 2px 4px rgba(0,0,0,.2); pointer-events: none; }
+.yawf-feed-video .wbp-video:not(.yawf-feed-video-actived):hover::before { color: #ff8200; }
 .yawf-video-container { position: absolute; top: 0; right: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; overflow: hidden; }
 `);
 
