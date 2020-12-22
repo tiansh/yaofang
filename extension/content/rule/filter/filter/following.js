@@ -643,7 +643,7 @@
     initial: true,
     ainit() {
       const showArticleCss = `
-.WB_editor_iframe, .WB_editor_iframe_new { height: auto !important; }
+.WB_editor_iframe, .WB_editor_iframe_new, .WB_editor_iframe_word { height: auto !important; }
 .artical_add_box [node-type="maskContent"] { display: none; }
 `;
       css.append(showArticleCss);
