@@ -1,5 +1,6 @@
 ; (function () {
 
+  const browser = window.weBrowser;
   const yawf = window.yawf;
   const util = yawf.util;
   const rule = yawf.rule;

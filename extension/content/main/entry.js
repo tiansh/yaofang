@@ -181,8 +181,6 @@
   const init = yawf.init;
   const rule = yawf.rule;
 
-  const i18n = util.i18n;
-
   const showRuleDialog = function (tab = null) {
     try {
       rule.dialog(tab);

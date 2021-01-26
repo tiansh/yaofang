@@ -5,8 +5,6 @@
   const network = yawf.network;
   const request = yawf.request = yawf.request || {};
 
-  const i18n = util.i18n;
-
   const ignoreError = function (callback) {
     try { return callback(); } catch (e) { /* ignore */ }
     return null;

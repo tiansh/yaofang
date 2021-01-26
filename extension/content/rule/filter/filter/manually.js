@@ -169,7 +169,6 @@
 `);
     },
     init() {
-      const rule = this;
       observer.feed.filter(function showMyFeed(feed) {
         // 选项的开关只影响是否显示按钮，过滤规则总是执行
         const mid = feed.getAttribute('mid');

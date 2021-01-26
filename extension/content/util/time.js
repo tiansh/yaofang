@@ -22,7 +22,7 @@
   time.parse = function (text) {
     let parseDate = null;
     const now = Date.now();
-    const [cy, cm, cd] = timeToParts(now);
+    const [cy, cm, cd] = timeToParts(now, 'cst');
     if (/^\d+-\d+-\d+ \d+:\d+$/.test(text)) {
       const [y, m, d, h, u] = text.match(/\d+/g);
       parseDate = Date.UTC(y, m - 1, d, h, u) - 288e5;
@@ -62,7 +62,7 @@
   time.format = function (time, { format = 'auto', locale = 'current' } = {}) {
     const ref = now();
     const [iy, im, id, ih, iu] = timeToParts(time, locale);
-    const [ny, nm, nd, nh, nu] = timeToParts(ref, locale);
+    const [ny, nm, nd, nh, _nu] = timeToParts(ref, locale);
     const diff = (ref - time) / 1e3;
     if (format === 'full') {
       return formatter.format(time);

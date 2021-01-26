@@ -1,5 +1,5 @@
 ; (function () {
-
+  const browser = window.weBrowser;
   const yawf = window.yawf = window.yawf || {};
   const browserInfo = yawf.browserInfo = {};
 

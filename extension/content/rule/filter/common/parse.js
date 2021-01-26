@@ -862,11 +862,9 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const init = yawf.init;
-  const page = init.page;
 
   const feedParser = yawf.feedV7 = {};
-  const commentParser = yawf.commentV7 = {};
+  const commentParser = yawf.commentV7 = {}; // eslint-disable-line no-unused-vars
 
   // 将时间格式化为东八区的 ISO 8601 串
   const date = function (dateStr) {

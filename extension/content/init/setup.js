@@ -291,7 +291,7 @@
         [...document.querySelectorAll(`[yawf-component-tag~="${tag}"]`)].forEach(found);
       }
     };
-    const getComponentsByTagName = vueSetup.getComponentsByTagName = function (tag) {
+    vueSetup.getComponentsByTagName = function (tag) {
       const result = [];
       eachComponentVM(tag, result.push.bind(result), { watch: false });
       return result;

@@ -5,7 +5,6 @@
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
-  const init = yawf.init;
   const fontList = yawf.fontList;
   const chatframe = yawf.chatframe;
   const backend = yawf.backend;

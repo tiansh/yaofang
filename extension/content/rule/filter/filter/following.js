@@ -447,7 +447,7 @@
           return fetchData;
         },
         render() {
-          const fetchData = this.getConfig();
+          this.getConfig();
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
           if (yawf.WEIBO_VERSION === 6) {
@@ -455,7 +455,6 @@
           } else {
             buttonArea.innerHTML = '<span class="yawf-following-checking"></span><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-check-now"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
           }
-          const checkingText = buttonArea.querySelector('.yawf-following-checking');
           const checkNowButton = buttonArea.querySelector('.yawf-following-check-now');
           checkNowButton.addEventListener('click', event => {
             if (!event.isTrusted) return;

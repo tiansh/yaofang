@@ -208,7 +208,7 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-detail', function (nodeStruct, Nodes) {
-      const { h, wrapNode, vNode, addClass } = Nodes;
+      const { vNode, addClass } = Nodes;
       const [authorBox, content] = nodeStruct.childNodes;
 
       // 原作者
@@ -285,7 +285,7 @@
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-toolbar', function (nodeStruct, Nodes) {
-      const { addClass, vNode, removeChild, insertBefore, addEventListener } = Nodes;
+      const { addClass, vNode, removeChild, insertBefore } = Nodes;
 
       addClass(nodeStruct, 'yawf-feed-toolbar');
 
@@ -316,7 +316,7 @@
     });
 
     const repostCommentListRanderTransform = function (nodeStruct, Nodes) {
-      const { h, wrapNode, vNode, addClass, setAttribute } = Nodes;
+      const { addClass, setAttribute } = Nodes;
 
       // 查看全部评论
       const more = nodeStruct.querySelector('x-woo-divider + x-a-link');

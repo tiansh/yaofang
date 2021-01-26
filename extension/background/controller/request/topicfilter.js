@@ -1,10 +1,11 @@
 ; (function () {
 
+  const browser = window.weBrowser;
   const yawf = window.yawf;
   const message = yawf.message;
 
   const topicFilter = async function topicFilter(details, hideItems) {
-    const { requestId, tabId, url } = details;
+    const { requestId } = details;
     const filter = browser.webRequest.filterResponseData(requestId);
     const capacity = 1 << 24;
     let size = 0;

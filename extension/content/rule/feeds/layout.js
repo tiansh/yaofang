@@ -1,19 +1,14 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const init = yawf.init;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
-  const request = yawf.request;
-  const feedParser = yawf.feed;
 
   const feeds = yawf.rules.feeds;
 
   const i18n = util.i18n;
   const css = util.css;
-  const strings = util.strings;
-  const dialog = util.dialog;
 
   const layout = feeds.layout = {};
 
@@ -306,7 +301,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
               feed._yawf_VideoTouched = vm.isPlaying;
             });
             vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
-              const { addClass, vNode } = Nodes;
+              const { addClass } = Nodes;
               if (this.isPlaying) {
                 addClass(nodeStruct, 'yawf-feed-video-actived');
               } else {

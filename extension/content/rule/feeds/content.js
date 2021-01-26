@@ -7,7 +7,6 @@
   const observer = yawf.observer;
   const request = yawf.request;
   const feedParser = yawf.feed;
-  const network = yawf.network;
 
   const feeds = yawf.rules.feeds;
   const layout = yawf.rules.layout;
@@ -15,7 +14,6 @@
   const i18n = util.i18n;
   const css = util.css;
   const ui = util.ui;
-  const strings = util.strings;
 
   const content = feeds.content = {};
 

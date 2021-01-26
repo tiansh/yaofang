@@ -1,5 +1,6 @@
 ; (function () {
 
+  const browser = window.weBrowser;
   const yawf = window.yawf = window.yawf || {};
   const util = yawf.util = yawf.util || {};
 
@@ -301,6 +302,7 @@
 
 // 将数据从 sync 移动到 local
 ; (async function () {
+  const browser = window.weBrowser;
   const [syncStorage, localStorage] = await Promise.all([
     browser.storage.sync.get(),
     browser.storage.local.get(),

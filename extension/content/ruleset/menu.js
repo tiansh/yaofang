@@ -1,15 +1,6 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const util = yawf.util;
-  const init = yawf.init;
-
-  const ui = util.ui;
-  const i18n = util.i18n;
-  const css = util.css;
-
-  const rule = yawf.rule;
-  const tabs = rule.tabs;
 
   const pagemenu = yawf.pagemenu = {};
 

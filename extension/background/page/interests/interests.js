@@ -6,6 +6,7 @@
  */
 ; (function () {
 
+  const browser = window.weBrowser;
   let counter = 0;
   browser.webRequest.onBeforeRequest.addListener(details => {
     // 如果连续跳转到这页，那么说明可能跳转并不奏效

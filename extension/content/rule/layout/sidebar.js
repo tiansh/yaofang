@@ -474,11 +474,6 @@
           const yawf = window[rootKey];
           const vueSetup = yawf.vueSetup;
 
-          const icons = {
-            navNew: 'new_feed',
-            navSpecial: 'special',
-            navMutual: 'friends',
-          };
           vueSetup.eachComponentVM('left-nav-home', function (vm) {
             if (!Array.isArray(vm.customList)) return;
             vm.customShowCount = Infinity;

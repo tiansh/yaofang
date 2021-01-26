@@ -1,7 +1,6 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const init = yawf.init;
   const util = yawf.util = yawf.util || {};
 
   const keyboard = util.keyboard;

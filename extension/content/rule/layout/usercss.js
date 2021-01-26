@@ -9,7 +9,6 @@
   const layout = yawf.rules.layout;
 
   const i18n = util.i18n;
-  const css = util.css;
   const ui = util.ui;
 
   const userCss = layout.userCss = {};
@@ -79,7 +78,9 @@
         const style = document.createElement('style');
         style.textContent = this.ref.css.getConfig();
         setTimeout(function addStyle() {
-          if (!document.body) setTimeout(addStyle, 0);
+          // Tampermonkey BETA 处理 setTimeout 0 会真的 0，会卡死……
+          // 虽然扩展版本不受影响，不过两边代码是共用的，所以这里改一下也不会有什么问题
+          if (!document.body) setTimeout(addStyle, 16);
           else document.body.appendChild(style);
         }, 0);
         // 我们添加一个可以禁用这个功能的方式以防有用户把设置对话框给隐藏了或者弄乱了改不回去

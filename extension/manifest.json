@@ -34,6 +34,7 @@
   "background": {
     "scripts": [
       "common/global/env.js",
+      "common/global/stub.js",
       "common/browser/browser.js",
       "common/util/functools.js",
 
@@ -72,6 +73,7 @@
       ],
       "js": [
         "common/global/env.js",
+        "common/global/stub.js",
         "common/browser/browser.js",
         "common/util/functools.js",
         "common/util/urls.js",
@@ -211,6 +213,7 @@
         "*://api.weibo.com/chat*"
       ],
       "js": [
+        "common/global/stub.js",
         "content/util/inject.js",
         "content/util/strings.js",
         "content/util/css.js",
@@ -234,6 +237,7 @@
         "*://t.cn/*"
       ],
       "js": [
+        "common/global/stub.js",
         "content/storage/storage.js",
         "content/storage/config.js",
 

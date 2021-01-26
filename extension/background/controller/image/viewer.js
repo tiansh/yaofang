@@ -3,6 +3,7 @@
  */
 ; (function () {
 
+  const browser = window.weBrowser;
   const yawf = window.yawf;
   const message = yawf.message;
 
