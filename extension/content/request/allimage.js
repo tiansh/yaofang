@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const network = yawf.network;
-  const request = yawf.request = yawf.request || {};
+  const request = yawf.request = yawf.request ?? {};
 
   const getAllImages = async function (author, mid) {
     const url = new URL(`https://weibo.com/${author}/${util.mid.encode(mid)}`);

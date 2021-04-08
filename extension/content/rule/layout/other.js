@@ -145,7 +145,7 @@
           if (!Array.isArray(value)) return emptyList;
           return value.filter(item => {
             if (item === null) return true;
-            if (item && item.title && item.img && item.text) return true;
+            if (item?.title && item.img && item.text) return true;
             return false;
           }).concat(emptyList).slice(0, 10);
         },
@@ -186,7 +186,7 @@
        */
       const renderListKeepOld = function (ul, faceList, isIm) {
         const listItems = Array.from(ul.querySelectorAll('li'));
-        const newFaceTitles = new Set(faceList.map(e => e && e.title).filter(t => t));
+        const newFaceTitles = new Set(faceList.map(e => e?.title).filter(t => t));
         const emptySlots = [];
         listItems.forEach(li => {
           const title = li.title;
@@ -215,7 +215,7 @@
         const listItems = Array.from(ul.querySelectorAll('li'));
         faceList.forEach((face, index) => {
           const listItem = listItems[index];
-          if (listItem.title === (face && face.title || '')) return;
+          if (listItem.title === (face?.title ?? '')) return;
           listItem.replaceWith(createFaceItem(face, isIm));
         });
       };

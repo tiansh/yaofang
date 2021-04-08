@@ -517,7 +517,7 @@
     const parser = detail ? fullTextParser : simpleTextParser;
     const elements = feedContentElements(target, { detail, long: true });
     if (elements) {
-      const texts = elements.map(element => parser(element) || '');
+      const texts = elements.map(element => parser(element) ?? '');
       return texts.join(detail ? '\u2028' : '\n');
     } else {
       return parser(target);
@@ -576,7 +576,7 @@
       return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
     } else {
       return domList.map(dom => {
-        const [_, uid] = dom.pathname.match(/^\/(?:u\/)?(\d+)/) || [];
+        const uid = dom.pathname.match(/^\/(?:u\/)?(\d+)/)?.[1];
         return String(Number.parseInt(uid, 10));
       }).filter(uid => +uid);
     }
@@ -644,7 +644,7 @@
       return domList.map(dom => new URLSearchParams(dom.getAttribute('usercard')).get('id'));
     } else {
       return domList.map(dom => {
-        const [_, uid] = dom.pathname.match(/^\/(?:u\/)?(\d+)/) || [];
+        const uid = dom.pathname.match(/^\/(?:u\/)?(\d+)/)?.[1];
         return String(Number.parseInt(uid, 10));
       }).filter(uid => +uid);
     }
@@ -838,7 +838,7 @@
   commentParser.text = target => {
     const elements = commentContentElements(target);
     if (elements) {
-      const texts = elements.map(element => commentTextParser(element) || '');
+      const texts = elements.map(element => commentTextParser(element) ?? '');
       return texts.join('\n');
     } else {
       return commentTextParser(target);
@@ -887,7 +887,7 @@
   const mid = mid => mid > 0 ? mid : null;
 
   feedParser.mid = feed => mid(feed.mid);
-  feedParser.omid = feed => mid((feed.retweeted_status || {}).mid);
+  feedParser.omid = feed => mid(feed.retweeted_status?.mid);
 
   feedParser.isFast = feed => feed.screen_name_suffix_new != null;
   feedParser.isFastForward = feed => feedParser.isFast(feed) && feed.ori_mid != null;
@@ -914,7 +914,7 @@
   };
   const text = feedParser.text = {};
   text.detail = feed => {
-    let text = [feed, feed.retweeted_status].filter(x => x && x.user).map(x => [
+    let text = [feed, feed.retweeted_status].filter(x => x?.user).map(x => [
       x.user.screen_name,
       x.longTextContent_raw || x.text_raw,
       x.source,
@@ -922,8 +922,8 @@
     ]).reduce((x, y) => x.concat(y)).join('\u2028');
     if (Array.isArray(feed.url_struct)) {
       text = feed.url_struct.reduce(url => {
-        if (!url || !url.short_url || !/https?:\/\//.test(url.short_url)) return text;
-        return text.split(url.short_url).join((url.long_url || url.short_url) + '\ufff9' + (url.url_title || '') + '\ufffb');
+        if (!url?.short_url || !/https?:\/\//.test(url.short_url)) return text;
+        return text.split(url.short_url).join((url.long_url || url.short_url) + '\ufff9' + (url.url_title ?? '') + '\ufffb');
       }, text);
     }
     const topics = linkTopics(feed).map(t => `#${t}[超话]#`).join('');
@@ -935,7 +935,7 @@
       .map(x => x.longTextContent_raw || x.text_raw).join('\n');
     if (Array.isArray(feed.url_struct)) {
       text = feed.url_struct.reduce(url => {
-        if (!url || !url.short_url || !/https?:\/\//.test(url.short_url)) return text;
+        if (!url?.short_url || !/https?:\/\//.test(url.short_url)) return text;
         return text.split(url.short_url).join(url.url_title || url.long_URL || url.short_url);
       }, text);
     }
@@ -947,7 +947,7 @@
   mention.name = feed => {
     const text = [feed, feed.retweeted_status].filter(x => x)
       .map(x => x.longTextContent_raw || x.text_raw).join('\n');
-    const users = (text.match(/@[\u4e00-\u9fa5|\uE7C7-\uE7F3|\w_\-·]+/g) || []);
+    const users = text.match(/@[\u4e00-\u9fa5|\uE7C7-\uE7F3|\w_\-·]+/g) || [];
     return users.map(u => u.slice(1));
   };
   const topic = feedParser.topic = {};
@@ -971,7 +971,7 @@
   pics.info = feed => {
     const pics = [];
     [feed, feed.retweeted_status].forEach(fd => {
-      if (fd && fd.pic_infos) pics.push(...Object.keys(fd.pic_infos).map(k => fd.pic_infos[k]));
+      if (fd?.pic_infos) pics.push(...Object.keys(fd.pic_infos).map(k => fd.pic_infos[k]));
     });
     return pics;
   };

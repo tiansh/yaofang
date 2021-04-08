@@ -1,8 +1,8 @@
 ; (function () {
 
   const browser = window.weBrowser;
-  const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util = yawf.util || {};
+  const yawf = window.yawf = window.yawf ?? {};
+  const util = yawf.util = yawf.util ?? {};
 
   const storage = yawf.storage = {};
 
@@ -179,7 +179,7 @@
     }
     triggerOnChanged(key, newValue, oldValue) {
       const callbacks = this.watcher.get(key);
-      if (!callbacks || !callbacks.size) return;
+      if (!callbacks?.size) return;
       const clonedNewValue = newValue && JSON.parse(JSON.stringify(newValue));
       const clonedOldValue = oldValue && JSON.parse(JSON.stringify(oldValue));
       callbacks.forEach(callback => {

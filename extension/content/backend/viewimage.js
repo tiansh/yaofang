@@ -1,6 +1,6 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
+  const yawf = window.yawf = window.yawf ?? {};
 
   const message = yawf.message;
 

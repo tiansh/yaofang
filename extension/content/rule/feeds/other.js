@@ -77,7 +77,7 @@
           });
         } else {
           button.setAttribute('favorite', '1');
-          const text = button.querySelector('[node-type="favorite_btn_text"]') || button;
+          const text = button.querySelector('[node-type="favorite_btn_text"]') ?? button;
           text.innerHTML = '<span><em class="W_ficon ficon_favorite S_spetxt">\xFB</em><em></em></span>';
           text.querySelector('em + em').textContent = i18n.favoriteFeed;
         }

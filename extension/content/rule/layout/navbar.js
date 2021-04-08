@@ -191,7 +191,7 @@
         vueSetup.eachComponentVM('ctrls', function (vm) {
           vm.$watch(function () { return this.navItems; }, function () {
             const profile = vm.navItems.find(item => item.name === 'profile');
-            if (profile && profile.src) profile.src = '';
+            if (profile?.src) profile.src = '';
             vm.$forceUpdate();
           }, { deep: true, immediate: true });
         });

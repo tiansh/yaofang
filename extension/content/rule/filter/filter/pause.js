@@ -143,7 +143,7 @@
         if (!list) return; // 搜索页面
         const container = list.parentNode;
         const sibling = container.previousSibling;
-        if (sibling && sibling.nodeType === Node.ELEMENT_NODE) {
+        if (sibling?.nodeType === Node.ELEMENT_NODE) {
           if (sibling.matches('.yawf-feed-filter-pause-notice')) return;
         }
         const wrap = document.createElement('div');

@@ -116,7 +116,7 @@ body[yawf-feed-only] .WB_frame { padding-left: 0; }
 `);
 
       const updateEnable = function updateEnable() {
-        if (!document || !document.body) {
+        if (!document?.body) {
           setTimeout(updateEnable, 1000);
           return;
         }

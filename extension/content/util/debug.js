@@ -1,8 +1,8 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
+  const yawf = window.yawf = window.yawf ?? {};
   const env = yawf.env;
-  const util = yawf.util = yawf.util || {};
+  const util = yawf.util = yawf.util ?? {};
 
   const prefix = env.config.consolePrefix;
   const pending = [];

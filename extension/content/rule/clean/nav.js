@@ -86,7 +86,7 @@
       ainit: function () {
         document.documentElement.addEventListener('DOMNodeInserted', event => {
           const script = event.target;
-          if (!script || (script.tagName || '').toLowerCase() !== 'script') return;
+          if (script?.tagName?.toLowerCase() !== 'script') return;
           const pattern = /^https?:\/\/s.weibo.com\/ajax\/jsonp\/gettopsug\?(?:.*&)?_cb=(STK_\d+)/;
           const match = script.src.match(pattern);
           if (!match || !match[1]) return;

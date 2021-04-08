@@ -1,7 +1,7 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util = yawf.util || {};
+  const yawf = window.yawf = window.yawf ?? {};
+  const util = yawf.util = yawf.util ?? {};
 
   const strings = util.strings;
 
@@ -60,7 +60,7 @@
         resolver.get(detail.id)(detail.error ? Promise.reject(detail.error) : detail.result);
         resolver.delete(detail.id);
       } else if (detail.type === 'callback') {
-        Array.from(callbacks.get(detail.callback) || []).forEach(func => {
+        Array.from(callbacks.get(detail.callback) ?? []).forEach(func => {
           try { func(...detail.params); } catch (e) { /* */ }
         });
       }

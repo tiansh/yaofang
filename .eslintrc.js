@@ -1,8 +1,9 @@
+/* eslint-disable */
 module.exports = {
   root: true,
   extends: 'eslint:recommended',
   parserOptions: {
-    ecmaVersion: 8,
+    ecmaVersion: 2020,
     ecmaFeatures: {
       impliedStrict: true,
     },

@@ -1,8 +1,8 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util = yawf.util || {};
-  const functools = util.functools = util.functools || {};
+  const yawf = window.yawf = window.yawf ?? {};
+  const util = yawf.util = yawf.util ?? {};
+  const functools = util.functools = util.functools ?? {};
 
   /**
    * @template T

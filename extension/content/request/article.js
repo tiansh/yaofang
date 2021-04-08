@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const network = yawf.network;
-  const request = yawf.request = yawf.request || {};
+  const request = yawf.request = yawf.request ?? {};
 
   const ignoreError = function (callback) {
     try { return callback(); } catch (e) { /* ignore */ }
@@ -54,7 +54,7 @@
   const whiteListAttribute = tagName => [
     ...({
       img: ['src'],
-    }[tagName] || []),
+    }[tagName] ?? []),
   ];
   const whiteListStyle = {
     'text-align': /^(?:left|right|center|justify)$/,
@@ -159,7 +159,7 @@
       const figure = document.createElement('figure');
       const img = figure.appendChild(document.createElement('img'));
       img.src = ori.src;
-      const descriptionText = description && description.textContent.trim();
+      const descriptionText = description?.textContent.trim();
       if (descriptionText) {
         const figcaption = figure.appendChild(document.createElement('figcaption'));
         figcaption.textContent = descriptionText;

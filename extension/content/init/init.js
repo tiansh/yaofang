@@ -19,10 +19,10 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const init = yawf.init = yawf.init || {};
+  const init = yawf.init = yawf.init ?? {};
   yawf.WEIBO_VERSION = 0;
 
-  const page = init.page = init.page || {};
+  const page = init.page = init.page ?? {};
 
   const validPageReadyV6 = $CONFIG => {
     // 必须的参数
@@ -69,7 +69,7 @@
     for (const { callback } of list) {
       try {
         const result = callback();
-        if (result && typeof result.then === 'function') {
+        if (typeof result?.then === 'function') {
           await Promise.resolve(result);
         }
       } catch (e) {

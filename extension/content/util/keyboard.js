@@ -1,7 +1,7 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util = yawf.util || {};
+  const yawf = window.yawf = window.yawf ?? {};
+  const util = yawf.util = yawf.util ?? {};
   const keyboard = util.keyboard = {};
 
   const CTRL = 2 ** 32, SHIFT = CTRL * 2, ALT = SHIFT * 2, META = ALT * 2, KEY = CTRL - 1, MAX = META * 2 - 1;
@@ -13,7 +13,7 @@
 
   // 对一个按键事件做编号
   keyboard.event = function (e) {
-    if (!e || !e.keyCode) return null;
+    if (!e?.keyCode) return null;
     return (e.keyCode >>> 0) +
       e.ctrlKey * CTRL +
       e.shiftKey * SHIFT +

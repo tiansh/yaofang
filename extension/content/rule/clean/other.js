@@ -115,14 +115,13 @@
         util.inject(function (rootKey) {
           const yawf = window[rootKey];
           const vueSetup = yawf.vueSetup;
-
           vueSetup.eachComponentVM('card-hot-search', function (vm) {
             vm.$watch(function () { return this.bandList; }, function () {
               const cleanUp = vm.bandList.filter(i => !i.is_ad);
               if (vm.bandList.length !== cleanUp.length) vm.bandList = cleanUp;
             });
             vm.$watch(function () { return this.TopWord; }, function () {
-              if (vm.TopWord.is_ad) vm.TopWord = null;
+              if (vm.TopWord?.is_ad) vm.TopWord = null;
             });
           }, { immediate: true });
 

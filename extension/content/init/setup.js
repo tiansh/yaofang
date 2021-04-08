@@ -192,7 +192,7 @@
           node.setAttribute('yawf-component-tag', tag);
         }
       }
-      const key = (vm.$vnode || {}).key;
+      const key = vm.$vnode?.key;
       if (key != null && node instanceof Element) {
         node.setAttribute('yawf-component-key', key);
       }
@@ -265,7 +265,7 @@
 
     Object.defineProperty(window, rootKey, { value: {}, enumerable: false, writable: false });
     const yawf = window[rootKey];
-    const vueSetup = yawf.vueSetup = (yawf.vueSetup || {});
+    const vueSetup = yawf.vueSetup = yawf.vueSetup ?? {};
 
     vueSetup.getRootVm = () => rootVm;
 
@@ -337,7 +337,7 @@
     const getVNodeTag = function (vnode) {
       if (!vnode.componentOptions) return vnode.tag;
       const opt = vnode.componentOptions;
-      const tag = opt.Ctor && opt.Ctor.options && opt.Ctor.options.name || opt.tag;
+      const tag = opt.Ctor?.options?.name ?? opt.tag;
       return 'x-' + kebabCase(tag);
     };
     const buildNodes = function buildNodes(vnode) {
@@ -360,7 +360,7 @@
       }
       const node = document.createElement(tag);
       node.__vnode__ = vnode;
-      const data = vnode.data || {};
+      const data = vnode.data ?? {};
       const className = parseClass(data.class);
       if (className) node.className = className;
       const staticClassName = parseClass(data.staticClass);
@@ -433,7 +433,7 @@
     };
     const classModify = function (node, add, remove) {
       const vnode = vNode(node);
-      vnode.data = vnode.data || {};
+      vnode.data = vnode.data ?? {};
       const added = parseClass([parseClass(vnode.data.class), ...add].join(' '));
       const removed = added.split(/\s+/).filter(c => !remove.includes(c)).join(' ');
       vnode.data.class = removed;
@@ -512,8 +512,8 @@
     };
     const transformSlot = function (node, slotName, transformer) {
       const vnode = vNode(node);
-      const slots = (vnode.data || {}).scopedSlots;
-      if (!slots || !slots[slotName]) return;
+      const slots = vnode.data?.scopedSlots;
+      if (!slots?.[slotName]) return;
       slots[slotName] = transformRender(slots[slotName], transformer);
     };
     const builder = function (createElement) {

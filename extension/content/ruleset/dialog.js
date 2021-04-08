@@ -95,8 +95,8 @@
       '<=': v => v <= verNum,
       '=': v => v === +verNum,
       '': v => v === +verNum,
-    }[verOp] || (() => true);
-    const [_wbverMatch, wbVerNum] = input.match(/\bweibo:v([67])\b/) || [];
+    }[verOp] ?? (() => true);
+    const [_wbverMatch, wbVerNum] = input.match(/\bweibo:v([67])\b/) ?? [];
     const weiboVersionTest = wbVerNum ? (v => Array.isArray(v) ? v.includes(+wbVerNum) : v === +wbVerNum) : () => true;
     layer.innerHTML = '';
     if (!searchTexts.length && verNum == null && wbVerNum == null) {

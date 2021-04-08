@@ -4,10 +4,10 @@
  */
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
+  const yawf = window.yawf = window.yawf ?? {};
   const init = yawf.init;
   const message = yawf.message;
-  const backend = yawf.backend = yawf.backend || {};
+  const backend = yawf.backend = yawf.backend ?? {};
 
   /** @type {Map<string, Function>} */
   const requestHandler = new Map();

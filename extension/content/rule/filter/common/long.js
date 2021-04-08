@@ -40,7 +40,7 @@
     const unfolding = unfold.map(async function (button) {
       const text = button.parentNode;
       if (!text.matches('.WB_text')) return;
-      if (text.nextElementSibling && text.nextElementSibling.matches('.WB_text')) return;
+      if (text.nextElementSibling?.matches('.WB_text')) return;
       const mid = new URLSearchParams(button.getAttribute('action-data')).get('mid');
       const html = await request.getLongText(mid);
       const full = text.cloneNode(false);

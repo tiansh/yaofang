@@ -230,7 +230,7 @@
         normal: ['child', 'splitter', 'text'],
         recursive: ['child', 'splitter', 'text', 'rule'],
         text: ['child', 'text'],
-      }[mode || 'normal']) || acceptTypes.filter(type => type !== 'rule');
+      }[mode ?? 'normal']) || acceptTypes.filter(type => type !== 'rule');
       const reference = document.createElement('label');
       const container = document.createElement('span');
       container.classList.add('yawf-config-item');
@@ -264,7 +264,7 @@
     let result;
     if (this.template) result = parse.call(this, isRoot);
     else result = this.render(isRoot);
-    return result && result.textContent.trim() || '';
+    return result?.textContent.trim() ?? '';
   })(parseTemplate(false)));
   /**
    * 渲染包括 render 和一个可选的 afterRender
@@ -906,7 +906,7 @@
       const contentLabel = content.querySelector('label');
       contentLabel.replaceWith(...Array.from(contentLabel.childNodes));
       const container = document.createElement('span');
-      const iconType = this.icon || 'ask';
+      const iconType = this.icon ?? 'ask';
       let icon;
       if (yawf.WEIBO_VERSION === 6) {
         icon = document.createElement('i');
@@ -1122,7 +1122,7 @@
       const updatePosition = () => {
         if (!suggestionItemsShown) return;
         const rects = input.getClientRects();
-        if (!rects || !rects[0]) return;
+        if (!rects?.[0]) return;
         const { left, width, bottom } = rects[0];
         const [oldLeft, oldWidth, oldBottom] = oldPosition;
         if (left !== oldLeft) suggestionContainer.style.left = Math.round(left) + 'px';
@@ -1194,12 +1194,12 @@
           },
           [keyboard.code.UP]: () => {
             const old = getFocus();
-            const current = old && old.previousSibling || suggestionItems[suggestionItems.length - 1];
+            const current = old?.previousSibling ?? suggestionItems[suggestionItems.length - 1];
             if (current) setFocus(current);
           },
           [keyboard.code.DOWN]: () => {
             const old = getFocus();
-            const current = old && old.nextSibling || suggestionItems[0];
+            const current = old?.nextSibling ?? suggestionItems[0];
             if (current) setFocus(current);
           },
         }[keyboard.event(event)];
@@ -1371,7 +1371,7 @@
     async parseUserInput(value) {
       const username = value.replace(/^@/, '');
       const user = await request.userInfo({ name: username });
-      if (!user || !user.id) return null;
+      if (!user?.id) return null;
       return [{ id: user.id }];
     }
     async parseFastItem(value, type) {

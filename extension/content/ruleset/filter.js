@@ -200,11 +200,11 @@
   init.onLoad(function () {
     if (yawf.WEIBO_VERSION === 6) {
       observer.feed.apply = function (feed, { result, filter = null, reason = null }) {
-        feed.setAttribute('yawf-feed-display', result || 'unset');
+        feed.setAttribute('yawf-feed-display', result ?? 'unset');
         if (result && result !== 'unset') {
           const author = feed.querySelector('.WB_detail > .WB_info > .W_fb[usercard]') ||
             feed.querySelector('.card-feed .info .name');
-          const authorName = author && author.textContent;
+          const authorName = author?.textContent;
           if (authorName) feed.setAttribute('yawf-feed-author', authorName);
           if (reason) feed.setAttribute('yawf-feed-reason', reason);
           util.debug('Feed filter %o -> %o by %o due to %o', feed, result, filter, reason);
@@ -220,7 +220,7 @@
         return this.active(parsed, false);
       };
       observer.comment.apply = function (comment, { result, filter = null, reason = null }) {
-        comment.setAttribute('yawf-comment-display', result || 'unset');
+        comment.setAttribute('yawf-comment-display', result ?? 'unset');
         if (result && result !== 'unset') {
           util.debug('Comment filter %o -> %o by %o due to %o', comment, result, filter, reason);
         }
@@ -284,7 +284,7 @@
       observer.feed.apply = function (data, { result, filter = null, reason = null }) {
         const mid = data.mid;
         const event = new CustomEvent(key, {
-          detail: JSON.stringify({ action: 'result', mid, result: { result: result || 'unset', reason } }),
+          detail: JSON.stringify({ action: 'result', mid, result: { result: result ?? 'unset', reason } }),
         });
         document.documentElement.dispatchEvent(event);
         if (result) util.debug('Feed filter %o -> %o by %o due to %o', data, result, filter, reason);
@@ -309,7 +309,7 @@
 
         // 展开微博正文
         const longContentExpandForDetail = async function (vm, feedDetail) {
-          if (!feedDetail || !feedDetail.isLongText) return;
+          if (!feedDetail?.isLongText) return;
           if (feedDetail.longTextContent_raw) return;
           if ([true, false].includes(feedDetail._yawf_LongTextContentLoading)) return;
           vm.$set(feedDetail, '_yawf_LongTextContentLoading', true);
@@ -321,7 +321,7 @@
             });
             if (!resp.data || !resp.data.ok || !resp.data.data) return;
             const data = resp.data.data;
-            if (data && data.longTextContent) {
+            if (data?.longTextContent) {
               feedDetail.longTextContent_raw = data.longTextContent;
               if (data.url_struct) feedDetail.url_struct = data.url_struct;
               if (data.topic_struct) feedDetail.topic_struct = data.topic_struct;

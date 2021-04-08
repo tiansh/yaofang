@@ -4,9 +4,9 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const init = yawf.init = yawf.init || {};
+  const init = yawf.init = yawf.init ?? {};
 
-  const page = init.page = init.page || {};
+  const page = init.page = init.page ?? {};
 
   // eslint-disable-next-line complexity
   page.typeV6 = function () {
@@ -72,7 +72,7 @@
       return 'group';
     }
     if (route.name === 'weibo') {
-      const channel = route.meta && route.meta.channel;
+      const channel = route.meta?.channel;
       // 热门
       if (channel === 'hot') return 'discover';
       // 首页

@@ -1,9 +1,9 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
+  const yawf = window.yawf = window.yawf ?? {};
 
   const storage = yawf.storage;
-  const config = yawf.config = yawf.config || {};
+  const config = yawf.config = yawf.config ?? {};
   const pools = config.pools = [];
 
   config.init = async function (uid) {

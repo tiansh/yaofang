@@ -1,13 +1,13 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const util = yawf.util = yawf.util || {};
+  const util = yawf.util = yawf.util ?? {};
 
   const keyboard = util.keyboard;
   const i18n = util.i18n;
   const css = util.css;
 
-  const ui = util.ui = util.ui || {};
+  const ui = util.ui = util.ui ?? {};
 
   i18n.okButtonTitle = {
     cn: '确定',
@@ -87,8 +87,8 @@
     closeButton.title = i18n.closeButtonTitle;
     render(contentNode, Object.assign({}, ...[
       { close: closeButton },
-      button && button.ok ? { ok: okButton } : {},
-      button && button.cancel ? { cancel: cancelButton } : {},
+      button?.ok ? { ok: okButton } : {},
+      button?.cancel ? { cancel: cancelButton } : {},
     ]));
     // 定位对话框的位置
     const lastPos = { x: 0, y: 0 };
@@ -142,7 +142,7 @@
       cover.className = 'yawf-dialog-outer';
     }
     // 响应鼠标
-    if (!button || !button.ok && !button.cancel) {
+    if (!button?.ok && !button?.cancel) {
       buttonCollectionNode.parentNode.removeChild(buttonCollectionNode);
     } else {
       if (button.ok) okButton.addEventListener('click', event => {
@@ -158,12 +158,12 @@
     }
     closeButton.addEventListener('click', event => {
       if (!event.isTrusted) return;
-      (button && button.close || hide)();
+      (button?.close ?? hide)();
     });
     if (yawf.WEIBO_VERSION === 7) {
       mask.addEventListener('click', event => {
         if (!event.isTrusted) return;
-        (button && button.close || hide)();
+        (button?.close ?? hide)();
       });
     }
     // 响应按键
@@ -173,7 +173,7 @@
       const code = keyboard.event(event);
       if (code === keyboard.code.ENTER && button && button.ok) button.ok(event);
       else if (code === keyboard.code.ESC) {
-        (button && (button.cancel || button.close) || hide)(event);
+        (button?.cancel ?? button?.close ?? hide)(event);
       } else return;
       event.stopPropagation();
       event.preventDefault();

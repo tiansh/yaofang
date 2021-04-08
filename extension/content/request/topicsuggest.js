@@ -6,7 +6,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const network = yawf.network;
-  const request = yawf.request = yawf.request || {};
+  const request = yawf.request = yawf.request ?? {};
 
   const topicSuggest = async function (key) {
     const url = new URL('https://weibo.com/aj/mblog/topic?');

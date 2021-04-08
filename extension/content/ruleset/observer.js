@@ -12,7 +12,7 @@
   const util = yawf.util;
   const init = yawf.init;
 
-  const observer = yawf.observer = yawf.observer || {};
+  const observer = yawf.observer = yawf.observer ?? {};
   observer.dom = {};
 
   const priority = util.priority;

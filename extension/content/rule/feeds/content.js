@@ -133,8 +133,8 @@
                     http_code: 200,
                     data: {
                       longTextContent: vm.data.longTextContent_raw,
-                      url_struct: vm.data.url_struct || [],
-                      topic_struct: vm.data.topic_struct || [],
+                      url_struct: vm.data.url_struct ?? [],
+                      topic_struct: vm.data.topic_struct ?? [],
                     },
                   },
                 };
@@ -420,7 +420,7 @@
             vm.setVote = (function (setVote) {
               return function (id) {
                 if (!this.isParted) {
-                  const feedData = this.$parent && this.$parent.data;
+                  const feedData = this.$parent?.data;
                   if (feedData && !feedData.attitudes_status) {
                     voteBlock();
                     return;
@@ -614,7 +614,7 @@
           }
           last = { type, str };
           return last;
-        })].filter(content => content && content.str);
+        })].filter(content => content?.str);
         /** @type {{ delete: { type: 'delete', str: string }, insert: { type: 'insert', str: string } }} */
         let prevPart = { delete: null, insert: null, same: null };
         const result = connected.filter(part => {
@@ -1019,7 +1019,7 @@ body { position: relative; }
         }
         // 标题
         const title = container.querySelector('.yawf-article-title');
-        title.textContent = article.title || '';
+        title.textContent = article.title ?? '';
         // 作者
         const author = container.querySelector('.yawf-article-author');
         if (article.author) {
@@ -1030,7 +1030,7 @@ body { position: relative; }
           link.setAttribute('usercard', `id=${article.author.uid}`);
         } else author.remove();
         const authorInner = container.querySelector('.yawf-article-author-inner');
-        if (article.author && article.author.inner) {
+        if (article.author?.inner) {
           const inner = article.author.inner;
           if (inner.uid) {
             const link = document.createElement('a');

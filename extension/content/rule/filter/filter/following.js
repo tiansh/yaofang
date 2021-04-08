@@ -167,7 +167,7 @@
   const checkListDiff = function (list, newList, lastChange) {
     // 如果之前没有数据，那么也就不用对比
     if (!Array.isArray(list)) return { add: [], lost: [], rename: [] };
-    const { add: lastAdd = [], lost: lastLost = [], rename: lastRename = [] } = lastChange || {};
+    const { add: lastAdd = [], lost: lastLost = [], rename: lastRename = [] } = lastChange ?? {};
     const sameFollowItem = (x, y) => x.id === y.id;
     const getName = x => x.name.replace(/@|\s?\(.*\)/g, '');
     // 先根据原有名单和未提交的更改恢复更早的名单
@@ -257,8 +257,8 @@
       reportUpdateStatus('checking');
       const newList = removeDuplicate(fetchData.getConfig().list);
       const oldList = lastList.getConfig();
-      const changeList = (lastChange.getConfig() || {});
-      const { add, lost, rename } = checkListDiff(oldList && oldList.list, newList, changeList);
+      const changeList = lastChange.getConfig() ?? {};
+      const { add, lost, rename } = checkListDiff(oldList?.list, newList, changeList);
 
       const finishTime = Date.now();
       lastList.setConfig({ timestamp: finishTime, list: newList });
@@ -278,7 +278,7 @@
 
   const clearFollowList = async function () {
     const { fetchData, lastList, lastChange } = followingContext;
-    const { timestamp, lock } = fetchData.getConfig() || {};
+    const { timestamp, lock } = fetchData.getConfig() ?? {};
     util.debug('Fetch Follow: clear fetching data.');
     if (timestamp > Date.now() - 600e3 && lock) {
       util.debug('Fetch Follow: Fetching seems in progress, and would break');
@@ -564,14 +564,14 @@
       const fetchContext = fetchData.getConfig();
       const list = lastList.getConfig();
       if (fetchContext.lock) shouldUpdate = true;
-      if (enabled && (!list || !list.list)) shouldUpdate = true;
+      if (enabled && !list?.list) shouldUpdate = true;
       if (enabled && list && list.timestamp < Date.now() - frequency) shouldUpdate = true;
       if (shouldUpdate) {
         reportUpdateStatus('waiting');
         setTimeout(updateFollowList, 10e3);
       }
       const change = lastChange.getConfig();
-      if (change && change.timestamp) {
+      if (change?.timestamp) {
         if (init.page.type() === 'search') return;
         showChangeList(change).then(confirm => confirm && lastChange.setConfig(null));
       }

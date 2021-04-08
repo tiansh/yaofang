@@ -46,7 +46,7 @@
       const getVueInstance = function (tester) {
         return function find(vue) {
           if (tester(vue)) return vue;
-          return (vue.$children || []).reduce((found, child) => {
+          return (vue.$children ?? []).reduce((found, child) => {
             if (found) return found;
             return find(child);
           }, null);
@@ -91,7 +91,7 @@
 
       vueReady.then(function getUserData(root) {
         const vue = getVueInstance(vue => vue.userdata)(root);
-        if (!vue || !vue.userdata) {
+        if (!vue?.userdata) {
           setTimeout(() => { getUserData(root); }, 0);
           return;
         }

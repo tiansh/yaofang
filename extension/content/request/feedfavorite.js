@@ -5,7 +5,7 @@
 
   const yawf = window.yawf;
   const util = yawf.util;
-  const request = yawf.request = yawf.request || {};
+  const request = yawf.request = yawf.request ?? {};
 
   const strings = util.strings;
 

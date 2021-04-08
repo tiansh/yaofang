@@ -1,8 +1,8 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util = yawf.util || {};
-  const urls = util.urls = util.urls || {};
+  const yawf = window.yawf = window.yawf ?? {};
+  const util = yawf.util = yawf.util ?? {};
+  const urls = util.urls = util.urls ?? {};
 
   /**
    * @param {Blob} blob

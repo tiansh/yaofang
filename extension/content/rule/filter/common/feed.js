@@ -145,7 +145,7 @@
       ul.classList.add('yawf-fast-add-list');
       container.appendChild(ul);
       selectedItems.forEach(originalItem => {
-        const handlers = fastHandlers.get(originalItem.type) || [];
+        const handlers = fastHandlers.get(originalItem.type) ?? [];
         handlers.forEach(({ active, render, rules, radioGroup }) => {
           const item = JSON.parse(JSON.stringify(originalItem));
           items.push(item);

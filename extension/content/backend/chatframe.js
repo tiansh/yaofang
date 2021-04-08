@@ -1,6 +1,6 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
+  const yawf = window.yawf = window.yawf ?? {};
   const chatframe = yawf.chatframe = {};
   const message = yawf.message;
 

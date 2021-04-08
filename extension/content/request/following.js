@@ -3,7 +3,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const network = yawf.network;
-  const request = yawf.request = yawf.request || {};
+  const request = yawf.request = yawf.request ?? {};
 
   const catched = f => function (...args) {
     try {
@@ -53,7 +53,7 @@
       const avatar = new URL(img.src, 'https://weibo.com').href;
       return (catched(function () {
         // 关注了一个用户
-        const id = new URLSearchParams(img.getAttribute('usercard') || '').get('id');
+        const id = new URLSearchParams(img.getAttribute('usercard') ?? '').get('id');
         if (!id) return null;
         const href = `https://weibo.com/u/${id}`;
         const name = img.getAttribute('alt');
@@ -67,9 +67,9 @@
           name,
           description,
         };
-      })()) || (catched(function () {
+      })()) ?? (catched(function () {
         // 关注了一支股票
-        const id = (img.parentNode.href.match(/weibo.com\/p\/230677([a-zA-Z\d]+)/) || [])[1];
+        const id = img.parentNode.href.match(/weibo.com\/p\/230677([a-zA-Z\d]+)/)?.[1];
         if (!id) return null;
         const href = `https://weibo.com/p/230677${id}`;
         const description = `$${title}$`;
@@ -82,7 +82,7 @@
           name: description,
           description,
         };
-      })()) || (catched(function () {
+      })()) ?? (catched(function () {
         // 关注了一个话题
         const ref = img.parentNode.href.match(/huati.weibo.com/);
         if (!ref) return null;
@@ -98,9 +98,9 @@
           name: description,
           description: description,
         };
-      })()) || (catched(function () {
+      })()) ?? (catched(function () {
         const link = img.closest('[href]');
-        const href = link && link.getAttribute('href') || avatar;
+        const href = link?.getAttribute('href') ?? avatar;
         // 未知关注内容
         return {
           id: 'unknown-' + href,
@@ -122,7 +122,7 @@
   };
 
   const getFollowingPageV7 = async function (uid, page) {
-    const url = `https://weibo.com/ajax/friendships/friends?page=${page || 1}&uid=${uid}`;
+    const url = `https://weibo.com/ajax/friendships/friends?page=${page ?? 1}&uid=${uid}`;
     util.debug('Fetch Follow: fetch page %s', url);
     util.debug('fetch url %s', url);
     const resp = await network.fetchJson(url);

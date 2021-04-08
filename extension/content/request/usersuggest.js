@@ -6,7 +6,7 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const network = yawf.network;
-  const request = yawf.request = yawf.request || {};
+  const request = yawf.request = yawf.request ?? {};
 
   const userSuggestCache = new Map();
 
@@ -19,7 +19,7 @@
     url.searchParams.set('uid', yawf.init.page.$CONFIG.uid);
     util.debug('fetch url %s', url);
     const resp = await network.fetchText(url);
-    const users = Array.from((network.parseJson(resp).data || {}).user);
+    const users = Array.from(network.parseJson(resp).data?.user ?? []);
     const result = users.map(user => ({
       id: user.u_id + '',
       name: user.u_name,

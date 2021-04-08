@@ -93,7 +93,7 @@
 
     // 给提到和话题的链接加上新标签页打开的标记
     const handleContentRender = function (content) {
-      if (!((content.data || {}).domProps || {}).innerHTML) return;
+      if (!content.data?.domProps?.innerHTML) return;
       const tag = 'x-content-parse-wrap-x' + (Math.random() + '').slice(2);
       const wrap = new DOMParser().parseFromString(`<${tag}>` + content.data.domProps.innerHTML, 'text/html').querySelector(tag);
       [...wrap.querySelectorAll('a')].forEach(link => {
@@ -196,7 +196,7 @@
       const tip = nodeStruct.querySelector('x-woo-tip');
       if (tip) {
         addClass(tip, 'yawf-feed-content-tip');
-        if (this.data.complaint && this.data.complaint.url) {
+        if (this.data.complaint?.url) {
           const linkVNode = h('a', {
             class: 'yawf-feed-content-tip-link yawf-extra-link',
             attrs: { href: absoluteUrl(this.data.complaint.url) },
@@ -243,8 +243,8 @@
         addClass(nodeStruct, 'yawf-feed-picture-single');
         // 缩小单张图片，V5 版单张图片的尺寸不超过 120x120
         if (smallImage) {
-          const oriWidth = this.isPay && this.pics[0] && this.pics[0].width ? this.pics[0].width : this.pics[0].geo && this.pics[0].geo.width;
-          const oriHeight = this.isPay && this.pics[0] && this.pics[0].height ? this.pics[0].height : this.pics[0].geo && this.pics[0].geo.height;
+          const oriWidth = this.isPay && this.pics[0]?.width || this.pics[0].geo?.width;
+          const oriHeight = this.isPay && this.pics[0]?.height || this.pics[0].geo?.height;
           const width = Math.min(120, Math.max(120 / oriHeight * oriWidth, 30));
           const height = Math.min(120, Math.max(120 / oriWidth * oriHeight, 30));
           const style = vNode(nodeStruct.firstChild).data.style;
@@ -267,7 +267,8 @@
       if (newTab.card) setAttribute(nodeStruct, 'target', '_blank');
       const card = nodeStruct.firstChild;
       addClass(card, 'yawf-feed-card');
-      const [picture, content] = card.childNodes;
+      const picture = card.querySelector('x-woo-picture');
+      const content = picture.nextSibling;
       addClass(picture, 'yawf-feed-card-picture');
       addClass(content, 'yawf-feed-card-content');
     });
@@ -371,9 +372,9 @@
         if (newTab.comments) setAttribute(author, 'target', '_blank');
       }
       // 二级评论作者
-      if (replyAuthors && replyAuthors.length) {
+      if (replyAuthors?.length) {
         replyAuthors.forEach((author, index) => {
-          if (!comment.comments || !comment.comments[index]) return;
+          if (!comment.comments?.[index]) return;
           addClass(author, 'yawf-feed-comment-author', 'yawf-feed-comment-reply-author');
         });
       }
@@ -381,7 +382,7 @@
       // 评论的内容
       const contentList = [...nodeStruct.querySelectorAll('span')];
       contentList.forEach(content => {
-        if (!Object.prototype.hasOwnProperty.call((vNode(content).data || {}).domProps || {}, 'innerHTML')) return;
+        if (!Object.prototype.hasOwnProperty.call(vNode(content).data?.domProps || {}, 'innerHTML')) return;
         addClass(content, 'yawf-feed-comment-content');
         addClass(content.parentNode, 'yawf-feed-comment-text');
         handleContentRender(vNode(content));
@@ -444,9 +445,9 @@
       const showRepost = removeClickHandler(vNode(nodeStruct));
 
       // 转发微博的时间
-      const time = content && content.parentNode.nextSibling.querySelector('div');
-      addClickHandler(vNode(time), showRepost);
+      const time = content?.parentNode.nextSibling.querySelector('div');
       if (time) {
+        addClickHandler(vNode(time), showRepost);
         const linkVNode = h('a', {
           class: 'yawf-feed-repost-time yawf-extra-link',
           attrs: {

@@ -188,7 +188,7 @@ a[action-type="feed_list_favorite"], a[action-type="feed_list_favorite"]+.S_txt3
       else if (a.matches('[action-type="reply"]')) type = 'reply';
       else if (a.matches('[action-type="replycomment"]')) type = 'reply';
       else if (a.matches('[action-type="fl_like"]')) type = 'like';
-      li.setAttribute('yawf-comment-handle-type', type || '');
+      li.setAttribute('yawf-comment-handle-type', type ?? '');
     });
   });
 

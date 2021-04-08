@@ -1,7 +1,7 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util = yawf.util || {};
+  const yawf = window.yawf = window.yawf ?? {};
+  const util = yawf.util = yawf.util ?? {};
 
   let language = util.language = null;
   const i18n = new Proxy(Object.create(null), {
@@ -39,9 +39,8 @@
       else if (lower === 'zh-hk') language = 'hk';
       else if (lower === 'zh-tw') language = 'tw';
       else if (lower === 'en') language = 'en';
-      else return false;
+      else return;
       util.language = language;
-      return true;
     },
   });
 

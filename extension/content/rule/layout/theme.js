@@ -93,7 +93,7 @@
         if (!skinStyle) {
           const skinCss = document.querySelector('link[href*="//img.t.sinajs.cn/t6/skin/"][href*="/skin.css?"]');
           if (!skinCss) return;
-          version = ((skinCss.href.match(/version=([a-fA-F0-9]*)/) || [])[1]) || '';
+          version = skinCss.href.match(/version=([a-fA-F0-9]*)/)?.[1] ?? '';
           skinStyle = skinCss.cloneNode(); skinStyle.id = 'yawf-skin_style';
           setSkinId(skinId);
         }

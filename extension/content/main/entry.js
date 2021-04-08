@@ -139,7 +139,7 @@
     };
     const menuitem = function () {
       const menuitems = document.querySelectorAll('.gn_topmenulist ul li.line');
-      if (!menuitems || !menuitems.length) { setTimeout(menuitem, 100); return; }
+      if (!menuitems?.length) { setTimeout(menuitem, 100); return; }
       const reference = [...menuitems].pop();
       const ul = document.createElement('ul');
       ul.innerHTML = `

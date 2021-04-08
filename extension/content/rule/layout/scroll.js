@@ -94,7 +94,7 @@ body[yawf-merge-left] .WB_main_r[yawf-fixed] .WB_main_l { width: 229px; }
         const container = document.querySelector('#plc_main');
         if (!left || !reference) return;
         const refc = reference.getClientRects();
-        if (!refc || !refc[0]) return;
+        if (!refc?.[0]) return;
         const pos = refc[0];
         if (!hasScroll) {
           if (pos.bottom < -60) {

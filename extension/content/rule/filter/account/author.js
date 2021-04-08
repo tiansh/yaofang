@@ -53,7 +53,7 @@
         const isShowRule = rule.feedAction === 'show';
         const isProfile = pageType === 'profile';
         const isGroup = pageType === 'group';
-        if ((fauthor || author) === oid && !isShowRule && isProfile) return null;
+        if ((fauthor ?? author) === oid && !isShowRule && isProfile) return null;
         const accounts = rule.ref.items.getConfig();
         const ignoreFastAuthor = isGroup && !isShowRule;
         const ignoreAuthor = ignoreFastAuthor && !feedParser.isFast(feed);

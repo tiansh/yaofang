@@ -96,7 +96,7 @@
     } else if (ref.getAttribute('imagecard')) {
       const pid = new URLSearchParams(ref.getAttribute('imagecard')).get('pid');
       return { images: [getUrlByPid(pid).href], current: 1 };
-    } else if (ref.href && ref.href.indexOf('javascript:') === -1) {
+    } else if (ref.href?.indexOf('javascript:') === -1) {
       return { images: [ref.href], current: 1 };
     } else if (ref instanceof HTMLImageElement && ref.src) {
       return { images: [getImageUrl(ref, true)], current: 1 };
@@ -187,9 +187,9 @@
             filename = (index + 1) + '.' + extension;
           }
           const feed = ref.closest('[mid], [omid], [comment_id]');
-          const feedId = feed.getAttribute('comment_id') ||
-            ref.closest('.WB_feed_expand') && feed.getAttribute('omid') ||
-            feed.getAttribute('mid') || 0;
+          const feedId = feed.getAttribute('comment_id') ??
+            (ref.closest('.WB_feed_expand') && feed.getAttribute('omid')) ??
+            feed.getAttribute('mid') ?? 0;
           const path = 'weibo-images/' + download.filename(feedId) + '/' + filename;
           return { url, filename: path };
         });
@@ -271,7 +271,7 @@
         const target = event.target;
         if (event.button !== 0) return; // 只响应左键操作
         if (target.closest('.yawf-W_icon_tag_9p')) return; // 展开过多被折叠的图片按钮不响应
-        const pic = target.closest('.WB_media_wrap .WB_pic') || target.closest('a[imagecard]');
+        const pic = target.closest('.WB_media_wrap .WB_pic') ?? target.closest('a[imagecard]');
         if (!pic) return;
         const active = (function () {
           const shift = event.shiftKey;
@@ -298,7 +298,7 @@
           /** @type {Element & EventTarget} */
           const target = event.target;
           const pic = (function () {
-            const pic = target.closest('.WB_media_wrap .WB_pic') || target.closest('a[imagecard]');
+            const pic = target.closest('.WB_media_wrap .WB_pic') ?? target.closest('a[imagecard]');
             if (pic) return pic;
             const feed = target.closest('.WB_feed_type');
             if (!feed) return null;
@@ -458,7 +458,7 @@
           /** @type {string[]} */
           const allImages = await request.getAllImages(original, mid);
           ul.classList.remove('yawf-WB_media_a_m9p_loading');
-          if (!allImages || !allImages.length) return;
+          if (!allImages?.length) return;
           const imageCount = allImages.length;
           if (imageCount === 9 && officialNotSupport) return;
           const pids = allImages.map(img => img.replace(/^.*\/(.*)\..*$/, '$1'));
@@ -898,7 +898,7 @@ li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video
             // 我们自己画一个视频播放器上去
             let url = null;
             if (quality === 'best') try {
-              const playback = this.infos.media_info.playback_list.find(x => x.play_info && x.play_info.url);
+              const playback = this.infos.media_info.playback_list.find(x => x.play_info?.url);
               url = playback.play_info.url;
             } catch (e) { /* ignore */ }
             if (!url) url = this.infos.media_info.stream_url;

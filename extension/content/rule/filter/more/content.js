@@ -52,7 +52,7 @@
           return 'hide';
         } else {
           if (feed.retweeted_status) {
-            if ((feed.retweeted_status.visible || {}).list_id > 0) return 'hide';
+            if (feed.retweeted_status.visible?.list_id > 0) return 'hide';
             if (feed.retweeted_status.deleted) return 'hide';
           }
           return null;
@@ -125,12 +125,12 @@
           if (feedParser.source.text(feed).includes('投票')) return 'hide';
         } else {
           if (Array.isArray(feed.url_struct)) {
-            if (feed.url_struct.find(url => /^1022:231716/.test((url.actionlog || {}).oid))) return 'hide';
+            if (feed.url_struct.find(url => /^1022:231716/.test(url.actionlog?.oid))) return 'hide';
             if (feed.url_struct.find(url => /https:\/\/vote\.weibo\.com\//.test(url.long_url))) return 'hide';
             if (feed.url_struct.find(url => /https:\/\/vote\.weibo\.com\//.test(url.ori_url))) return 'hide';
             if (feed.url_struct.find(url => /sinaweibo:\/\/browser\?url=https%3A%2F%2Fvote\.weibo\.com%2F/.test(url.ori_url))) return 'hide';
           }
-          if ((feed.page_info || {}).object_type === 'hudongvote') return 'hide';
+          if (feed.page_info?.object_type === 'hudongvote') return 'hide';
         }
         return null;
       });
@@ -205,7 +205,7 @@
           return 'hide';
         } else {
           const pics = feedParser.pics.info(feed);
-          if (pics.find(pic => (pic.pic_tags || []).length)) return 'hide';
+          if (pics.find(pic => pic.pic_tags?.length)) return 'hide';
           return null;
         }
       });
@@ -407,7 +407,7 @@
         } else {
           const pics = feedParser.pics.info(feed);
           // 付费图片
-          if (pics.find(pic => (pic.blur || {}).isPay)) return 'hide';
+          if (pics.find(pic => pic.blur?.isPay)) return 'hide';
           // 付费文章的特征找不到！
         }
         return null;

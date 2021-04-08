@@ -89,7 +89,7 @@
     ].join(',')));
     if (!titles.length) return;
     titles.forEach(function (title) {
-      const name = title && title.textContent.trim() || '';
+      const name = title?.textContent.trim() ?? '';
       const container = title.closest('.WB_frame_b > div, .WB_frame_c > div');
       if (!container.hasAttribute('yawf-obj-name')) {
         container.setAttribute('yawf-obj-name', name);

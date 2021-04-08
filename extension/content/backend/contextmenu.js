@@ -3,7 +3,7 @@
  */
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
+  const yawf = window.yawf = window.yawf ?? {};
   const message = yawf.message;
   const contextmenu = yawf.contextmenu = {};
 
@@ -14,7 +14,7 @@
     lastCheck = Promise.all(contextMenuListener.map(listener => {
       try {
         return Promise.resolve(listener(event))
-          .then(items => items || [], () => []);
+          .then(items => items ?? [], () => []);
       } catch (e) {
         return Promise.resolve([]);
       }

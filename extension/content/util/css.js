@@ -1,8 +1,8 @@
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
-  const util = yawf.util = yawf.util || {};
-  const css = util.css = util.css || {};
+  const yawf = window.yawf = window.yawf ?? {};
+  const util = yawf.util = yawf.util ?? {};
+  const css = util.css = util.css ?? {};
 
   css.add = function (css) {
     const target = document.head || document.body || document.documentElement;

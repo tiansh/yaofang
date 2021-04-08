@@ -56,8 +56,8 @@
       while ((!prev || prev.matches('.lev_line')) &&
         (!next || next.matches('.lev_line'))) {
         let line = null;
-        if (prev && prev.matches('.lev_line')) line = prev;
-        if (next && next.matches('.lev_line')) line = next;
+        if (prev?.matches('.lev_line')) line = prev;
+        if (next?.matches('.lev_line')) line = next;
         if (line) {
           line = prev || next;
           removeBlankSibling(line);

@@ -56,7 +56,7 @@
           if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
         } else {
           // 某某赞过的微博
-          if ((feed.title || {}).type === 'likerecommend') return 'hide';
+          if (feed.title?.type === 'likerecommend') return 'hide';
         }
         return null;
       }, { priority: 1e6 });
@@ -213,7 +213,7 @@
           if (feed.url_struct.find(url => /^https:\/\/m\.tb\.cn\//.test(url.long_url))) return 'hide';
           if (feed.url_struct.find(url => /buy\.png$/.test(url.url_type_pic))) return 'hide';
           if (feed.url_struct.find(url => /^https:\/\/shop\.sc\.weibo\.com\//.test(url.long_url))) return 'hide';
-          if (feed.url_struct.find(url => /shop_sc_weibo/.test((url.actionlog || {}).oid))) return 'hide';
+          if (feed.url_struct.find(url => /shop_sc_weibo/.test(url.actionlog?.oid))) return 'hide';
         }
         return null;
       });

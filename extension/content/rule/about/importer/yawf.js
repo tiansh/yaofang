@@ -66,7 +66,7 @@
       rule('weibo.tool.load_weibo_by_group.group', 'filter_homepage_single_group.group', group => `g${group.id}`);
       rule('weibo.tool.load_weibo_by_multi_group.enabled', 'filter_homepage_multi_group');
       rule(['weibo.tool.load_weibo_by_multi_group', 'weibo.tool.load_weibo_by_multi_group.whisper'], 'filter_homepage_multi_group.groups', ([groups, whisper], target) => ([
-        ...(groups || []).map(group => `g${group}`),
+        ...(groups ?? []).map(group => `g${group}`),
         ...(whisper ? ['whisper'] : []),
       ]));
       rule('weibo.other.auto_load_new_weibo', 'filter_homepage_auto_load');

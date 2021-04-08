@@ -5,7 +5,7 @@
  */
 ; (function () {
 
-  const yawf = window.yawf = window.yawf || {};
+  const yawf = window.yawf = window.yawf ?? {};
   const download = yawf.download = {};
   const message = yawf.message;
 

@@ -179,7 +179,7 @@
           exportButton.classList.remove('yawf-export-busy');
         };
         download.blob({ blob, filename }).then(download => {
-          if (!download || !download.show) {
+          if (!download?.show) {
             finishDownload();
           } else {
             setTimeout(() => {

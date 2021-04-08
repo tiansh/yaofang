@@ -23,18 +23,18 @@
     }
     convert(wbp) {
       const configs = {};
-      (wbp.hideMods || []).forEach(mod => {
-        Object.assign(configs, ...(this.cleans.get(mod) || []).map(clean => clean() || {}));
+      wbp.hideMods?.forEach(mod => {
+        Object.assign(configs, ...(this.cleans.get(mod) ?? []).map(clean => clean() ?? {}));
       });
       Object.keys(wbp).forEach(key => {
-        Object.assign(configs, ...(this.rules.get(key) || []).map(rule => rule(wbp[key]) || {}));
+        Object.assign(configs, ...(this.rules.get(key) ?? []).map(rule => rule(wbp[key]) ?? {}));
       });
       Object.keys(wbp).forEach(key => {
         if (!this.collections.has(key)) return;
-        (this.collections.get(key) || []).forEach(mapper => {
+        this.collections.get(key)?.forEach(mapper => {
           const conf = mapper(wbp[key]);
           Object.keys(conf).forEach(ckey => {
-            configs[ckey] = (configs[ckey] || []).concat(conf[ckey]);
+            configs[ckey] = (configs[ckey] ?? []).concat(conf[ckey]);
           });
         });
       });

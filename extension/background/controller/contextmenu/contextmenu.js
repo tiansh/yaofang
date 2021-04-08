@@ -93,7 +93,7 @@
       /* no menu */
     }
     if (contextMenuIndex !== lastContextMenuIndex) return;
-    if (!items || !items.length) return;
+    if (!items?.length) return;
     const rootMenu = browser.menus.create({
       title: menuTitleWithAccessKey(browser.i18n.getMessage('extensionName'), env.config.contextMenuKey),
       contexts: ['tab'],
