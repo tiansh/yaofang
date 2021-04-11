@@ -16,6 +16,10 @@
     cleanFeedOuterTipDetail: {
       cn: '消息流内部的提示横幅，如“ 系统提示：根据你的屏蔽设置，系统已过滤掉部分微博。”等内容。',
     },
+    cleanFeedInnerTip: { cn: '微博内提示横幅 {{i}}', tw: '微博內提示橫幅 {{i}}', en: 'Tips for feed {{i}}' },
+    cleanFeedInnerTipDetail: {
+      cn: '各条微博内的提示横幅。v6 位于某条微博顶部，v7 位于作者与正文之间。',
+    },
     cleanFeedCommentTip: { cn: '评论框提示横幅 {{i}}', tw: '評論框提示橫幅 {{i}}', en: 'Tips for comment {{i}}' },
     cleanFeedCommentTipDetail: {
       cn: '经常出现在评论框上方的横幅，通常包含如“微博社区管理中心举报处理大厅，欢迎查阅！”等内容。',
@@ -54,6 +58,11 @@
   clean.CleanRule('feed_outer_tip', () => i18n.cleanFeedOuterTip, 1, {
     acss: '.WB_feed > .W_tips { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedOuterTip } },
+  });
+  clean.CleanRule('feed_inner_tip', () => i18n.cleanFeedInnerTip, 91, {
+    acss: '.WB_feed_detail .W_tips, .yawf-feed-content .yawf-feed-content-tip, .yawf-feed-content .yawf-feed-content-tip-link { display: none !important; }',
+    ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedInnerTip } },
+    weiboVersion: [6, 7],
   });
   clean.CleanRule('feed_tip', () => i18n.cleanFeedCommentTip, 1, {
     acss: '[node-type="feed_privateset_tip"] { display: none !important; }',
