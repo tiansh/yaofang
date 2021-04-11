@@ -33,9 +33,10 @@
 
   ; (function (linkTypes) {
     Object.keys(linkTypes).sort().forEach(id => {
-      const { type, name, recognizer } = linkTypes[id];
+      const { type, name, recognizer, v7Type, v7Recognizer } = linkTypes[id];
       const pascalCaseType = type.replace(/^./, c => c.toUpperCase());
       link[type] = rule.Rule({
+        weiboVersion: [6, 7],
         id: `filter_${pascalCaseType}`,
         version: 30,
         parent: link.link,
@@ -45,8 +46,17 @@
           observer.feed.filter(function feedWithSpecialLinkFilter(feed) {
             if (!rule.isEnabled()) return null;
             if (init.page.type() === type) return null;
-            if (feed.querySelector(`a[suda-uatrack*="1022-${type}"]`)) return 'hide';
-            if (recognizer && recognizer(feed)) return 'hide';
+            if (yawf.WEIBO_VERSION === 6) {
+              if (feed.querySelector(`a[suda-uatrack*="1022-${type}"]`)) return 'hide';
+              if (recognizer?.(feed)) return 'hide';
+            } else {
+              if (v7Type) {
+                const urls = feed.url_struct || [];
+                const url = urls.find(url => url.url_type_pic?.includes(v7Type + '.png'));
+                if (url) return 'hide';
+              }
+              if (v7Recognizer?.(feed)) return 'hide';
+            }
             return null;
           });
           this.addConfigListener(() => { observer.feed.rerun(); });
@@ -56,18 +66,22 @@
   }({
     100101: {
       type: 'place',
+      v7Type: 'location',
       name: () => i18n.feedWithLinkPlace,
     },
     100120: {
       type: 'movie',
+      v7Type: 'movie',
       name: () => i18n.feedWithLinkMovie,
     },
     100202: {
       type: 'book',
+      v7Type: 'book',
       name: () => i18n.feedWithLinkBook,
     },
     100808: {
       type: 'topic',
+      v7Type: 'super',
       name: () => i18n.feedWithLinkTopic,
       recognizer: feed => {
         const source = feed.querySelector('.WB_from a[href^="https://huati.weibo.com/k/"]');
@@ -77,11 +91,15 @@
     },
     101515: {
       type: 'music',
+      v7Type: 'music',
       name: () => i18n.feedWithLinkMusic,
     },
     230677: {
       type: 'stock',
       name: () => i18n.feedWithLinkStock,
+      v7Recognizer: feed => {
+        return feed.url_struct?.some(url => url.url_title?.[0] === '$');
+      },
     },
   }));
 
