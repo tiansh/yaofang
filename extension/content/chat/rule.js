@@ -19,6 +19,21 @@
     }
   }());
 
+  const newTabDefault = function () {
+    const base = document.createElement('base');
+    base.target = '_blank';
+    document.body.appendChild(base);
+  };
+  if (self !== top) {
+    if (document.body) {
+      newTabDefault();
+    } else {
+      document.addEventListener('DOMContentLoaded', event => {
+        newTabDefault();
+      });
+    }
+  }
+
   const disableUnloadPrompt = function () {
     util.inject(function disableBeforeUnload() {
       if (!window.onbeforeunload) {

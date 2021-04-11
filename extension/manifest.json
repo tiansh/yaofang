@@ -214,8 +214,10 @@
       ],
       "js": [
         "common/global/stub.js",
-        "content/util/inject.js",
+
+        "common/global/env.js",
         "content/util/strings.js",
+        "content/util/inject.js",
         "content/util/css.js",
 
         "content/storage/storage.js",
