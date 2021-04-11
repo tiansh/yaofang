@@ -638,7 +638,7 @@
                 } else {
                   const more = h('div', {}, [
                     h('a', {
-                      class: 'viewpic yawf-feed-detail-content-retweet-size',
+                      class: 'viewpic yawf-feed-detail-content-retweet-size yawf-feed-pic-expand',
                       on: { click: expand },
                     }, [`查看全部图片（共 ${this.pic_num} 张）`]),
                   ]);
@@ -646,10 +646,10 @@
                 }
               }
             });
-
             vm.$forceUpdate();
           });
         }, util.inject.rootKey, configs);
+        css.append('.yawf-feed-pic-expand, .yawf-feed-pic-expand:hover { cursor: pointer; text-decoration: none; }');
       }
     },
   });
