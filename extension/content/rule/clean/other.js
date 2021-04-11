@@ -124,6 +124,16 @@
               if (vm.TopWord?.is_ad) vm.TopWord = null;
             });
           }, { immediate: true });
+          vueSetup.eachComponentVM('new-hot', function (vm) {
+            vm.$watch(function () { return this.list; }, function () {
+              for (let i = 0; i < vm.list.length;) {
+                if (!vm.list[i].realpos) {
+                  vm.list.splice(i, 1);
+                } else i++;
+              }
+              vm.hasTop = false;
+            });
+          });
 
         }, util.inject.rootKey);
       }

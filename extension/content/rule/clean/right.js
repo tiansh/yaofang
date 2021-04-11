@@ -12,6 +12,7 @@
     cleanRightInfo: { cn: '个人信息', tw: '个人信息', en: 'Personal Info' },
     cleanRightRanks: { cn: '榜单（新歌榜等）', tw: '榜單（新歌榜等）', en: 'Rank List (Song list, etc.)' },
     cleanRightHotTopic: { cn: '热门话题 / 微博热搜', tw: '熱門話題', en: 'Hot Topic' },
+    cleanRightHotTopicTop: { cn: '置顶热门话题' },
     cleanRightInterest: { cn: '可能感兴趣的人', tw: '可能感興趣的人', en: 'You may know' },
     cleanRightMember: { cn: '会员专区', tw: '會員專區', en: 'Weibo VIP' },
     cleanRightGroups: { cn: '分组成员列表', tw: '分組成員列表', en: 'Members of group' },
@@ -27,6 +28,7 @@
   clean.CleanGroup('right', () => i18n.cleanRightGroupTitle);
   clean.CleanRule('info', () => i18n.cleanRightInfo, 1, '#v6_pl_rightmod_myinfo { display: none !important; }');
   clean.CleanRule('ranks', () => i18n.cleanRightRanks, 1, '#v6_pl_rightmod_rank, [yawf-id="rightmod_taobao_movie"], [yawf-id="rightmod_recom_movie"] { display: none !important; }');
+  const hotSearchTop = clean.CleanRule('hot_topic_top', () => i18n.cleanRightHotTopicTop, 91, '', { weiboVersion: 7 });
   const hotSearch = clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }', { weiboVersion: [6, 7] });
   const interested = clean.CleanRule('interest', () => i18n.cleanRightInterest, 1, '[yawf-id="rightmod_recom_interest"] { display: none !important; }', { weiboVersion: [6, 7] });
   clean.CleanRule('member', () => i18n.cleanRightMember, 1, '#v6_trustPagelet_recom_member { display: none !important; }');
@@ -54,6 +56,7 @@
   });
 
   clean.CleanRuleGroup({
+    hotSearchTop: hotSearchTop,
     cardHotSearch: hotSearch,
     cardInterested: interested,
   }, function (options) {
@@ -73,6 +76,14 @@
           }
         }, { immediate: true });
       });
+
+      if (options.hotSearchTop) {
+        vueSetup.eachComponentVM('card-hot-search', function (vm) {
+          vm.$watch(function () { return this.TopWord; }, function () {
+            if (vm.TopWord) vm.TopWord = null;
+          });
+        }, { immediate: true });
+      }
     }, util.inject.rootKey, options);
   });
 
