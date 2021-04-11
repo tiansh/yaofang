@@ -416,29 +416,22 @@
           // 因为设置的这个属性我们并不期望以后还有变化，所以我们不需要让它过 Vue 的生命周期 $forceUpdate 就是了
           Object.defineProperty(vm, 'sizeDependencies', { value: ['_yawf_Height'], configurable: true, enumerable: true, writable: true });
           const sensorPrefix = 'yawf_resize_sensor_element_';
-          const resetSensor = function (container) {
-            const [expand, shrink] = container.children;
-            const height = container.clientHeight;
-            expand.scrollTop = 1e7;
-            shrink.scrollTop = 1e7;
-            return height;
-          };
-          const onScroll = function (index) {
-            return wrapRaf(function () {
-              const container = vm.$refs[sensorPrefix + index];
-              if (!container) return;
-              vm.data[index]._yawf_Height = resetSensor(container);
+          const observer = new ResizeObserver(entries => {
+            entries.forEach(entry => {
+              const { target } = entry;
+              const index = Number.parseInt(target.id.slice(sensorPrefix.length), 10);
+              const data = vm?.data?.[index];
+              if (data) data._yawf_Height = target.clientHeight;
             });
-          };
+          });
           // 如果可以把 sensor 做成组件的话，其实只要 mount 时处理一下就行了，不过这里是没办法
           const updateSensor = wrapRaf(function () {
             const allSensor = Object.keys(vm.$refs).filter(key => key.startsWith(sensorPrefix));
             allSensor.map(key => Number.parseInt(key.slice(sensorPrefix.length), 10)).forEach(index => {
               const container = vm.$refs[sensorPrefix + index];
               if (!container) return;
-              const [expand, shrink] = container.children;
-              if (expand.scrollTop !== 0 && shrink.scrollTop !== 0) return;
-              vm.data[index]._yawf_Height = resetSensor(container);
+              observer.observe(container);
+              vm.data[index]._yawf_Height = container.clientHeight;
             });
           });
           vm.$scopedSlots.content = (function (content) {
@@ -449,20 +442,8 @@
               const resizeSensor = h('div', {
                 class: 'yawf-resize-sensor',
                 ref: sensorPrefix + index,
-              }, [
-                h('div', {
-                  class: 'yawf-resize-sensor-expand',
-                  on: { '&scroll': onScroll(index) },
-                }, [
-                  h('div', { class: 'yawf-resize-sensor-child' }),
-                ]),
-                h('div', {
-                  class: 'yawf-resize-sensor-shrink',
-                  on: { '&scroll': onScroll(index) },
-                }, [
-                  h('div', { class: 'yawf-resize-sensor-child' }),
-                ]),
-              ]);
+                attrs: { id: sensorPrefix + index },
+              });
               const result = Array.isArray(raw) ? raw : [raw];
               result.push(resizeSensor);
               updateSensor();
