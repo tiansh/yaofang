@@ -10,9 +10,10 @@
   Object.assign(i18n, {
     cleanRightGroupTitle: { cn: '隐藏模块 - 右栏', tw: '隱藏模組 - 右欄', en: 'Hide modules - Right Column' },
     cleanRightInfo: { cn: '个人信息', tw: '个人信息', en: 'Personal Info' },
+    cleanRightV7Entry: { cn: '切换到新版' },
     cleanRightRanks: { cn: '榜单（新歌榜等）', tw: '榜單（新歌榜等）', en: 'Rank List (Song list, etc.)' },
     cleanRightHotTopic: { cn: '热门话题 / 微博热搜', tw: '熱門話題', en: 'Hot Topic' },
-    cleanRightHotTopicTop: { cn: '置顶热门话题' },
+    cleanRightHotTopicTop: { cn: '置顶热门话题 (V7)' },
     cleanRightInterest: { cn: '可能感兴趣的人', tw: '可能感興趣的人', en: 'You may know' },
     cleanRightMember: { cn: '会员专区', tw: '會員專區', en: 'Weibo VIP' },
     cleanRightGroups: { cn: '分组成员列表', tw: '分組成員列表', en: 'Members of group' },
@@ -26,7 +27,8 @@
   });
 
   clean.CleanGroup('right', () => i18n.cleanRightGroupTitle);
-  clean.CleanRule('info', () => i18n.cleanRightInfo, 1, '#v6_pl_rightmod_myinfo { display: none !important; }');
+  clean.CleanRule('info', () => i18n.cleanRightInfo, 1, '[yawf-id="v6_pl_rightmod_myinfo_myinfo"] { display: none !important; }');
+  clean.CleanRule('v7_entry', () => i18n.cleanRightV7Entry, 91, '[yawf-id="v6_pl_rightmod_myinfo_new_pc_apply"] { display: none !important; }');
   clean.CleanRule('ranks', () => i18n.cleanRightRanks, 1, '#v6_pl_rightmod_rank, [yawf-id="rightmod_taobao_movie"], [yawf-id="rightmod_recom_movie"] { display: none !important; }');
   const hotSearchTop = clean.CleanRule('hot_topic_top', () => i18n.cleanRightHotTopicTop, 91, '', { weiboVersion: 7 });
   const hotSearch = clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }', { weiboVersion: [6, 7] });
@@ -45,6 +47,7 @@
     '#trustPagelet_indexright_recom .WB_right_module:not([yawf-id])',
     '#v6_pl_rightmod_recominfo .WB_cardwrap:not([yawf-id])',
     '#v6_pl_rightmod_rank .WB_cardwrap:not([yawf-id])',
+    '#v6_pl_rightmod_myinfo .WB_cardwrap:not([yawf-id])',
   ].join(','), {
     '[change-data*="key=hottopic_r2"]': 'rightmod_zt_hottopic',
     '[change-data*="key=interest_r2"]': 'rightmod_recom_interest',
@@ -53,6 +56,8 @@
     'h2.main_title a[href*="book.weibo.com/top"]': 'v6_pl_rightmod_rank_book',
     'h4.obj_name a[href*="pop.weibo.com"]': 'v6_pl_rightmod_rank_pop',
     'div.obj_name a[href*="100808faecebff8a54b97a91699c654e5f4cda"]': 'v6_pl_rightmod_rank_hong',
+    '.W_person_info': 'v6_pl_rightmod_myinfo_myinfo',
+    'a[action-type="new_pc_apply"]': 'v6_pl_rightmod_myinfo_new_pc_apply',
   });
 
   clean.CleanRuleGroup({
