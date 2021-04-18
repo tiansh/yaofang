@@ -85,7 +85,7 @@
 .yawf-feed-author-box { justify-content: space-between !important; }
 .yawf-feed-author-box::after { content: " "; margin-bottom: 4px }
 .yawf-feed-detail-content { font-size: ${fs}px !important; line-height: ${lh}px !important; }
-.yawf-feed-original span, .yawf-feed-detail-content-retweet, .yawf-feed-comment-text, .yawf-feed-comment-more, .yawf-feed-repost-text, .yawf-feed-detail-content-retweet-size { font-size: ${fs2}px !important; line-height: ${lh2}px !important; }
+.yawf-feed-original span, .yawf-feed-detail-content-retweet, .yawf-feed-comment-text, .yawf-feed-comment-more-text, .yawf-feed-repost-text, .yawf-feed-detail-content-retweet-size { font-size: ${fs2}px !important; line-height: ${lh2}px !important; }
 .yawf-feed-detail-content img, .yawf-feed-detail-content .icon-link { height: ${fs}px !important; width: ${fs}px !important; }
 .yawf-feed-detail-content-retweet img, .yawf-feed-detail-content-retweet .icon-link { height: ${fs2}px !important; width: ${fs2}px !important; }
 

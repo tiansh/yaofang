@@ -61,7 +61,7 @@
   });
   clean.CleanRule('feed_inner_tip', () => i18n.cleanFeedInnerTip, 91, {
     acss: '.WB_feed_detail .W_tips, .yawf-feed-content .yawf-feed-content-tip, .yawf-feed-content .yawf-feed-content-tip-link { display: none !important; }',
-    ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedInnerTip } },
+    ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedInnerTipDetail } },
     weiboVersion: [6, 7],
   });
   clean.CleanRule('feed_tip', () => i18n.cleanFeedCommentTip, 1, {

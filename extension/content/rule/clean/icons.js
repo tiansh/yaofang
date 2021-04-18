@@ -107,7 +107,6 @@
       const hideBigfan = hideSymbol.includes('bigfan');
       if (hideVip || hideBigfan) {
         vueSetup.eachComponentVM('icon-fans', function (vm) {
-          console.log('icon-fans: %o', vm);
           if (hideVip) {
             Object.defineProperties(vm, { isVip: { get: () => false } });
           }

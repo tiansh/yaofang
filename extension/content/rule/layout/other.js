@@ -119,7 +119,7 @@
         }
       } else {
         if (shape === 'circle') return;
-        css.append(`.woo-avatar-hoverMask, .woo-avatar-img { border-radius: 0 !important; }`);
+        css.append(`.woo-avatar-hoverMask, .woo-avatar-img, .woo-avatar-main::before { border-radius: 0 !important; }`);
       }
     },
   });

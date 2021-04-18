@@ -326,7 +326,8 @@
         if (newTab.comments) setAttribute(more, 'target', '_blank');
       }
     };
-    vueSetup.transformComponentsRenderByTagName('repost-comment-feed', repostCommentListRanderTransform);
+    vueSetup.transformComponentsRenderByTagName('repost-coment-feed', repostCommentListRanderTransform); // 又是他们拼错了
+    vueSetup.transformComponentsRenderByTagName('repost-comment-feed', repostCommentListRanderTransform); // 这行现在没用
     vueSetup.transformComponentsRenderByTagName('repost-comment-list', repostCommentListRanderTransform);
 
     vueSetup.transformComponentsRenderByTagName('reply-modal', function (nodeStruct, Nodes) {
@@ -375,8 +376,17 @@
       if (replyAuthors?.length) {
         replyAuthors.forEach((author, index) => {
           if (!comment.comments?.[index]) return;
+          if (newTab.comments) setAttribute(author, 'target', '_blank');
           addClass(author, 'yawf-feed-comment-author', 'yawf-feed-comment-reply-author');
         });
+        if (comment.comments) {
+          const more = replyAuthors.slice(comment.comments.length);
+          more.forEach((author, index) => {
+            if (!comment.more_info?.user_list?.[index]) return;
+            if (newTab.comments) setAttribute(author, 'target', '_blank');
+            addClass(author, 'yawf-feed-comment-author', 'yawf-feed-comment-reply-author', 'yawf-feed-comment-more-author');
+          });
+        }
       }
 
       // 评论的内容
@@ -394,9 +404,10 @@
       if (picture) addClass(picture, 'yawf-feed-comment-picture');
 
       // 某条评论下的所有评论
-      const moreIcon = nodeStruct.querySelector('a > x-woo-fonticon');
-      if (moreIcon) {
-        addClass(moreIcon.parentNode, 'yawf-feed-comment-more');
+      const moreIcon = nodeStruct.querySelector('.yawf-feed-comment-more-author, a > x-woo-fonticon');
+      const line = moreIcon?.closest('.text');
+      if (line) {
+        addClass(line, 'yawf-feed-comment-more-text');
       }
 
       // 评论的操作按钮
