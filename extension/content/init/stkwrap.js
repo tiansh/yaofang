@@ -67,30 +67,31 @@
 
   }, key);
 
-  stk.wrap = async function (name, wrapper, ...params) {
-    util.inject(`function (key, name, params) { window[key] = { name, wrapper: (${wrapper}(...params)) }; }`, key, name, params);
-  };
-
   let stkInfoResolve = null;
   stk.info = new Promise(resolve => { stkInfoResolve = resolve; });
   const initInfoKey = 'yawf_init_info' + strings.randKey();
-  yawf.stk.wrap('pl.top.source.init', function (initInfoKey) {
-    const gotInfo = function (info) {
-      const event = new CustomEvent(initInfoKey, {
-        detail: { info: JSON.stringify(info) },
-      });
-      window.dispatchEvent(event);
-    };
-    return function (regFunc) {
-      return function (stk) {
-        const inner = regFunc.call(this, stk);
-        return function (plc_top, info, ...params) {
-          gotInfo(info);
-          return inner(plc_top, info, ...params);
+  util.inject(function (key, name, ...params) {
+    window[key] = {
+      name,
+      wrapper: (function (initInfoKey) {
+        const gotInfo = function (info) {
+          const event = new CustomEvent(initInfoKey, {
+            detail: { info: JSON.stringify(info) },
+          });
+          window.dispatchEvent(event);
         };
-      };
+        return function (regFunc) {
+          return function (stk) {
+            const inner = regFunc.call(this, stk);
+            return function (plc_top, info, ...params) {
+              gotInfo(info);
+              return inner(plc_top, info, ...params);
+            };
+          };
+        };
+      }(...params)),
     };
-  }, initInfoKey);
+  }, key, 'pl.top.source.init', initInfoKey);
 
   window.addEventListener(initInfoKey, function gotInitInfo(event) {
     event.stopPropagation();
