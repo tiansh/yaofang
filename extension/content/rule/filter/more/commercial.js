@@ -57,7 +57,9 @@
         } else {
           // 某某赞过的微博
           if (feed.title?.type === 'likerecommend') return 'hide';
-          if (feed.content_auth === 5 /* 热推 */) return 'hide';
+          // 热推 / 广告之类
+          if (feed.content_auth === 5) return 'hide';
+          if (feed.retweeted_status?.content_auth === 5) return 'hide';
         }
         return null;
       }, { priority: 1e6 });
