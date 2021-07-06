@@ -60,7 +60,7 @@
       const currentVersion = Number(browser.runtime.getManifest().version.match(/\d+$/g));
       const lastVersion = this.ref.last.getConfig();
       const updateDone = () => { this.ref.last.setConfig(currentVersion); };
-      if (!lastVersion) {
+      if (!lastVersion && currentVersion) {
         // 初次运行
         ui.alert({
           id: 'yawf-first-seen',
