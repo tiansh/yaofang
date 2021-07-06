@@ -266,11 +266,13 @@
       addClass(nodeStruct, 'yawf-feed-card-link');
       if (newTab.card) setAttribute(nodeStruct, 'target', '_blank');
       const card = nodeStruct.firstChild;
-      addClass(card, 'yawf-feed-card');
-      const picture = card.querySelector('x-woo-picture');
-      const content = picture.nextSibling;
-      addClass(picture, 'yawf-feed-card-picture');
-      addClass(content, 'yawf-feed-card-content');
+      if (card) {
+        addClass(card, 'yawf-feed-card');
+        const picture = card.querySelector('x-woo-picture');
+        const content = picture.nextSibling;
+        addClass(picture, 'yawf-feed-card-picture');
+        addClass(content, 'yawf-feed-card-content');
+      }
     });
 
     vueSetup.transformComponentsRenderByTagName('feed-article', function (nodeStruct, Nodes) {
