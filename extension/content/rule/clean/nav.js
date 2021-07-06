@@ -24,16 +24,28 @@
 
   clean.CleanGroup('nav', () => i18n.cleanNavGroupTitle);
   clean.CleanRule('logo_img', () => i18n.cleanNavLogoImg, 1, {
+    weiboVersion: [6, 7],
     ainit: function () {
-      observer.dom.add(function replaceLogo() {
-        const box = document.querySelector('.WB_global_nav .gn_logo .box');
-        if (!box) { setTimeout(replaceLogo, 100); return; }
-        const img = box.getElementsByTagName('img')[0];
-        if (!img) return;
-        const logo = document.createElement('span');
-        logo.classList.add('logo');
-        img.replaceWith(logo);
-      });
+      if (yawf.WEIBO_VERSION === 6) {
+        observer.dom.add(function replaceLogo() {
+          const box = document.querySelector('.WB_global_nav .gn_logo .box');
+          if (!box) { setTimeout(replaceLogo, 100); return; }
+          const img = box.getElementsByTagName('img')[0];
+          if (!img) return;
+          const logo = document.createElement('span');
+          logo.classList.add('logo');
+          img.replaceWith(logo);
+        });
+      } else {
+        util.inject(function (rootKey) {
+          const yawf = window[rootKey];
+          const vueSetup = yawf.vueSetup;
+
+          vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
+            Object.defineProperty(vm, 'skinData', { get: () => ({}) });
+          });
+        }, util.inject.rootKey);
+      }
     },
     acss: '.WB_global_nav .gn_logo .box img { display: none !important; }',
   });
