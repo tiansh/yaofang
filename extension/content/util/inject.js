@@ -67,9 +67,9 @@
     });
     const run = function (func, params) {
       const parsed = JSON.parse(params, function (key, val) {
-        if (typeof val === 'object' && val._type === 'method' && val.invoke === baseKey) {
+        if (val && typeof val === 'object' && val._type === 'method' && val.invoke === baseKey) {
           return invoke(val);
-        } else if (typeof val === 'object' && val._type === 'callback' && val.invoke === baseKey) {
+        } else if (val && typeof val === 'object' && val._type === 'callback' && val.invoke === baseKey) {
           return callback(val);
         } else {
           return val;

@@ -578,18 +578,20 @@
         }
       } else {
         const configs = {
-          col: Number(this.ref.count.getConfig().split('x')[0]),
-          row: Number(this.ref.count.getConfig().split('x')[1]) || Infinity,
+          count: this.ref.count.getConfig(),
           more: this.ref.more.getConfig(),
         };
         util.inject(function (rootKey, configs) {
           const yawf = window[rootKey];
           const vueSetup = yawf.vueSetup;
 
+          const col = Number(configs.count.split('x')[0]);
+          const row = Number(configs.count.split('x')[1]) || Infinity;
+
           vueSetup.eachComponentVM('feed-picture', function (vm) {
             Object.defineProperty(vm, 'inlineNum', {
               get: function () {
-                return [1, 1, 3, 3, 4, 4, 3, 4, 4, 3][vm.pic_num] || configs.col;
+                return [1, 1, 3, 3, 4, 4, 3, 4, 4, 3][vm.pic_num] || col;
               },
               set: function (v) { },
               enumerable: true,
@@ -598,7 +600,7 @@
             Object.defineProperty(vm, 'newPics', {
               get: function () {
                 if (vm.$parent.data._yawf_PictureShowAll) return vm.pics.slice(0);
-                return vm.pics.slice(0, configs.col * configs.row);
+                return vm.pics.slice(0, col * row);
               },
               set: function (v) { },
               enumerable: true,
@@ -622,7 +624,7 @@
               }
               if (vm.$parent.data._yawf_PictureShowAll) {
                 // pass
-              } else if (this.pic_num > configs.col * configs.row) {
+              } else if (this.pic_num > col * row) {
                 if (configs.more === 'mask') {
                   const lastPic = nodeStruct.querySelector('x-woo-box-item:last-child');
                   const mask = h('woo-box', {
@@ -632,7 +634,7 @@
                     h('span', {
                       class: this.$style.picNum,
                       on: { click: expand },
-                    }, ['+' + (this.pic_num - configs.col * configs.row)]),
+                    }, ['+' + (this.pic_num - col * row)]),
                   ]);
                   appendChild(lastPic, mask);
                 } else {
