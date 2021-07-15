@@ -198,14 +198,15 @@
       }
       if (tag) {
         if (vmToHtmlNode.has(vm)) {
-          const old = vmToHtmlNode.has(vm);
+          const old = vmToHtmlNode.get(vm);
           if (old !== node) {
             reportNewNode({ tag, node, replace: true });
+            vmToHtmlNode.set(vm, node);
           }
         } else {
           reportNewNode({ tag, node, replace: false });
+          vmToHtmlNode.set(vm, node);
         }
-        vmToHtmlNode.set(vm, node);
       }
     };
     const eachVmForNode = function* (node) {
