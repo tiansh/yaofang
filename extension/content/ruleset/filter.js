@@ -376,6 +376,9 @@
               // 那么我们不会把它就这么给隐藏起来
               const underFilter = feedScroll != null && this.mid > 0;
               const result = render.call(this, createElement);
+              if (!result.key && this.data.mid) {
+                result.key = 'yawf-feed-' + this.data.mid;
+              }
               Object.assign(result.data.class, {
                 'yawf-feed-filter': true,
                 'yawf-feed-filter-ignore': !underFilter,
@@ -396,9 +399,8 @@
             };
           }(vm.$options.render));
           vm.$forceUpdate();
-          // 每次高度变化时更新 _yawf_Height 属性
-          // 我也不知道这段代码怎么工作起来的，反正网上的代码就这逻辑，然后也真的能用
         });
+        let heightIndex = 0;
         vueSetup.eachComponentVM('scroll', function (vm) {
           const wrapRaf = function (f) {
             let dirty = false;
@@ -416,12 +418,20 @@
           // 因为设置的这个属性我们并不期望以后还有变化，所以我们不需要让它过 Vue 的生命周期 $forceUpdate 就是了
           Object.defineProperty(vm, 'sizeDependencies', { value: ['_yawf_Height'], configurable: true, enumerable: true, writable: true });
           const sensorPrefix = 'yawf_resize_sensor_element_';
+          const getItemFromSensor = sensor => {
+            if (!sensor?.id) return null;
+            const index = Number.parseInt(sensor.id.slice(sensorPrefix.length), 10);
+            // 在有微博被隐藏后，微博相对的索引会发生变化
+            // 无法依赖微博的索引确定对应的微博
+            // 所以我们不用 vm.data[index] 而只能这样找一遍
+            const item = vm?.data?.find?.(item => item._yawf_HeightIndex === index);
+            return item;
+          };
           const observer = new ResizeObserver(entries => {
             entries.forEach(entry => {
               const { target } = entry;
-              const index = Number.parseInt(target.id.slice(sensorPrefix.length), 10);
-              const data = vm?.data?.[index];
-              if (data) data._yawf_Height = target.clientHeight;
+              const item = getItemFromSensor(target);
+              if (item) item._yawf_Height = target.clientHeight;
             });
           });
           // 如果可以把 sensor 做成组件的话，其实只要 mount 时处理一下就行了，不过这里是没办法
@@ -431,14 +441,21 @@
               const container = vm.$refs[sensorPrefix + index];
               if (!container) return;
               observer.observe(container);
-              vm.data[index]._yawf_Height = container.clientHeight;
+              const item = getItemFromSensor(container);
+              if (item) item._yawf_Height = container.clientHeight;
             });
           });
           vm.$scopedSlots.content = (function (content) {
             return function (data) {
               const createElement = vm._self._c, h = createElement;
               const raw = content.call(this, data);
-              const { index } = data;
+              // 给每个元素一个唯一的标识用于对应高度检测器
+              // 我们没办法用现成的 mid 或 comment_id，因为我们并不知道元素是什么类型
+              // 元素有可能是 feed，但也有可能是其他任何东西
+              if (!data.item._yawf_HeightIndex) {
+                data.item._yawf_HeightIndex = ++heightIndex;
+              }
+              const index = data.item._yawf_HeightIndex;
               const resizeSensor = h('div', {
                 class: 'yawf-resize-sensor',
                 ref: sensorPrefix + index,
