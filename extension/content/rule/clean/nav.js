@@ -111,6 +111,23 @@
     });
   }
   clean.CleanRule('notice_new', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
-  clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }');
+  clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }', {
+    weiboVersion: [6, 7],
+    ainit: function () {
+      if (yawf.WEIBO_VERSION !== 7) return;
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        vueSetup.transformComponentsRenderByTagName('ctrls', function (nodeStruct, Nodes) {
+          const { vNode } = Nodes;
+          const badges = Array.from(nodeStruct.querySelectorAll('x-woo-badge'));
+          badges.forEach(budge => {
+            Object.assign(vNode(budge).componentOptions.propsData, { dot: false, value: 0 });
+          });
+        });
+      }, util.inject.rootKey);
+    },
+  });
 
 }());
