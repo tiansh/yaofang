@@ -140,7 +140,7 @@
       }
     }
     async rerun() {
-      const lastRerun = this.lastRerun = (this.lastRerun || 0) + 1;
+      const lastRerun = this.lastRerun = {};
       await new Promise(resolve => setTimeout(resolve, 1000));
       if (this.lastRerun !== lastRerun) return;
       this.reapply();
@@ -180,8 +180,13 @@
 .yawf-WBV6 .WB_feed.WB_feed_v3 .WB_feed_type[yawf-feed-display="fold"].WB_feed_vipcover:hover .WB_feed_detail { padding-top: 0; }
 .yawf-WBV6 .WB_feed_type[yawf-feed-display="fold"] .WB_feed_handle { display: none; }
 
-.yawf-WBV7 .yawf-feed-filter-loading,
-.yawf-WBV7 .yawf-feed-filter-running { visibility: hidden; }
+.yawf-WBV7 article[class*="Feed"]:not(.yawf-feed-filter) > *,
+.yawf-WBV7 article[class*="Feed"].yawf-feed-filter-loading > *,
+.yawf-WBV7 article[class*="Feed"].yawf-feed-filter-running > * { visibility: hidden; }
+.yawf-WBV7 article[class*="Feed"]:not(.yawf-feed-filter)::before,
+.yawf-WBV7 article[class*="Feed"].yawf-feed-filter-loading::before,
+.yawf-WBV7 article[class*="Feed"].yawf-feed-filter-running::before { content: " "; display: block; position: absolute; left: 100px; right: 100px; top: 50%; height: 140px; max-height: calc(100% - 20px); transform: translateY(-50%); background-image: repeating-linear-gradient(to bottom, transparent 0 20px, var(--w-panel-background) 20px 60px), linear-gradient(to right, var(--w-main) 40%, transparent 50%, var(--w-main) 60%); animation: yawf-feed-filter-running 2s 1s linear infinite; background-size: 200% 100%; background-repeat: repeat; opacity: 0.1; } 
+@keyframes yawf-feed-filter-running { 0% { background-position: 120%; } 100% { background-position: -20%; } }
 .yawf-WBV7 .yawf-resize-sensor,
 .yawf-WBV7 .yawf-resize-sensor-expand,
 .yawf-WBV7 .yawf-resize-sensor-shrink { position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; z-index: -1; visibility: hidden; }
@@ -296,11 +301,17 @@
         const event = new CustomEvent(key, { detail: JSON.stringify({ action: 'rerun' }) });
         document.documentElement.dispatchEvent(event);
       };
+      const feedTriggerPending = [];
       // 当页面脚本检测到一条需要过滤的微博时，提交过滤
       window.addEventListener(key, function (event) {
         const detail = JSON.parse(event.detail);
         if (detail.action === 'trigger') {
-          observer.feed.active([detail.data]);
+          feedTriggerPending.push(detail.data);
+          setTimeout(() => {
+            if (feedTriggerPending.length) {
+              observer.feed.active(feedTriggerPending.splice(0));
+            }
+          }, 0);
         }
       }, true);
       util.inject(function (rootKey, key) {
@@ -370,34 +381,45 @@
           const feedScroll = vueSetup.closest(vm, 'feed-scroll');
 
           // 在渲染一条 feed 时，额外插入过滤状态的标识
-          vm.$options.render = (function (render) {
-            return function (createElement) {
-              // 如果某个 feed 不在 feed-scroll 里面
-              // 那么我们不会把它就这么给隐藏起来
-              const underFilter = feedScroll != null && this.mid > 0;
-              const result = render.call(this, createElement);
-              if (!result.key && this.data.mid) {
-                result.key = 'yawf-feed-' + this.data.mid;
-              }
-              Object.assign(result.data.class, {
-                'yawf-feed-filter': true,
-                'yawf-feed-filter-ignore': !underFilter,
-                [`yawf-feed-filter-${this.data._yawf_FilterStatus || 'loading'}`]: underFilter,
-              });
-              result.data.attrs['data-feed-author-name'] = this.data.user.screen_name;
-              result.data.attrs['data-feed-mid'] = this.data.mid;
-              if (this.data.retweeted_status) {
-                result.data.attrs['data-feed-omid'] = this.data.retweeted_status.mid;
-              }
+          vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+            const { vNode, addClass } = Nodes;
+
+            // 如果某个 feed 不在 feed-scroll 里面
+            // 那么我们不会把它就这么给隐藏起来
+            const underFilter = feedScroll != null && this.data.mid > 0;
+
+            const feed = nodeStruct;
+            const vnode = vNode(feed);
+
+            if (!vnode.key && this.data.mid) {
+              vnode.key = 'yawf-feed-' + this.data.mid;
               if (this.data.ori_mid) {
-                result.data.attrs['data-feed-fmid'] = this.data.idstr;
+                vnode.key = 'yawf-feed-' + this.data.mid + '-' + this.data.ori_mid;
+              } else {
+                vnode.key = 'yawf-feed-' + this.data.mid;
               }
-              if (this.data._yawf_FilterReason) {
-                result.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
-              }
-              return result;
-            };
-          }(vm.$options.render));
+            }
+
+            addClass(feed, 'yawf-feed-filter');
+            if (underFilter) {
+              addClass(feed, `yawf-feed-filter-${this.data._yawf_FilterStatus || 'loading'}`);
+            } else {
+              addClass(feed, 'yawf-feed-filter-ignore');
+            }
+
+            vnode.data.attrs['data-feed-author-name'] = this.data.user.screen_name;
+            vnode.data.attrs['data-feed-mid'] = this.data.mid;
+            if (this.data.retweeted_status) {
+              vnode.data.attrs['data-feed-omid'] = this.data.retweeted_status.mid;
+            }
+            if (this.data.ori_mid) {
+              vnode.data.attrs['data-feed-fmid'] = this.data.idstr;
+            }
+            if (this.data._yawf_FilterReason) {
+              vnode.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
+            }
+            return vnode;
+          });
           vm.$forceUpdate();
         });
         let heightIndex = 0;
