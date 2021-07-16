@@ -54,9 +54,6 @@
           if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
           if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
           if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
-          if (/^\d+_[^0]|_0_(?!1)\d+_0$/.test(new URLSearchParams(feed.getAttribute('mrid')).get('rid'))) {
-            if (feed.querySelector('.WB_face .opt[action-data*="refer_from=homefeed"]')) return 'hide';
-          }
         } else {
           // 某某赞过的微博
           if (feed.title?.type === 'likerecommend') return 'hide';
