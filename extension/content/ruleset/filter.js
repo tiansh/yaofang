@@ -407,16 +407,18 @@
               addClass(feed, 'yawf-feed-filter-ignore');
             }
 
-            vnode.data.attrs['data-feed-author-name'] = this.data.user.screen_name;
-            vnode.data.attrs['data-feed-mid'] = this.data.mid;
-            if (this.data.retweeted_status) {
-              vnode.data.attrs['data-feed-omid'] = this.data.retweeted_status.mid;
-            }
-            if (this.data.ori_mid) {
-              vnode.data.attrs['data-feed-fmid'] = this.data.idstr;
-            }
-            if (this.data._yawf_FilterReason) {
-              vnode.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
+            if (this.data.mid) {
+              vnode.data.attrs['data-feed-author-name'] = this.data.user.screen_name;
+              vnode.data.attrs['data-feed-mid'] = this.data.mid;
+              if (this.data.retweeted_status) {
+                vnode.data.attrs['data-feed-omid'] = this.data.retweeted_status.mid;
+              }
+              if (this.data.ori_mid) {
+                vnode.data.attrs['data-feed-fmid'] = this.data.idstr;
+              }
+              if (this.data._yawf_FilterReason) {
+                vnode.data.attrs['data-yawf-filter-reason'] = this.data._yawf_FilterReason;
+              }
             }
             return vnode;
           });
@@ -481,6 +483,7 @@
               const resizeSensor = h('div', {
                 class: 'yawf-resize-sensor',
                 ref: sensorPrefix + index,
+                key: sensorPrefix + index,
                 attrs: { id: sensorPrefix + index },
               });
               const result = Array.isArray(raw) ? raw : [raw];

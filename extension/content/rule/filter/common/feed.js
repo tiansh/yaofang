@@ -292,14 +292,14 @@
       dragIndex++;
       if (!dropArea) return;
       dropArea.classList.add('yawf-drag');
-      dropArea.parentNode.classList.add('yawf-drop-area-active');
+      if (dropArea.parentNode) dropArea.parentNode.classList.add('yawf-drop-area-active');
     };
     const hideDropArea = function () {
       dragIndex++;
       inArea = false;
       if (!dropArea) return;
       dropArea.classList.remove('yawf-drag', 'yawf-drag-in');
-      dropArea.parentNode.classList.remove('yawf-drop-area-active');
+      if (dropArea.parentNode) dropArea.parentNode.classList.remove('yawf-drop-area-active');
     };
     const enterDropArea = function () {
       inArea = true;
