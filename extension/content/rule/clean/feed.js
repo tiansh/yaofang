@@ -11,7 +11,7 @@
 
   Object.assign(i18n, {
     cleanFeedGroupTitle: { cn: '隐藏模块 - 微博内', tw: '隱藏模組 - 微博內', en: 'Hide modules - Weibo' },
-    cleanFeedRecommend: { cn: '精彩微博推荐', tw: '精彩微博推薦', en: 'Feed you may interested in' },
+    cleanFeedRecommend: { cn: '热门内容推荐', tw: '熱門內容推薦', en: '热门内容推荐 (Feed you may interested in)' },
     cleanFeedOuterTip: { cn: '消息流提示横幅 {{i}}', tw: '消息流提示橫幅 {{i}}', en: 'Tips for feed {{i}}' },
     cleanFeedOuterTipDetail: {
       cn: '消息流内部的提示横幅，如“ 系统提示：根据你的屏蔽设置，系统已过滤掉部分微博。”等内容。',
@@ -54,7 +54,30 @@
   });
 
   clean.CleanGroup('feed', () => i18n.cleanFeedGroupTitle);
-  clean.CleanRule('recommend', () => i18n.cleanFeedRecommend, 1, '[node-type="recommfeed"] { display: none !important; }');
+  clean.CleanRule('recommend', () => i18n.cleanFeedRecommend, 97, `
+[node-type="recommfeed"] { display: none !important; }
+[id^="Pl_Official_WeiboDetail__"] .WB_feed_type ~ .WB_cardwrap,
+[id^="Pl_Official_WeiboDetail__"] ~ [id^="Pl_Core_NewMixFeed__"] { display: none !important; }
+.B_page .WB_frame { min-height: auto; }
+`, {
+    ainit: function () {
+      if (yawf.WEIBO_VERSION !== 7) return;
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        vueSetup.eachComponentVM('repost-comment-recom', function (vm) {
+          vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+            const { removeChild } = Nodes;
+            while (nodeStruct.firstChild) {
+              removeChild(nodeStruct, nodeStruct.firstChild);
+            }
+          });
+        });
+      }, util.inject.rootKey);
+    },
+    weiboVersion: [6, 7],
+  });
   clean.CleanRule('feed_outer_tip', () => i18n.cleanFeedOuterTip, 1, {
     acss: '.WB_feed > .W_tips { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'ask', template: () => i18n.cleanFeedOuterTip } },
