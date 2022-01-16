@@ -18,6 +18,7 @@
     cleanNavHot: { cn: '热门（发现）', en: 'Discover' },
     cleanNavGame: { cn: '游戏', tw: '遊戲', en: 'Game' },
     cleanNavHotSearch: { cn: '大家正在搜', tw: '大家正在熱搜', en: 'Hot search' },
+    cleanNavAria: { cn: '无障碍', en: '无障碍 (a11y)' },
     cleanNavNoticeNew: { cn: '新消息计数', tw: '新消息計數', en: 'Count for new notice' },
     cleanNavNew: { cn: '提示红点', tw: '提示紅點', en: 'Red dot tips' },
   });
@@ -110,6 +111,7 @@
       },
     });
   }
+  clean.CleanRule('aria', () => i18n.cleanNavAria, 98, '[yawf-component-tag~="aria"], .gn_set_aria { display: none !important; }', { weiboVersion: [6, 7] });
   clean.CleanRule('notice_new', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
   clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }', {
     weiboVersion: [6, 7],

@@ -20,20 +20,20 @@
 
   // 缩小搜索框宽度以留出漏斗按钮的位置
   const searchCss = `
-.WB_global_nav .gn_search_v2 { width: 178px !important; }
-.WB_global_nav .gn_search_v2 .placeholder, .WB_global_nav .gn_search_v2 .W_input { width: 135px !important; }
-.gn_topmenulist_search { width: 180px !important; }
+.WB_global_nav .gn_search_v2 { width: 118px !important; }
+.WB_global_nav .gn_search_v2 .placeholder, .WB_global_nav .gn_search_v2 .W_input { width: 75px !important; }
+.gn_topmenulist_search { width: 120px !important; }
 @media screen and (min-width:1295px) {
-  .WB_global_nav .gn_search_v2 { width: 435px !important; }
-  .WB_global_nav .gn_search_v2 .placeholder, .WB_global_nav .gn_search_v2 .W_input { width: 392px !important; }
-  .gn_topmenulist_search { width: 437px !important; }
+  .WB_global_nav .gn_search_v2 { width: 375px !important; }
+  .WB_global_nav .gn_search_v2 .placeholder, .WB_global_nav .gn_search_v2 .W_input { width: 332px !important; }
+  .gn_topmenulist_search { width: 377px !important; }
 }
 @media screen and (max-width:1006px) {
-  .WB_global_nav .gn_search_v2 { width: 115px !important; }
-  .WB_global_nav .gn_search_v2 .placeholder, .WB_global_nav .gn_search_v2 .W_input { width: 72px !important; }
-  .gn_topmenulist_search { width: 117px !important; }
+  .WB_global_nav .gn_search_v2 { width: 55px !important; }
+  .WB_global_nav .gn_search_v2 .placeholder, .WB_global_nav .gn_search_v2 .W_input { width: 12px !important; }
+  .gn_topmenulist_search { width: 57px !important; }
 }
-.gn_topmenulist_search { min-width: 200px !important; }
+.gn_topmenulist_search { min-width: 140px !important; }
 `;
   // 添加漏斗图标的定义
   const iconCss = `
