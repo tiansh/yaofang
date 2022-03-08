@@ -121,6 +121,7 @@
     const icon = function () {
       const reference = document.querySelector('.WB_global_nav .gn_set_list');
       if (!reference) { setTimeout(icon, 100); return; }
+      if (document.querySelector('.gn_filter')) return;
       const template = document.createElement('template');
       template.innerHTML = `<div class="gn_set_list yawf-gn_set_list"><a node-type="filter" href="javascript:void(0);" class="gn_filter"><em class="W_ficon ficon_mail S_ficon">Y</em></a></div>`;
       const container = document.importNode(template.content.firstElementChild, true);

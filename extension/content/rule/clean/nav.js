@@ -3,6 +3,7 @@
   const yawf = window.yawf;
   const env = yawf.env;
   const util = yawf.util;
+  const css = util.css;
   const backend = yawf.backend;
   const observer = yawf.observer;
 
@@ -16,6 +17,7 @@
     cleanNavMain: { cn: '首页', tw: '首頁', en: 'Home' },
     cleanNavTV: { cn: '视频', en: '视频 (Video)' },
     cleanNavHot: { cn: '热门（发现）', en: 'Discover' },
+    cleanNavECom: { cn: '电商', en: '电商 (Mall)' },
     cleanNavGame: { cn: '游戏', tw: '遊戲', en: 'Game' },
     cleanNavHotSearch: { cn: '大家正在搜', tw: '大家正在熱搜', en: 'Hot search' },
     cleanNavAria: { cn: '无障碍', en: '无障碍 (a11y)' },
@@ -45,6 +47,9 @@
           vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
             Object.defineProperty(vm, 'skinData', { get: () => ({}) });
           });
+          vueSetup.eachComponentVM('weibo-top-nav-base', function (vm) {
+            Object.defineProperty(vm, 'logoUrl', { get: () => null, set: x => true });
+          });
         }, util.inject.rootKey);
       }
     },
@@ -55,7 +60,14 @@
     home: clean.CleanRule('main', () => i18n.cleanNavMain, 1, '.gn_nav_list>li:nth-child(1) { display: none !important; }', { weiboVersion: [6, 7] }),
     tv: clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '.gn_nav_list>li:nth-child(2) { display: none !important; }', { weiboVersion: [6, 7] }),
     hot: clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '.gn_nav_list>li:nth-child(3) { display: none !important; }', { weiboVersion: [6, 7] }),
-    game: clean.CleanRule('game', () => i18n.cleanNavGame, 1, '.gn_nav_list>li:nth-child(4) { display: none !important; }', { weiboVersion: [6, 7] }),
+    eCom: clean.CleanRule('eCom', () => i18n.cleanNavECom, 99, '.gn_set_v2>a:nth-child(1) { display: none !important; }', {
+      weiboVersion: [6, 7],
+      ainit: function () {
+        const hideGame = clean.nav.game.getConfig();
+        if (hideGame) css.append('.gn_set_v2 { display: none !important; }');
+      },
+    }),
+    game: clean.CleanRule('game', () => i18n.cleanNavGame, 99, '.gn_set_v2>a:nth-child(2) { display: none !important; }', { weiboVersion: [6, 7] }),
   }, function (options) {
     if (yawf.WEIBO_VERSION !== 7) return;
     util.inject(function (rootKey, options) {

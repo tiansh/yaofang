@@ -1749,6 +1749,8 @@
 .yawf-WBV7 .yawf-config-item .yawf-config-select .woo-input-wrap { padding-right: 36px; position: relative; }
 .yawf-WBV7 .yawf-config-item .yawf-config-select .woo-input-wrap::before { content: " "; display: block; width: 0; height: 0; border-top: 4px solid currentColor; border-left: 4px solid transparent; border-right: 4px solid transparent; position: absolute; right: 14px; top: calc(50% - 2px); }
 .yawf-WBV7 .yawf-config-text .woo-input-wrap { width: 520px; height: auto; padding: 0; }
+.yawf-WBV7 .yawf-config-item .woo-input-main { background: inherit; }
+.yawf-WBV7 .yawf-config-item .woo-input-wrap select { margin-left: -12px; padding-left: 12px; margin-right: -36px; padding-right: 36px; width: auto; }
 `);
 
 }());
