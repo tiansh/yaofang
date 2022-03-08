@@ -139,6 +139,9 @@
             });
           });
 
+          vueSetup.transformComponentsRenderByTagName('tips-ad', function () {
+            return function () { return null; };
+          }, { raw: true });
         }, util.inject.rootKey);
       }
     },
