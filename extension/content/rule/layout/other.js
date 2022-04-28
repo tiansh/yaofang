@@ -492,7 +492,7 @@
             if (textNode.nodeType !== Node.TEXT_NODE) return;
             const text = textNode.textContent.trim();
             if (text === '') return;
-            const [_full, match, tail] = text.match(/^(.*?)\s*(来自|來自|come from|)$/);
+            const [_full, match, tail] = text.match(/^(.*?)\s*((?:(?:来自|來自|come from).*)?)$/);
             const time = util.time.parse(match);
             if (!time) return;
             util.debug('parse time %o(%s) to %o(%s)', textNode, text, time, time);
@@ -500,7 +500,7 @@
             const timeElement = document.createElement('span');
             timeElement.setAttribute('yawf-date', +time);
             updateDate(timeElement);
-            textNode.replaceWith(timeElement);
+            textNode.parentNode.insertBefore(timeElement, textNode);
           });
         };
         observer.dom.add(handleTextDateElements);
