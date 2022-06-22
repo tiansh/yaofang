@@ -191,7 +191,7 @@
             (ref.closest('.WB_feed_expand') && feed.getAttribute('omid')) ??
             feed.getAttribute('mid') ?? 0;
           const path = 'weibo-images/' + download.filename(feedId) + '/' + filename;
-          return { url, filename: path };
+          return { url, filename: path, referrer: 'https://weibo.com/' };
         });
         files.forEach(file => {
           util.debug('download fetch url %s', file.url);

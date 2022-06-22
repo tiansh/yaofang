@@ -7,8 +7,10 @@
   const yawf = window.yawf;
   const message = yawf.message;
 
-  const downloadByUrl = async function ({ url, filename }) {
-    const downloadId = await browser.downloads.download({ url, filename });
+  const downloadByUrl = async function ({ url, filename, referrer }) {
+    const headers = [];
+    if (referrer) headers.push({ name: 'Referer', value: referrer });
+    const downloadId = await browser.downloads.download({ url, filename, headers });
     return new Promise(async resolve => {
       const downloadFinish = function (error) {
         browser.downloads.onChanged.removeListener(downloadOnChanged);
@@ -34,7 +36,7 @@
   /**
    * @param {{ url: string, filename: string }}
    */
-  const downloadFile = async function downloadFile({ url, filename }) {
+  const downloadFile = async function downloadFile({ url, filename, referrer = '' }) {
     if (url.startsWith('data:')) {
       const blob = await fetch(url).then(resp => resp.blob());
       const blobUrl = URL.createObjectURL(blob);
@@ -42,7 +44,7 @@
       URL.revokeObjectURL(blobUrl);
       return result;
     } else {
-      return await downloadByUrl({ url, filename });
+      return await downloadByUrl({ url, filename, referrer });
     }
   };
   message.export(downloadFile);

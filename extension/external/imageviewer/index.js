@@ -10,6 +10,28 @@ document.addEventListener('DOMContentLoaded', function () {
   const preview = document.getElementById('preview');
 
   const placeholder = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
+  let imageSrc = null;
+  const setImageSrc = function (img, src) {
+    if (!src) {
+      img.src = imageSrc = placeholder;
+      return;
+    }
+    const onError = () => { img.src = src; };
+    imageSrc = src;
+    fetch(src, { referrer: 'https://weibo.com/' }).then(resp => {
+      if (resp.status !== 200) throw Error();
+      return resp.arrayBuffer();
+    }).then(ab => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        img.src = reader.result;
+      });
+      reader.readAsDataURL(new Blob([ab], { type: 'image/*' }));
+    }, onError);
+  };
+  const isImagePlaceholder = function (img) {
+    return imageSrc === placeholder;
+  };
 
   const images = new URL(location.href).searchParams.getAll('i').map(image => {
     if (!/https?:/.test(image)) throw Error('Invalid url');
@@ -29,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
       previewItem.className = 'preview-item';
       const previewLink = document.createElement('a');
       const previewImage = document.createElement('img');
-      previewImage.src = String(image).replace(/\/large\//, '/square/');
+      setImageSrc(previewImage, String(image).replace(/\/large\//, '/square/'));
       previewItem.dataset.index = index;
       previewLink.href = '#' + (index + 1);
       previewItem.append(previewLink);
@@ -115,17 +137,18 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const setLoading = function () {
-    const loading = viewer.src === placeholder;
+    const loading = isImagePlaceholder(viewer.src);
     if (loading) container.classList.add('loading');
     else container.classList.remove('loading');
     return loading;
   };
 
   const showImage = function (index) {
+    if (Number(viewer.dataset.index) === index) return;
+    viewer.dataset.index = index;
+    setImageSrc(viewer.src);
     const url = images[index];
-    if (viewer.src === url) return;
-    viewer.src = placeholder;
-    window.requestAnimationFrame(() => { viewer.src = url; });
+    window.requestAnimationFrame(() => { setImageSrc(viewer, url); });
     container.scrollTop = 0;
     container.scrollLeft = 0;
     const items = Array.from(document.querySelectorAll('.preview-item'));
