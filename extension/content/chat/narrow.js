@@ -19,7 +19,7 @@
 #app .searchlist .searchlist-box .contactslist .title { margin: 4px 0 2px 10px; }
 #app .searchlist .searchlist-box .contactslist .sessionlist { height: 50px; }
 #app .searchlist .searchlist-box .contactslist .sessionlist .list-left .avatar { width: 40px; height: 40px; margin: 5px 10px; }
-#app .chatlist { top: 35px; }
+#app .chatlist { top: 40px !important; }
 #app .chatlist .chatlist-box { width: var(--yawf-left-width); }
 #app .chatlist .chatlist-box ul { overflow-x: hidden; }
 #app .chatlist .chatlist-box .contactslist .sessionlist { height: 50px; }
