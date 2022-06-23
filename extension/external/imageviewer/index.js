@@ -20,13 +20,13 @@ document.addEventListener('DOMContentLoaded', function () {
     imageSrc = src;
     fetch(src, { referrer: 'https://weibo.com/' }).then(resp => {
       if (resp.status !== 200) throw Error();
-      return resp.arrayBuffer();
-    }).then(ab => {
+      return resp.blob();
+    }).then(blob => {
       const reader = new FileReader();
       reader.addEventListener('load', () => {
         img.src = reader.result;
       });
-      reader.readAsDataURL(new Blob([ab], { type: 'image/*' }));
+      reader.readAsDataURL(blob);
     }, onError);
   };
   const isImagePlaceholder = function (img) {
