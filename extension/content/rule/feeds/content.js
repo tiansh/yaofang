@@ -203,7 +203,7 @@
 
   content.confusableHanNormalize = rule.Rule({
     id: 'confusable_han_normalize',
-    version: 102,
+    version: 103,
     parent: content.content,
     template: () => i18n.confusableHanNormalize,
     ref: {
