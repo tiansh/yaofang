@@ -834,6 +834,10 @@
   feedParser.omid = node => feedContainer(node).getAttribute('omid');
   feedParser.fmid = node => feedContainer(node).getAttribute('fmid');
 
+  commentParser.content = comment => {
+    return commentContentElements(comment);
+  };
+
   // 评论内容
   commentParser.text = target => {
     const elements = commentContentElements(target);

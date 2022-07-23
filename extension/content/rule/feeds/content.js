@@ -7,6 +7,7 @@
   const observer = yawf.observer;
   const request = yawf.request;
   const feedParser = yawf.feed;
+  const commentParser = yawf.comment;
 
   const feeds = yawf.rules.feeds;
   const layout = yawf.rules.layout;
@@ -14,6 +15,7 @@
   const i18n = util.i18n;
   const css = util.css;
   const ui = util.ui;
+  const strings = util.strings;
 
   const content = feeds.content = {};
 
@@ -182,8 +184,41 @@
             }
           }, { immediate: true });
         });
-
       }, util.inject.rootKey, expand, { count, br });
+    },
+  });
+
+  Object.assign(i18n, {
+    confusableHanNormalize: {
+      cn: '同形汉字归一化处理{{i}}',
+      tw: '同形漢字歸一化處理{{i}}',
+      en: 'Normalize confusable Han characters {{i}}',
+    },
+    confusableHanNormalizeDetail: {
+      cn: '替换一部分同形汉字为其常见的模式。不会处理一些仅是形近的 CJK 字符或同形的非汉字字符。',
+      tw: '替換一部分同形漢字為其常見的模式。不會處理一些僅是形近的 CJK 字元或同形的非漢字字元。',
+      en: 'Replace some confusable Han characters to its common variant.',
+    },
+  });
+
+  content.confusableHanNormalize = rule.Rule({
+    id: 'confusable_han_normalize',
+    version: 102,
+    parent: content.content,
+    template: () => i18n.confusableHanNormalize,
+    ref: {
+      i: { type: 'bubble', icon: 'ask', template: () => i18n.confusableHanNormalizeDetail },
+    },
+    ainit() {
+      // 微博相关逻辑见展开长微博
+      // 这里是评论相关逻辑
+      observer.comment.onBefore(function normalizeConfusableHan(comment) {
+        const contents = commentParser.content(comment);
+        if (!contents) return;
+        contents.forEach(content => {
+          strings.normalizeConfusableHanNode(content);
+        });
+      });
     },
   });
 

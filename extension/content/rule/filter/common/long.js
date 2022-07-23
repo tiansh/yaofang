@@ -5,9 +5,11 @@
   const observer = yawf.observer;
 
   const request = yawf.request;
+  const feedParser = yawf.feed;
 
   const i18n = util.i18n;
   const dom = util.dom;
+  const strings = util.strings;
 
   /**
    * 统计一条微博的字数
@@ -34,6 +36,17 @@
 
   observer.feed.onBefore(async function (feed) {
     if (yawf.WEIBO_VERSION !== 6) return Promise.resolve();
+    const normalizeConfusableHan = function () {
+      const enabled = yawf.rules.feeds.content.confusableHanNormalize.isEnabled();
+      if (!enabled) return;
+      [false, true].forEach((isMain, _, bools) => {
+        bools.forEach(isFull => {
+          /** @type {HTMLElement} */
+          const element = feedParser.content.dom(feed, isMain, isFull);
+          strings.normalizeConfusableHanNode(element);
+        });
+      });
+    };
     const unfold = Array.from(feed.querySelectorAll('[action-type="fl_unfold"]'));
     // 这段逻辑基于 lib.feed.plugins.moreThan140
     // 包括直接把 HTML 插入进去的逻辑也是根据这段来做的
@@ -63,7 +76,9 @@
         foldButton.insertBefore(document.createTextNode(i18n.foldText), foldButton.firstChild);
         full.appendChild(foldButton);
       }
+      normalizeConfusableHan();
     });
+    normalizeConfusableHan();
     return Promise.all(unfolding).then(() => { });
   });
 
