@@ -161,8 +161,9 @@
   clean.CleanRule('home_tip', () => i18n.cleanOtherHomeTip, 1, '#v6_pl_content_hometip { display: none !important }');
   clean.CleanRule('footer', () => i18n.cleanOtherFooter, 1, {
     // 直接 display: none 的话，发现页面的左边栏会飘走
-    acss: '.global_footer, .WB_footer { height: 0; overflow: hidden; }',
+    acss: '.global_footer, .WB_footer { height: 0; overflow: hidden; } [yawf-component-tag*="copy-right"] { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherFooterDetail } },
+    weiboVersion: [6, 7],
   });
   clean.CleanRule('im', () => i18n.cleanOtherIM, 1, {
     acss: '.WB_webim { display: none !important; }',
