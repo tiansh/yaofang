@@ -60,6 +60,10 @@
           // 热推 / 广告之类
           if (feed.content_auth === 5) return 'hide';
           if (feed.retweeted_status?.content_auth === 5) return 'hide';
+          if (feed.attitude_dynamic_adid) {
+            // TODO 我也不确定这个属性是做什么的
+            // util.debug('attitude_dynamic_adid', feed.attitude_dynamic_adid, feed);
+          }
         }
         return null;
       }, { priority: 1e6 });
@@ -264,6 +268,7 @@
   };
 
   commercial.userLike = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_user_like',
     version: 1,
     parent: commercial.commercial,
@@ -275,13 +280,23 @@
       const rule = this;
       observer.feed.filter(function userLikeFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        if (init.page.type() !== 'profile') return null;
-        const { oid, onick } = init.page.$CONFIG;
-        if (!oid || !onick) return null;
-        const [author] = feedParser.author.id(feed);
-        const [fauthor] = feedParser.fauthor.id(feed);
-        if ((fauthor || author) !== oid) return 'hide';
-        return null;
+        if (yawf.WEIBO_VERSION === 6) {
+          if (init.page.type() !== 'profile') return null;
+          const { oid, onick } = init.page.$CONFIG;
+          if (!oid || !onick) return null;
+          const [author] = feedParser.author.id(feed);
+          const [fauthor] = feedParser.fauthor.id(feed);
+          if ((fauthor || author) !== oid) return 'hide';
+          return null;
+        } else {
+          if (init.page.type() !== 'profile') return null;
+          const oid = String(init.page.route.params.id);
+          if (!oid) return null;
+          const [author] = feedParser.author.id(feed);
+          const [fauthor] = feedParser.fauthor.id(feed);
+          if (String(fauthor || author) !== oid) return 'hide';
+          return null;
+        }
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
