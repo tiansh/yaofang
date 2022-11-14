@@ -287,9 +287,9 @@
 
       // 当有一条完成过滤规则判断时，交给页面脚本处理
       observer.feed.apply = function (data, { result, filter = null, reason = null }) {
-        const mid = data.mid;
+        const mid = data.mid, runIndex = data._yawf_FilterRunIndex;
         const event = new CustomEvent(key, {
-          detail: JSON.stringify({ action: 'result', mid, result: { result: result ?? 'unset', reason } }),
+          detail: JSON.stringify({ action: 'result', mid, runIndex, result: { result: result ?? 'unset', reason } }),
         });
         document.documentElement.dispatchEvent(event);
         if (result) util.debug('Feed filter %o -> %o by %o due to %o', data, result, filter, reason);
@@ -349,10 +349,10 @@
         // 触发过滤并等待过滤结果回来
         const pendingFeeds = new Map();
         const triggerFilter = function (vm, feed) {
-          const mid = feed.mid;
+          const runIndex = feed._yawf_FilterRunIndex;
           feed._yawf_FilterStatus = 'running';
           const cleanUp = function () {
-            pendingFeeds.delete(mid);
+            pendingFeeds.delete(runIndex);
             vm.$off('hook:beforeDestroy', cleanUp);
           };
           vm.$once('hook:beforeDestroy', cleanUp);
@@ -363,9 +363,9 @@
               feed._yawf_FilterReason = reason;
               resolve({ result, reason });
             };
-            pendingFeeds.set(mid, handleFilterResult);
+            pendingFeeds.set(runIndex, new WeakRef(handleFilterResult));
             const event = new CustomEvent(key, {
-              detail: JSON.stringify({ action: 'trigger', mid, data: feed }),
+              detail: JSON.stringify({ action: 'trigger', runIndex, data: feed }),
             });
             document.documentElement.dispatchEvent(event);
           });
@@ -520,10 +520,12 @@
             }, { watch: false });
           } else if (detail.action === 'result') {
             // 应用过滤结果
-            const handler = pendingFeeds.get(detail.mid);
+            const runIndex = detail.runIndex;
+            const handler = pendingFeeds.get(runIndex)?.deref();
             if (handler) handler(detail.result);
           }
         }, true);
+        let runIndex = 0;
         vueSetup.eachComponentVM('feed-scroll', function (vm) {
           // 当 feed-scroll 内 feed 列表变化时，我们把那些没见过的全都标记一下
           vm.$watch(function () { return this.data; }, function () {
@@ -534,6 +536,7 @@
               vm.$set(feed, '_yawf_FilterStatus', 'loading');
               vm.$set(feed, '_yawf_FilterReason', null);
               vm.$set(feed, '_yawf_FilterApply', true);
+              vm.$set(feed, '_yawf_FilterRunIndex', runIndex++);
               await longContentExpand(vm, feed);
               const { result, reason } = await triggerFilter(vm, feed);
               applyFilterResult(vm, feed, { result, reason });
@@ -554,6 +557,7 @@
 
   // 单条微博页面永远不应当隐藏微博
   observer.feed.filter(function singleWeiboPageUnsetRule() {
+    if (yawf.WEIBO_VERSION !== 6) return null;
     return document.querySelector('[id^="Pl_Official_WeiboDetail__"]') ? 'unset' : null;
   }, { priority: 1e6 });
   // 头条文章是一条微博，类似于单条微博，不应当隐藏
