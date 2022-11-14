@@ -58,7 +58,7 @@
       <div class="woo-dialog-body yawf-dialog-content">
       </div>
       <div class="woo-dialog-ctrl yawf-dialog-buttons">
-        <button class="woo-button-main woo-button-line woo-button-secondary woo-button-m woo-button-round woo-dialog-btn yawf-dialog-button-cancel"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>
+        <button class="woo-button-main woo-button-line woo-button-default woo-button-m woo-button-round woo-dialog-btn yawf-dialog-button-cancel"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>
         <button class="woo-button-main woo-button-flat woo-button-primary woo-button-m woo-button-round woo-dialog-btn yawf-dialog-button-ok"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>
       </div>
     </div>
