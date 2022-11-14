@@ -30,6 +30,82 @@
     template: () => i18n.feedContentGroupTitle,
   });
 
+  i18n.feedUserScreenName = {
+    cn: '已备注的微博作者显示原始微博名',
+  };
+
+  content.fontSize = rule.Rule({
+    weiboVersion: 7,
+    id: 'feed_user_screen_name',
+    version: 104,
+    parent: content.content,
+    template: () => i18n.feedUserScreenName,
+    ainit() {
+
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        const fixScreenName = function (author, { screen_name }, Nodes, type) {
+          const { h, insertBefore, addClass, getTextNodeValue, setTextNodeValue } = Nodes;
+          const remark = author.firstChild;
+          const text = remark.firstChild;
+          let displayName = screen_name;
+          if (getTextNodeValue(text).startsWith('@')) {
+            setTextNodeValue(text, getTextNodeValue(text).slice(1));
+            displayName = '@' + displayName;
+          }
+          const screenName = h('span', {
+            class: `yawf-feed-${type}-screen-name yawf-feed-screen-name`,
+            attrs: { title: screen_name },
+          }, [displayName]);
+          insertBefore(author, screenName, remark);
+          addClass(remark, `yawf-feed-${type}-remark yawf-feed-remark`);
+          addClass(author, `yawf-feed-${type}-with-remark yawf-feed-with-remark`);
+        };
+
+        vueSetup.transformComponentsRenderByTagName('feed-head', function (nodeStruct, Nodes) {
+          // 作者
+          const author = nodeStruct.querySelector('span').closest('x-a-link');
+          const userInfo = vueSetup.closest(this, 'feed').data.user;
+          if (author && userInfo?.remark) {
+            fixScreenName(author, userInfo, Nodes, 'author');
+          }
+          // 快转
+          const userLine = nodeStruct.querySelector('span').closest('x-woo-box');
+          this.screen_name_suffix_new?.forEach((suffix, index) => {
+            if (suffix.scheme?.startsWith('sinaweibo://userinfo?') && suffix.remark) {
+              fixScreenName(userLine.children[index], { screen_name: suffix.content }, Nodes, 'fast-forward');
+            }
+          });
+        });
+
+        vueSetup.transformComponentsRenderByTagName('feed-detail', function (nodeStruct, Nodes) {
+          // 原作者
+          const [authorBox] = nodeStruct.childNodes;
+          if (authorBox && authorBox.nodeType !== Node.COMMENT_NODE) {
+            const author = authorBox.querySelector('x-a-link');
+            const userInfo = vueSetup.closest(this, 'feed').data.retweeted_status.user;
+            if (author && userInfo?.remark) {
+              fixScreenName(author, userInfo, Nodes, 'original');
+            }
+          }
+        });
+
+      }, util.inject.rootKey);
+      // 我也不懂为什么他们作者和转发原作者的名字在鼠标 hover 时候颜色不一样，但是我们姑且按照和他们一样的逻辑来
+      css.append(`
+span.yawf-feed-remark { margin-left: 0.6em; font-weight: normal; font-size: 90%; vertical-align: bottom; color: var(--w-sub); }
+span.yawf-feed-remark::before { content: "("; }
+span.yawf-feed-remark::after { content: ")"; }
+span.yawf-feed-screen-name { font-weight: bold; }
+.yawf-feed-author-with-remark:active span, .yawf-feed-author-with-remark:hover span { color: var(--w-alink); }
+.yawf-feed-original-with-remark:active span, .yawf-feed-original-with-remark:hover span { color: var(--w-brand); }
+.yawf-feed-original-with-remark { white-space: nowrap; max-width: 100%; display: inline-block; overflow: hidden; text-overflow: ellipsis; }
+`);
+    },
+  });
+
   i18n.styleTextFontSize = {
     cn: '增大微博正文字号为|原大小的{{ratio}}（V7最大200%）',
     tw: '加大微博內文字體為|原大小的{{ratio}}（V7最大200%）',
