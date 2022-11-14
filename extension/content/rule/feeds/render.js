@@ -129,7 +129,14 @@
       }
       // 快转
       if (Array.isArray(this.screen_name_suffix_new) && this.screen_name_suffix_new.length) {
-        // TODO 微博目前快转的作者名不是链接，估计是 bug，先等等再看怎么处理
+        if (userLine) {
+          const [fastFromUser] = [...userLine.querySelectorAll('x-a-link')].filter(item => item !== userLink);
+          if (fastFromUser) {
+            addClass(fastFromUser, 'yawf-feed-author');
+            addClass(fastFromUser, 'yawf-feed-fast-forward-original');
+            addClass(userLink, 'yawf-feed-fast-forward-author');
+          }
+        }
       }
       // 标记一下时间和来源
       const headInfo = nodeStruct.querySelector('x-head-info');
@@ -153,7 +160,7 @@
       if (tag) addClass(tag, 'yawf-feed-tag');
 
       const sourceBox = nodeStruct.querySelector('x-woo-box-item x-woo-box');
-      const [source, edited] = sourceBox.childNodes;
+      const [, source, edited] = sourceBox.childNodes;
 
       // 替换掉原有的来源，保证来源本身有个标签，后续用来做拖拽过滤用
       if (source && source.nodeType !== Node.COMMENT_NODE) {
