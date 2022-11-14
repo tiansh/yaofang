@@ -15,6 +15,7 @@
     cleanRightHotTopic: { cn: '热门话题 / 微博热搜', tw: '熱門話題', en: 'Hot Topic' },
     cleanRightHotTopicTop: { cn: '置顶热门话题 (V7)' },
     cleanRightInterest: { cn: '可能感兴趣的人', tw: '可能感興趣的人', en: 'You may know' },
+    cleanRightService: { cn: '创作者中心' },
     cleanRightMember: { cn: '会员专区', tw: '會員專區', en: 'Weibo VIP' },
     cleanRightGroups: { cn: '分组成员列表', tw: '分組成員列表', en: 'Members of group' },
     cleanRightRecomGroupUser: { cn: '建议加入该分组', tw: '建議加入該分組', en: 'Suggest to add to this group' },
@@ -33,6 +34,7 @@
   const hotSearchTop = clean.CleanRule('hot_topic_top', () => i18n.cleanRightHotTopicTop, 91, '', { weiboVersion: 7 });
   const hotSearch = clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }', { weiboVersion: [6, 7] });
   const interested = clean.CleanRule('interest', () => i18n.cleanRightInterest, 1, '[yawf-id="rightmod_recom_interest"] { display: none !important; }', { weiboVersion: [6, 7] });
+  const service = clean.CleanRule('service', () => i18n.cleanRightService, 104, '', { weiboVersion: 7 })
   clean.CleanRule('member', () => i18n.cleanRightMember, 1, '#v6_trustPagelet_recom_member { display: none !important; }');
   clean.CleanRule('groups', () => i18n.cleanRightGroups, 1, '#v6_pl_rightmod_groups { display: none; }');
   clean.CleanRule('recom_group_user', () => i18n.cleanRightRecomGroupUser, 1, '#v6_pl_rightmod_recomgroupuser { display: none; }');
@@ -64,6 +66,7 @@
     hotSearchTop: hotSearchTop,
     cardHotSearch: hotSearch,
     cardInterested: interested,
+    cardService: service,
   }, function (options) {
     if (yawf.WEIBO_VERSION !== 7) return;
     util.inject(function (rootKey, options) {
@@ -73,8 +76,10 @@
       vueSetup.eachComponentVM('side', function (vm) {
         vm.$watch(function () { return this.cardsData; }, function () {
           if (Array.isArray(vm.cardsData)) {
+            if (vm.cardsData?.length) vm.$parent.isLoaded = true;
             for (let i = 0; i < vm.cardsData.length;) {
-              if (options[vm.cardsData[i].card_type]) {
+              const cardData = vm.cardsData[i];
+              if (cardData == null || options[cardData.card_type]) {
                 vm.cardsData.splice(i, 1);
               } else i++;
             }
