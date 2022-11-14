@@ -61,7 +61,7 @@
             Object.defineProperty(vm, 'skinData', { get: () => ({}) });
           });
           vueSetup.eachComponentVM('weibo-top-nav-base', function (vm) {
-            Object.defineProperty(vm, 'logoUrl', { get: () => null, set: x => true });
+            Object.defineProperty(vm, 'logoUrl', { get: () => null, set: x => { } });
           });
         }, util.inject.rootKey);
       }
@@ -89,10 +89,12 @@
 
       vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
         if (Array.isArray(vm.channels)) {
-          vm.channels = vm.channels.filter(channel => !options[channel.name]);
+          const filtered = vm.channels.filter(channel => !options[channel.name]);
+          vm.channels.splice(0, vm.channels.length, ...filtered);
         }
         if (Array.isArray(vm.links)) {
-          vm.links = vm.links.filter(link => !options[link.name]);
+          const filtered = vm.links.filter(link => !options[link.name]);
+          vm.links.splice(0, vm.links.length, ...filtered);
         }
       });
 
