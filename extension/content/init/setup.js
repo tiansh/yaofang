@@ -247,22 +247,24 @@
         },
       });
     };
+    const observeNewNodesIn = function (node) {
+      const nodes = [node];
+      if (node instanceof Element) {
+        nodes.push(...node.getElementsByTagName('*'));
+      }
+      nodes.forEach(node => {
+        eachMountedNode(node);
+      });
+    };
     /** @type {MutationCallback} */
     const observeNewNodes = function (records) {
       Array.from(records).forEach(record => {
-        Array.from(record.addedNodes).forEach(node => {
-          const nodes = [node];
-          if (node instanceof Element) {
-            nodes.push(...node.getElementsByTagName('*'));
-          }
-          nodes.forEach(node => {
-            eachMountedNode(node);
-          });
-        });
+        Array.from(record.addedNodes).forEach(observeNewNodesIn);
       });
     };
     const observer = new MutationObserver(observeNewNodes);
     observer.observe(document.documentElement, { childList: true, subtree: true });
+    observeNewNodesIn(document.documentElement);
 
     Object.defineProperty(window, rootKey, { value: {}, enumerable: false, writable: false });
     const yawf = window[rootKey];
