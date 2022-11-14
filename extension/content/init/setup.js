@@ -511,6 +511,15 @@
       if (!vnode.data.attrs) return;
       delete vnode.data.attrs[name];
     };
+    const getTextNodeValue = function (text) {
+      const vnode = vNode(text);
+      return vnode.text;
+    };
+    const setTextNodeValue = function (text, nodeValue) {
+      const vnode = vNode(text);
+      if (typeof vnode.text !== 'string') return;
+      vnode.text = nodeValue;
+    };
     const transformSlot = function (node, slotName, transformer) {
       const vnode = vNode(node);
       const slots = vnode.data?.scopedSlots;
@@ -538,6 +547,8 @@
           hasAttribute,
           getAttribute,
           removeAttribute,
+          getTextNodeValue,
+          setTextNodeValue,
           createElement,
           h: createElement,
           transformSlot,
