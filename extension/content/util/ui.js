@@ -50,7 +50,7 @@
 `;
     } else {
       template.innerHTML = `
-<div class="woo-box-flex woo-box-alignCenter woo-box-justifyCenter woo-modal-wrap">
+<div class="woo-box-flex woo-box-alignCenter woo-box-justifyCenter woo-modal-wrap woo-modal-an--pop-enter">
   <div class="woo-modal-main yawf-dialog">
     <i class="woo-font woo-font--cross yawf-dialog-close"></i>
     <div class="woo-box-flex woo-box-column woo-box-alignCenter woo-dialog-main" aria-modal="true" tabindex="0" role="alertdialog">
@@ -184,6 +184,7 @@
     // 关闭对话框
     const hide = function () {
       if (yawf.WEIBO_VERSION === 6) dialog.classList.add('UI_animated', 'UI_speed_fast', 'UI_ani_bounceOut');
+      else container.classList.add('woo-modal-an--pop-leave-to');
       document.removeEventListener('keydown', keys);
       container.removeEventListener('keypress', stopKeys);
       document.removeEventListener('scroll', resetPos);
@@ -216,6 +217,10 @@
         dialog.classList.add('UI_animated', 'UI_speed_fast', 'UI_ani_bounceIn');
         setTimeout(function () {
           dialog.classList.remove('UI_animated', 'UI_speed_fast', 'UI_ani_bounceIn');
+        }, 200);
+      } else {
+        setTimeout(function () {
+          container.classList.remove('woo-modal-an--pop-enter');
         }, 200);
       }
       dialogStack.push(dialog);
