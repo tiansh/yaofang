@@ -107,6 +107,18 @@
       Object.assign(content.data.domProps, { innerHTML: wrap.innerHTML });
     };
 
+    vueSetup.transformComponentsRenderByTagName('feed', function (nodeStruct, Nodes) {
+      const { addClass } = Nodes;
+      addClass(nodeStruct, 'yawf-feed');
+      const body = nodeStruct.querySelector('x-feed-head').parentNode;
+      addClass(body, 'yawf-feed-body');
+    });
+
+    vueSetup.transformComponentsRenderByTagName('feed-title', function (nodeStruct, Nodes) {
+      const { addClass } = Nodes;
+      addClass(nodeStruct, 'yawf-feed-title');
+    });
+
     vueSetup.transformComponentsRenderByTagName('feed-head', function (nodeStruct, Nodes) {
       const { addClass, setAttribute } = Nodes;
 
@@ -126,6 +138,11 @@
       if (userLine) {
         addClass(userLine, 'yawf-feed-author-line');
         addClass(userLine.parentNode, 'yawf-feed-author-box');
+        addClass(userLine.closest('.yawf-feed-head > *'), 'yawf-feed-head-main');
+      }
+      if (userLink) {
+        const iconList = userLink.parentNode.querySelector('x-icon-list');
+        if (iconList) addClass(iconList, 'yawf-feed-icon-list yawf-feed-author-icon-list');
       }
       // 快转
       if (Array.isArray(this.screen_name_suffix_new) && this.screen_name_suffix_new.length) {
@@ -140,7 +157,18 @@
       }
       // 标记一下时间和来源
       const headInfo = nodeStruct.querySelector('x-head-info');
-      addClass(headInfo, 'yawf-feed-head-info');
+      if (headInfo) addClass(headInfo, 'yawf-feed-head-info');
+
+      const slots = nodeStruct.lastChild;
+      if (slots) {
+        addClass(slots, 'yawf-feed-head-slots');
+        const readnum = slots.querySelector('x-readnum');
+        const followBtn = slots.querySelector('x-follow-btn');
+        const morepop = slots.querySelector('x-morepop');
+        if (readnum) addClass(readnum, 'yawf-feed-readnum');
+        if (followBtn) addClass(followBtn, 'yawf-feed-follown-btn');
+        if (morepop) addClass(morepop, 'yawf-feed-morepop');
+      }
     });
 
     vueSetup.transformComponentsRenderByTagName('head-info', function (nodeStruct, Nodes) {
@@ -191,6 +219,7 @@
         if (headInfoVNode.componentOptions.propsData) {
           headInfoVNode.componentOptions.propsData.source = this.data.source;
         }
+        addClass(headInfo.parentNode, 'yawf-feed-retweet-bar');
       }
 
       // 内容
@@ -218,10 +247,13 @@
       const { vNode, addClass } = Nodes;
       const [authorBox, content] = nodeStruct.childNodes;
 
+      addClass(nodeStruct, 'yawf-feed-detail');
+
       // 原作者
       if (authorBox && authorBox.nodeType !== Node.COMMENT_NODE) {
         const author = authorBox.querySelector('x-a-link');
         addClass(author, 'yawf-feed-original');
+        addClass(authorBox, 'yawf-feed-original-box');
       }
 
       // 内容
@@ -231,7 +263,6 @@
           addClass(content, 'yawf-feed-detail-content-retweet');
         }
         handleContentRender(vNode(content));
-        addClass(content, 'yawf-feed-detail-content-handler');
       }
     });
 
