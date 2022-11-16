@@ -198,42 +198,37 @@
       }
       if (tag) {
         if (vmToHtmlNode.has(vm)) {
-          const old = vmToHtmlNode.get(vm);
+          const old = vmToHtmlNode.get(vm).deref();
           if (old !== node) {
             reportNewNode({ tag, node, replace: true });
-            vmToHtmlNode.set(vm, node);
+            vmToHtmlNode.set(vm, new WeakRef(node));
           }
         } else {
           reportNewNode({ tag, node, replace: false });
-          vmToHtmlNode.set(vm, node);
+          vmToHtmlNode.set(vm, new WeakRef(node));
         }
       }
     };
     const eachVmForNode = function* (node) {
-      for (let vm = node.__vue__; vm && vm.$el === node; vm = vm.$parent) {
+      const visited = new Set();
+      const queue = [node.__vue__];
+      while (queue.length) {
+        const vm = queue.shift();
+        if (vm == null || !vm._isVue) continue;
+        if (vm.$el !== node || visited.has(vm)) continue;
+        visited.add(vm);
         yield vm;
-      }
-      for (let vm = node.__vue__; ; vm = vm.$children[0]) {
-        if (!Array.isArray(vm.$children)) break;
-        if (vm.$children.length !== 1) break;
-        const child = vm.$children[0];
-        if (!child || child.$el !== node) break;
-        yield child;
+        if (vm.$parent) queue.unshift(vm.$parent);
+        if (Array.isArray(vm.$children)) {
+          queue.push(...vm.$children);
+        }
+        if (vm.$slots) {
+          const slots = Object.keys(vm.$slots).flatMap(key => vm.$slots[key]);
+          queue.push(...slots.map(slot => slot?.componentInstance));
+        }
       }
     };
-    const eachMountedNode = function (node) {
-      const vm = node.__vue__;
-      if (!vm) return;
-      // 如果发现根元素，那么初始化脚本
-      if (vm.$parent == null) {
-        reportRootNode(node);
-        listenRouteChange(node);
-      }
-      for (let vmi of eachVmForNode(node)) {
-        markElement(node, vmi);
-      }
-      if (seenElement.has(node)) return;
-      seenElement.add(node);
+    const watchVueAttr = function (node) {
       let __vue__ = node.__vue__;
       delete node.__vue__;
       Object.defineProperty(node, '__vue__', {
@@ -247,24 +242,36 @@
         },
       });
     };
-    const observeNewNodesIn = function (node) {
-      const nodes = [node];
-      if (node instanceof Element) {
-        nodes.push(...node.getElementsByTagName('*'));
+    /** @param {Node} node */
+    const eachMountedNode = function (node) {
+      if (seenElement.has(node)) return;
+      seenElement.add(node);
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.__vue__) {
+          for (let vm of eachVmForNode(node)) {
+            // 如果发现根元素，那么初始化脚本
+            if (vm.$parent == null) {
+              reportRootNode(node);
+              listenRouteChange(node);
+            }
+            markElement(node, vm);
+          }
+        }
+        watchVueAttr(node);
       }
-      nodes.forEach(node => {
-        eachMountedNode(node);
-      });
+      if (node.children) {
+        [...node.children].forEach(eachMountedNode);
+      }
     };
     /** @type {MutationCallback} */
     const observeNewNodes = function (records) {
       Array.from(records).forEach(record => {
-        Array.from(record.addedNodes).forEach(observeNewNodesIn);
+        Array.from(record.addedNodes).forEach(eachMountedNode);
       });
     };
     const observer = new MutationObserver(observeNewNodes);
     observer.observe(document.documentElement, { childList: true, subtree: true });
-    observeNewNodesIn(document.documentElement);
+    eachMountedNode(document.documentElement);
 
     Object.defineProperty(window, rootKey, { value: {}, enumerable: false, writable: false });
     const yawf = window[rootKey];
@@ -273,11 +280,15 @@
     vueSetup.getRootVm = () => rootVm;
 
     vueSetup.kebabCase = kebabCase;
-    const eachComponentVM = vueSetup.eachComponentVM = function (tag, callback, { mounted = true, watch = true } = {}) {
+    const eachComponentVM = vueSetup.eachComponentVM = function (tagName, callback, { mounted = true, watch = true } = {}) {
+      const tag = kebabCase(tagName);
+      if (tag === '*') {
+        console.error('wildcard tag is aimed for debugging purpose only! Which should be avoid.');
+      }
       const seen = new WeakSet();
       const found = function (target) {
         for (let vm of eachVmForNode(target)) {
-          if (getTag(vm) === kebabCase(tag)) {
+          if (tag === '*' || getTag(vm) === tag) {
             if (seen.has(vm)) continue;
             seen.add(vm);
             callback(vm);
@@ -286,7 +297,7 @@
       };
       if (watch) {
         document.documentElement.addEventListener('yawf-VueNodeInserted', event => {
-          if (tag !== event.detail.tag) return;
+          if (tag !== '*' && tag !== event.detail.tag) return;
           found(event.target);
         });
       }
@@ -569,12 +580,16 @@
           return transformer(originalRender).call(this, createElement, { builder: builder(createElement) });
         };
       }
+      let errorFlag = false;
       const wrapped = function render(createElement) {
         const { nodeStruct, Nodes, getRoot } = builder(createElement)(originalRender.call(this, createElement));
         try {
           transformer.call(this, nodeStruct, Nodes);
         } catch (e) {
-          console.error('YAWF Error while inject render [%o]: %o', transformer, e);
+          if (!errorFlag) {
+            console.error('YAWF Error while inject render [%o]: %o (Following errors are supressed)', transformer, e);
+            errorFlag = true;
+          }
         }
         return getRoot();
       };
