@@ -92,9 +92,12 @@
           const filtered = vm.channels.filter(channel => !options[channel.name]);
           vm.channels.splice(0, vm.channels.length, ...filtered);
         }
-        if (Array.isArray(vm.links)) {
-          const filtered = vm.links.filter(link => !options[link.name]);
-          vm.links.splice(0, vm.links.length, ...filtered);
+        let links = vm.links;
+        if (!Object.getOwnPropertyDescriptor(vm, 'links')?.get) {
+          Object.defineProperty(vm, 'links', {
+            get() { return links.filter(link => !options[link.name]); },
+            set(v) { links = v; },
+          });
         }
       });
 
