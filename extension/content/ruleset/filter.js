@@ -344,7 +344,6 @@
         const pendingFeeds = new Map();
         const triggerFilter = function (vm, feed) {
           const runIndex = feed._yawf_FilterRunIndex;
-          console.log('FEEDFILTER Start: ', runIndex);
           feed._yawf_FilterStatus = 'running';
           const cleanUp = function () {
             pendingFeeds.delete(runIndex);
