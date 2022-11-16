@@ -301,17 +301,11 @@
         const event = new CustomEvent(key, { detail: JSON.stringify({ action: 'rerun' }) });
         document.documentElement.dispatchEvent(event);
       };
-      const feedTriggerPending = [];
       // 当页面脚本检测到一条需要过滤的微博时，提交过滤
       window.addEventListener(key, function (event) {
         const detail = JSON.parse(event.detail);
         if (detail.action === 'trigger') {
-          feedTriggerPending.push(detail.data);
-          setTimeout(() => {
-            if (feedTriggerPending.length) {
-              observer.feed.active(feedTriggerPending.splice(0));
-            }
-          }, 0);
+          observer.feed.active([detail.data]);
         }
       }, true);
       util.inject(function (rootKey, key) {
@@ -350,6 +344,7 @@
         const pendingFeeds = new Map();
         const triggerFilter = function (vm, feed) {
           const runIndex = feed._yawf_FilterRunIndex;
+          console.log('FEEDFILTER Start: ', runIndex);
           feed._yawf_FilterStatus = 'running';
           const cleanUp = function () {
             pendingFeeds.delete(runIndex);
