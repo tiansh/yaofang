@@ -159,6 +159,7 @@ span.yawf-feed-screen-name { font-weight: bold; }
         }[this.ref.ratio.getConfig()];
         const { fs, lh, fs2, lh2 } = config;
         css.append(`
+:root:root { --feed-detail-og-font-size: ${fs}px; --feed-detail-og-line-height: ${lh}px; --feed-detail-re-font-size: ${fs2}px; --feed-detail-re-line-height: ${lh2}px; }
 .yawf-feed-author-line { margin-bottom: 0px !important; font-size: ${fs}px !important; line-height: ${lh}px !important; }
 .yawf-feed-author-box { justify-content: space-between !important; }
 .yawf-feed-author-box::after { content: " "; margin-bottom: 4px }
