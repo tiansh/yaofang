@@ -55,15 +55,14 @@
           if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
           if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
         } else {
+          // TODO 我也不确定这个属性是做什么的
+          // if (feed.promotion) console.log('FILTERTEST promotion: %o (%o)', feed.promotion, feed);
+          // if (feed.attitude_dynamic_adid) console.log('FILTERTEST attitude_dynamic_adid: %o (%o)', feed.attitude_dynamic_adid, feed);
           // 某某赞过的微博
           if (feed.title?.type === 'likerecommend') return 'hide';
           // 热推 / 广告之类
           if (feed.content_auth === 5) return 'hide';
           if (feed.retweeted_status?.content_auth === 5) return 'hide';
-          if (feed.attitude_dynamic_adid) {
-            // TODO 我也不确定这个属性是做什么的
-            // util.debug('attitude_dynamic_adid', feed.attitude_dynamic_adid, feed);
-          }
         }
         return null;
       }, { priority: 1e6 });
@@ -81,6 +80,7 @@
   };
 
   commercial.fansTop = rule.Rule({
+    weiboVersion: [6, 7],
     id: 'filter_fans_top',
     version: 1,
     parent: commercial.commercial,
@@ -92,8 +92,13 @@
       const rule = this;
       observer.feed.filter(function fansTopFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        if (feed.querySelector('[adcard="fanstop"]')) return 'hide';
-        return null;
+        if (yawf.WEIBO_VERSION === 6) {
+          if (feed.querySelector('[adcard="fanstop"]')) return 'hide';
+          return null;
+        } else {
+          if (feed.promotion?.adtype === 8) return 'hide';
+          return null;
+        }
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
