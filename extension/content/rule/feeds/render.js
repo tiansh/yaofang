@@ -107,6 +107,18 @@
       Object.assign(content.data.domProps, { innerHTML: wrap.innerHTML });
     };
 
+    vueSetup.transformComponentsRenderByTagName('home', function (nodeStruct, Nodes) {
+      const { vNode, removeChild, insertBefore } = Nodes;
+      const gray = nodeStruct.querySelector('.grayTheme');
+      while (gray.firstChild) {
+        const node = gray.firstChild;
+        const vnode = vNode(node);
+        removeChild(gray, node);
+        insertBefore(gray.parentNode, vnode, gray.nextSibling, node);
+      }
+      removeChild(gray.parentNode, gray);
+    });
+
     vueSetup.transformComponentsRenderByTagName('feed', function (nodeStruct, Nodes) {
       const { addClass } = Nodes;
       addClass(nodeStruct, 'yawf-feed');
