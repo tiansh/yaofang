@@ -112,22 +112,27 @@
       this.busy = true;
       const promises = [];
       while (this.pending.length) {
-        const item = this.pending.shift();
-        promises.push((async () => {
-          await this.invokeCallbacks(this.before, item);
-          const result = await this.filters.filter(item);
-          const callAfter = this.apply(item, result);
-          if (callAfter) {
-            await this.invokeCallbacks(this.after, item, result);
-          }
-          await this.invokeCallbacks(this.finally, item, result);
+        while (this.pending.length) {
+          const item = this.pending.shift();
+          // console.log('filter run', item);
+          promises.push((async () => {
+            await this.invokeCallbacks(this.before, item);
+            const result = await this.filters.filter(item);
+            // console.log('filter apply', item);
+            const callAfter = this.apply(item, result);
+            if (callAfter) {
+              await this.invokeCallbacks(this.after, item, result);
+            }
+            await this.invokeCallbacks(this.finally, item, result);
+            await new Promise(resolve => setTimeout(resolve, 0));
+          })());
           await new Promise(resolve => setTimeout(resolve, 0));
-        })());
-        await new Promise(resolve => setTimeout(resolve, 0));
-        if (!this.busy) break;
+          // console.log('filter end', item);
+        }
+        await Promise.all(promises);
+        // console.log('filter done');
+        await this.invokeCallbacks(this.done);
       }
-      await Promise.all(promises);
-      await this.invokeCallbacks(this.done);
       this.busy = false;
       if (this.pending.length) {
         await this.active(this.pending.splice(0));
@@ -337,14 +342,21 @@
           feedDetail._yawf_LongTextContentLoading = false;
         };
         const longContentExpand = async function (vm, feed) {
-          await longContentExpandForDetail(vm, feed);
-          await longContentExpandForDetail(vm, feed.retweeted_status);
+          for (let retry = 0; retry < 3; retry++) {
+            try {
+              await longContentExpandForDetail(vm, feed);
+              await longContentExpandForDetail(vm, feed.retweeted_status);
+              return true;
+            } catch (_ignore) {
+              await new Promise(resolve => setTimeout(resolve, 1e3));
+            }
+          }
+          return false;
         };
         // 触发过滤并等待过滤结果回来
         const pendingFeeds = new Map();
         const triggerFilter = function (vm, feed) {
           const runIndex = feed._yawf_FilterRunIndex;
-          console.log('FEEDFILTER Start: ', runIndex);
           feed._yawf_FilterStatus = 'running';
           const cleanUp = function () {
             pendingFeeds.delete(runIndex);
@@ -528,12 +540,16 @@
             feeds.forEach(async feed => {
               if (!(feed.mid > 0)) return;
               if (feed._yawf_FilterApply) return;
+              const id = runIndex++;
+              // console.log('filter start', feed.mid);
               vm.$set(feed, '_yawf_FilterStatus', 'loading');
               vm.$set(feed, '_yawf_FilterReason', null);
               vm.$set(feed, '_yawf_FilterApply', true);
-              vm.$set(feed, '_yawf_FilterRunIndex', runIndex++);
+              vm.$set(feed, '_yawf_FilterRunIndex', id);
               await longContentExpand(vm, feed);
+              // console.log('filter trigger', feed.mid);
               const { result, reason } = await triggerFilter(vm, feed);
+              // console.log('filter finish', feed.mid);
               applyFilterResult(vm, feed, { result, reason });
             });
           }, { immediate: true });
