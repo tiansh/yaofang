@@ -110,6 +110,7 @@
     vueSetup.transformComponentsRenderByTagName('home', function (nodeStruct, Nodes) {
       const { vNode, removeChild, insertBefore } = Nodes;
       const gray = nodeStruct.querySelector('.grayTheme');
+      if (!gray) return;
       while (gray.firstChild) {
         const node = gray.firstChild;
         const vnode = vNode(node);
