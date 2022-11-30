@@ -77,7 +77,7 @@
         vm.$watch(function () { return this.cardsData; }, function () {
           if (Array.isArray(vm.cardsData)) {
             if (vm.cardsData?.length) vm.$parent.isLoaded = true;
-            for (let i = 0; i < vm.cardsData.length;) {
+            for (let i = 0; i < vm.cardsData?.length;) {
               const cardData = vm.cardsData[i];
               if (cardData == null || options[cardData.card_type]) {
                 vm.cardsData.splice(i, 1);
