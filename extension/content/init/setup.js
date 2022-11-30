@@ -125,23 +125,84 @@
         else return '-' + lower;
       });
     };
+
+    /** @type {Map<string, Set<() => void>>} */
+    const watchComponentVMCallbacks = new Map();
+    /** @type {Set<WeakSet<VM>>} */
+    const allComponentVM = new WeakSet();
+    /** @type {Map<string, Set<WeakRef<VM>>>} */
+    const allComponentVMByTagName = new Map();
+    const finalizeVm = new FinalizationRegistry((byTagName, ref) => {
+      byTagName.delete(ref);
+    });
     // 发现任何 Vue 元素的时候上报消息以方便其他模块修改该元素
-    const reportNewNode = function ({ tag, node, replace, root = false }) {
-      const event = new CustomEvent('yawf-VueNodeInserted', {
-        bubbles: true,
-        detail: { tag, replace, root },
-      });
-      node.dispatchEvent(event);
+    const reportNewVM = function (vm, node, replace) {
+      const tag = getTag(vm);
+      if (allComponentVM.has(vm)) return;
+      allComponentVM.add(vm);
+
+      const ref = new WeakRef(vm);
+      if (!allComponentVMByTagName.has(tag)) {
+        allComponentVMByTagName.set(tag, new Set());
+      }
+      const byTagName = allComponentVMByTagName.get(tag);
+      byTagName.add(ref);
+      finalizeVm.register(vm, byTagName, ref);
+
+      if (watchComponentVMCallbacks.has(tag)) {
+        [...watchComponentVMCallbacks.get(tag)].forEach(callback => {
+          callback(vm);
+        });
+      }
     };
+    const watchComponentVM = function (tag, callback) {
+      if (!watchComponentVMCallbacks.has(tag)) {
+        watchComponentVMCallbacks.set(tag, new Set());
+      }
+      const callbacks = watchComponentVMCallbacks.get(tag);
+      callbacks.add(callback);
+      return function unwatch() {
+        callbacks.delete(callback);
+        callback = null;
+      };
+    };
+    const getComponentsByTagName = function (tag) {
+      if (!allComponentVMByTagName.has(tag)) return [];
+      return [...allComponentVMByTagName.get(tag)].flatMap(ref => {
+        const vm = ref.deref();
+        if (!vm || !vm._isMounted) return [];
+        return [vm];
+      });
+    };
+    const eachComponentVM = function (tag, callback, { mounted = true, watch = true } = {}) {
+      let error = false;
+      const cb = function (vm) {
+        try {
+          callback(vm);
+        } catch (e) {
+          if (!error) {
+            console.error('Error while running eachCompontentVM callback %o:\n%o', callback, e);
+          }
+          error = true;
+        }
+      };
+      if (mounted) {
+        getComponentsByTagName(tag).forEach(cb);
+      }
+      if (watch) {
+        watchComponentVM(tag, cb);
+      }
+    };
+
     const routeReportObject = function (vm) {
-      return vm.$route ? {
+      return vm.$route ? JSON.parse(JSON.stringify({
         name: vm.$route.name,
         fullPath: vm.$route.fullPath,
         path: vm.$route.path,
-        params: JSON.parse(JSON.stringify(vm.$route.params)),
-        query: JSON.parse(JSON.stringify(vm.$route.query)),
-        meta: JSON.parse(JSON.stringify(vm.$route.meta)),
-      } : null;
+        params: vm.$route.params,
+        query: vm.$route.query,
+        meta: vm.$route.meta,
+      })) : null;
     };
     // 发现 Vue 根元素的时候启动脚本的初始化
     const reportRootNode = function (node) {
@@ -179,10 +240,8 @@
       return name;
     };
     /** @type {WeakMap<Object, Node>} */
-    const vmToHtmlNode = new WeakMap();
-    const seenElement = new WeakSet();
     const markElement = function (node, vm) {
-      if (!vm || vm.$el !== node) return;
+      if (!vm || vm.$el !== node || !vm._isMounted) return;
       const tag = getTag(vm);
       if (tag && node instanceof Element) {
         if (node.hasAttribute('yawf-component-tag')) {
@@ -197,16 +256,7 @@
         node.setAttribute('yawf-component-key', key);
       }
       if (tag) {
-        if (vmToHtmlNode.has(vm)) {
-          const old = vmToHtmlNode.get(vm).deref();
-          if (old !== node) {
-            reportNewNode({ tag, node, replace: true });
-            vmToHtmlNode.set(vm, new WeakRef(node));
-          }
-        } else {
-          reportNewNode({ tag, node, replace: false });
-          vmToHtmlNode.set(vm, new WeakRef(node));
-        }
+        reportNewVM(vm, node);
       }
     };
     const eachVmForNode = function* (node) {
@@ -242,6 +292,7 @@
         },
       });
     };
+    let seenElement = new WeakSet();
     /** @param {Node} node */
     const eachMountedNode = function (node) {
       if (seenElement.has(node)) return;
@@ -280,36 +331,8 @@
     vueSetup.getRootVm = () => rootVm;
 
     vueSetup.kebabCase = kebabCase;
-    const eachComponentVM = vueSetup.eachComponentVM = function (tagName, callback, { mounted = true, watch = true } = {}) {
-      const tag = kebabCase(tagName);
-      if (tag === '*') {
-        console.error('wildcard tag is aimed for debugging purpose only! Which should be avoid.');
-      }
-      const seen = new WeakSet();
-      const found = function (target) {
-        for (let vm of eachVmForNode(target)) {
-          if (tag === '*' || getTag(vm) === tag) {
-            if (seen.has(vm)) continue;
-            seen.add(vm);
-            callback(vm);
-          }
-        }
-      };
-      if (watch) {
-        document.documentElement.addEventListener('yawf-VueNodeInserted', event => {
-          if (tag !== '*' && tag !== event.detail.tag) return;
-          found(event.target);
-        });
-      }
-      if (mounted) {
-        [...document.querySelectorAll(`[yawf-component-tag~="${tag}"]`)].forEach(found);
-      }
-    };
-    vueSetup.getComponentsByTagName = function (tag) {
-      const result = [];
-      eachComponentVM(tag, result.push.bind(result), { watch: false });
-      return result;
-    };
+
+    vueSetup.getComponentsByTagName = getComponentsByTagName;
 
     vueSetup.closest = function (vm, tag) {
       for (let p = vm; p; p = p.$parent) {
@@ -596,15 +619,18 @@
       wrapped.originalRender = originalRender;
       return wrapped;
     };
-    const transformComponentRender = vueSetup.transformComponentRender = function (vm, transformer, configs = {}) {
+    const transformComponentRender = function (vm, transformer, configs = {}) {
       vm.$options.render = transformRender(vm.$options.render, transformer, configs);
     };
-    vueSetup.transformComponentsRenderByTagName = function (tag, transformer, configs = {}) {
+    const transformComponentsRenderByTagName = function (tag, transformer, configs = {}) {
       eachComponentVM(tag, function (vm) {
         transformComponentRender(vm, transformer, configs);
         vm.$forceUpdate();
       });
     };
+    vueSetup.eachComponentVM = eachComponentVM;
+    vueSetup.transformComponentRender = transformComponentRender;
+    vueSetup.transformComponentsRenderByTagName = transformComponentsRenderByTagName;
 
     const isSimpleClick = function (event) {
       if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return false;
