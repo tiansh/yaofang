@@ -40,7 +40,7 @@
   });
 
   script.text = rule.Text({
-    weiboVersion: [6, 7],
+    v7Support: true,
     parent: script.script,
     template: () => i18n.aboutText,
     ref: {
@@ -61,7 +61,6 @@
           link.href = 'https://weibo.com/tsh90';
           link.title = 'tsh90';
           link.textContent = '@tsh90';
-          link.setAttribute('usercard', 'id=3921589057');
           return link;
         },
       },
@@ -71,7 +70,6 @@
           link.href = 'https://weibo.com/yawfscript';
           link.title = 'YAWF脚本';
           link.textContent = '@YAWF脚本';
-          link.setAttribute('usercard', 'id=5601033111');
           return link;
         },
       },

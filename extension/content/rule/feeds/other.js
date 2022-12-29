@@ -1,7 +1,6 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const init = yawf.init;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
@@ -66,8 +65,7 @@
         event.stopPropagation();
         event.preventDefault();
         const feed = feedParser.feedNode(button);
-        const $CONFIG = init.page.$CONFIG;
-        const success = await request.feedFavorite(feed, { $CONFIG });
+        const success = await request.feedFavorite(feed, { location: null });
         if (!success) {
           dialog.alert({
             id: 'yawf-favorite-fail',
@@ -159,7 +157,7 @@
   });
 
   details.feedLinkNewTab = rule.Rule({
-    weiboVersion: 7,
+    v7Support: true,
     id: 'feed_link_new_tab',
     version: 85,
     parent: details.details,

@@ -1,13 +1,11 @@
 ; (function () {
 
   const yawf = window.yawf;
-  const env = yawf.env;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
   const request = yawf.request;
   const browserInfo = yawf.browserInfo;
-  const stk = yawf.stk;
   const feedParser = yawf.feed;
   const notifications = yawf.notifications;
   const init = yawf.init;
@@ -93,67 +91,7 @@
     template: () => i18n.feedsHomepageGroupTitle,
   });
 
-  // 因为 YAWF 脚本用的 -1，这里为了避免可能的冲突（虽然别的功能还是会冲突），所以用 -2
-  const CUSTOM_GID = -2;
-
-  const fixHomeUrlV6 = function (target) {
-    const setParam = function (url) {
-      if (target === 'newest') {
-        url.searchParams.delete('gid');
-        url.searchParams.set('is_new', 1);
-      } else if (target === 'custom') {
-        url.searchParams.set('gid', CUSTOM_GID);
-      } else if (target.startsWith('g')) {
-        url.searchParams.set('gid', target.slice(1));
-      } else if (target === 'whisper') {
-        url.searchParams.delete('gid');
-        url.searchParams.set('whisper', 1);
-      }
-    };
-    const updateLocation = function updateLocation() {
-      const isHomeFeed = document.getElementById('v6_pl_content_homefeed');
-      const notHomeFeed = document.getElementById('v6_pl_content_commentlist') ||
-        document.querySelector('[id^="Pl_Official_MyProfileFeed__"]');
-      if (!isHomeFeed && !notHomeFeed) return;
-      const url = new URL(location.href);
-      const hasGid = Boolean(+url.searchParams.get('gid'));
-      const isNew = Boolean(+url.searchParams.get('is_new'));
-      const isSearch = Boolean(+url.searchParams.get('is_search'));
-      const isSpecial = ['isfriends', 'vplus', 'isfriends', 'isgroupsfeed', 'whisper']
-        .some(key => +url.searchParams.get(key));
-      const isCustomGid = hasGid && url.searchParams.get('gid') < 0;
-      const shouldBeFixed = isHomeFeed && !isSearch && !isSpecial;
-      const shouldRemoveGid = notHomeFeed && isCustomGid;
-      const incorrectGid = isCustomGid && target !== 'custom';
-      if ((!hasGid || incorrectGid) && !isNew && shouldBeFixed) {
-        setParam(url);
-        observer.dom.remove(updateLocation);
-        location.replace(url.href);
-      } else if (hasGid && shouldRemoveGid) {
-        url.searchParams.delete('gid');
-        observer.dom.remove(updateLocation);
-        location.replace(url);
-      }
-    };
-    observer.dom.add(updateLocation);
-
-    const updateHomeLinks = function updateHomeLinks() {
-      /** @type {HTMLAnchorElement[]} */
-      const links = Array.from(document.querySelectorAll([
-        '.gn_logo a', // 导航栏logo
-        'a[suda-uatrack*="homepage"]', // 首页链接，根据跟踪标识识别；适用于顶栏和左栏
-        '#v6_pl_content_homefeed a[action-type="search_type"][action-data="type=0"]', // 首页消息流顶部的“全部”链接
-      ].map(selector => selector + ':not([href*="is_search"])').join(',')));
-      links.forEach(link => {
-        const url = new URL(link.href);
-        setParam(url);
-        link.href = url.href;
-      });
-    };
-    observer.dom.add(updateHomeLinks);
-  };
-
-  const fixHomeUrlV7 = function (config) {
+  const fixHomeUrl = function (config) {
     util.inject(function (rootKey, { gid, name, api, index, source }) {
       const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;
@@ -185,7 +123,7 @@
   };
 
   homepage.newestFeeds = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'filter_homepage_newest_feeds',
     version: 21,
     parent: homepage.homepage,
@@ -199,18 +137,14 @@
       });
     },
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        fixHomeUrlV6('newest');
-      } else {
-        const uid = init.page.config.user.idstr;
-        fixHomeUrlV7({
-          gid: '11000' + uid,
-          api: '/ajax/feed/friendstimeline',
-          name: '最新微博',
-          index: 1,
-          source: 'left',
-        });
-      }
+      const uid = init.page.config.user.idstr;
+      fixHomeUrl({
+        gid: '11000' + uid,
+        api: '/ajax/feed/friendstimeline',
+        name: '最新微博',
+        index: 1,
+        source: 'left',
+      });
     },
   });
 
@@ -218,16 +152,11 @@
   const groupListLazyPromise = new Promise(resolve => {
     groupListLazyPromiseResolve = resolve;
   }).then(async () => {
-    if (yawf.WEIBO_VERSION === 6) {
-      const groups = await request.groupList();
-      return groups.map(({ name, id }) => ({ text: name, value: id }));
-    } else {
-      const groups = await request.groupListV7();
-      return groups.map(({ gid, title }) => ({ text: title, value: gid }));
-    }
+    const groups = await request.groupListV7();
+    return groups.map(({ gid, title }) => ({ text: title, value: gid }));
   });
   homepage.singleGroup = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'filter_homepage_single_group',
     version: 1,
     parent: homepage.homepage,
@@ -252,302 +181,12 @@
       });
     },
     async ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        let group = this.ref.group.getConfig();
-        if (group == null) {
-          await groupListLazyPromise;
-          group = this.ref.group.getConfig();
-        }
-        fixHomeUrlV6(group);
-      } else {
-        const gid = this.ref.group.getConfig();
-        const groups = await request.groupListV7();
-        const index = groups.findIndex(g => g.gid === gid);
-        const name = groups[index].title;
-        const api = '/ajax/feed/groupstimeline';
-        fixHomeUrlV7({ gid, api, name, index, source: 'custom' });
-      }
-    },
-  });
-
-  homepage.multiGroup = rule.Rule({
-    id: 'filter_homepage_multi_group',
-    version: 1,
-    parent: homepage.homepage,
-    template: () => i18n.feedsHomepageMultiGroup,
-    ref: {
-      count: {
-        type: 'range',
-        min: 20,
-        max: 200,
-        initial: 50,
-        step: 10,
-      },
-      more: {
-        type: 'select',
-        select: [
-          { value: 'keep', text: () => i18n.feedsHomepageKeepOld },
-          { value: 'clear', text: () => i18n.feedsHomepageCleanOld },
-        ],
-        initial: 'clear',
-      },
-      unread: {
-        type: 'boolean',
-      },
-      groups: {
-        type: 'groups', // 不支持 V7
-      },
-      i: { type: 'bubble', icon: 'ask', template: () => i18n.feedsHomepageMultiGroupDetail },
-      ii: { type: 'bubble', icon: 'warn', template: () => i18n.feedsHomepageMultiGroupDetail2 },
-    },
-    init() {
-      this.addConfigListener(config => {
-        if (config) {
-          homepage.newestFeeds.setConfig(false);
-          homepage.singleGroup.setConfig(false);
-        }
-      });
-    },
-    ainit() {
-      const rule = this;
-      const count = rule.ref.count.getConfig();
-      const unread = rule.ref.unread.getConfig();
-      const groups = rule.ref.groups.getConfig().slice(0);
-      const clear = rule.ref.more.getConfig() === 'clear';
-      const autoLoad = homepage.autoLoad.isEnabled();
-
-      if (groups.length === 0) return;
-
-      fixHomeUrlV6('custom');
-
-      // 检查当前页面是否需要启用分组拼凑首页功能
-      const checkPage = function checkMultiGroupPage() {
-        const query = new URLSearchParams(location.search);
-        const gid = +query.get('gid');
-        if (gid !== CUSTOM_GID) return;
-        if (!Array.isArray(groups)) return;
-        if (groups.length < 2) return;
-        query.delete('gid');
-        observer.dom.add(function multiGroupPageFix() {
-          watchFeedList(query);
-          watchMembers();
-        });
-      };
-
-      const getLoadingTip = function () {
-        const container = document.createElement('div');
-        container.innerHTML = '<div class="WB_cardwrap S_bg2"><div class="WB_empty WB_empty_narrow"><div class="WB_innerwrap"><div class="empty_con clearfix"><p class="text"><i class="W_loading"></i></p></div></div></div></div>';
-        container.querySelector('.text').appendChild(document.createTextNode(i18n.feedsMultiGroupLoading));
-        return container.firstChild;
-      };
-      const getShowMore = function () {
-        const container = document.createElement('div');
-        container.innerHTML = '<div class="WB_cardwrap S_bg2 yawf-multiGroupMore"><a class="WB_cardmore WB_cardmore_noborder clearfix" href="javascript:;"><span class="more_txt W_f14"><em class="W_ficon ficon_arrow_down">c</em></span></a></div>';
-        const textContainer = container.querySelector('span');
-        textContainer.insertBefore(document.createTextNode(i18n.feedsMultiGroupLoadMore), textContainer.firstChild);
-        return container.firstChild;
-      };
-
-      // 找到消息流的容器，并初始化好它
-      const watchFeedList = function (query) {
-        const placeholder = document.querySelector('.WB_feed > .WB_result_null');
-        if (!placeholder) return;
-        let feedlist = placeholder.parentElement;
-        feedlist.removeChild(placeholder);
-        fillFeedList(feedlist, query);
-      };
-
-      // 初始化消息流容器
-      const fillFeedList = function (feedlist, query) {
-        feedlist.classList.add('WB_feed_v3', 'WB_feed_v4');
-        const loading = getLoadingTip();
-        feedlist.appendChild(loading);
-        const showmore = getShowMore();
-        showmore.style.display = 'none';
-        feedlist.appendChild(showmore);
-
-        const getter = showFeeds(groups, query, { feedlist, loading, showmore });
-        if (unread) {
-          initUnread(groups, query, getter, { feedlist });
-        }
-      };
-
-      // 下掉边栏组内用户的组件
-      const watchMembers = function () {
-        const members = document.getElementById('v6_pl_rightmod_groups');
-        if (members) members.parentNode.removeChild(members);
-      };
-
-      // 初始化拼凑首页的逻辑
-      const showFeeds = function (groups, query, dom) {
-        const getter = request.feedsByGroups(groups, query);
-        showMoreFeeds(getter, count, dom);
-        return getter;
-      };
-
-      // 一条一条往消息流里面塞内容
-      const showMoreFeeds = async function (getter, remain, dom) {
-        const hasNext = await getter.hasNext();
-        if (!hasNext) {
-          everythingDone(dom);
-          return;
-        }
-        if (remain === 0) {
-          await waitShowMore(dom);
-          remain = count;
-        }
-        const feed = await getter.next();
-        if (feed.type === 'feed') {
-          renderFeed(feed.dom, dom);
-          await new Promise(resolve => setTimeout(resolve, 10));
-          remain--;
-        } else {
-          renderDone(feed.group, dom);
-        }
-        showMoreFeeds(getter, remain, dom);
-      };
-
-      // 完成一组显示后等用户的操作再继续
-      const waitShowMore = async function ({ feedlist, loading, showmore }) {
-        loading.style.display = 'none';
-        showmore.style.display = 'block';
-        await new Promise(resolve => {
-          const listener = () => {
-            showmore.removeEventListener('click', listener);
-            resolve();
-          };
-          showmore.addEventListener('click', listener);
-        });
-        loading.style.display = 'block';
-        showmore.style.display = 'none';
-        if (clear) {
-          const nav = document.querySelector('.WB_global_nav');
-          const navBottom = nav.clientTop + nav.clientHeight;
-          const feedlistTop = feedlist.parentNode.offsetTop;
-          const margin = 10;
-          document.documentElement.scrollTop = feedlistTop - (navBottom + margin);
-          while (feedlist.firstChild !== loading) {
-            feedlist.removeChild(feedlist.firstChild);
-          }
-        }
-      };
-
-      // 显示一条消息
-      const renderFeed = function (feed, { feedlist, loading }) {
-        feedlist.insertBefore(feed, loading);
-      };
-
-      // 完成一个分组的加载
-      const renderDone = function (group, { feedlist, loading }) {
-        const container = document.createElement('div');
-        container.innerHTML = '<div class="WB_cardwrap S_bg2 yawf-multiGroupDone"><div class="WB_cardtitle_a W_tc yawf-multiGroupDoneTitle"></div></div>';
-        const titleContainer = container.querySelector('.yawf-multiGroupDoneTitle');
-        const [textBefore, textAfter] = i18n.feedsHomePageDoneGroup.split('{1}');
-        titleContainer.appendChild(document.createTextNode(textBefore));
-        const groupNameContainer = titleContainer.appendChild(document.createElement('span'));
-        titleContainer.appendChild(document.createTextNode(textAfter));
-        request.groupList().then(groupList => {
-          const gotGroup = groupList.find(({ id }) => id === group.id);
-          if (gotGroup) groupNameContainer.textContent = gotGroup.name;
-        });
-        feedlist.insertBefore(container, loading);
-      };
-
-      // 所有分组都完成加载
-      const everythingDone = function ({ feedlist, loading, showmore }) {
-        feedlist.removeChild(loading);
-        feedlist.removeChild(showmore);
-      };
-
-      const showUnreadFeeds = async function (groups, query, getter, unreadChecker, { newfeedtip, feedlist }, status) {
-        unreadChecker.pause();
-        if (status > count && !autoLoad) {
-          // 未读消息太多了，我们直接刷新算了
-          feedlist.innerHTML = '';
-          newfeedtip.remove();
-          fillFeedList(feedlist, query);
-        } else {
-          if (!autoLoad) {
-            const link = newfeedtip.querySelector('a');
-            link.textContent = i18n.feedsUnreadLoading;
-            const loading = document.createElement('i');
-            loading.className = 'W_loading';
-            link.insertBefore(loading, link.firstChild);
-            feedlist.insertBefore(newfeedtip, feedlist.firstChild);
-          }
-          const fragement = document.createDocumentFragment();
-          const newGetter = request.feedsByGroups(groups, query);
-          for (let limit = count; limit; limit--) {
-            const feed = await newGetter.next();
-            if (feed.type !== 'feed') continue;
-            if (getter.isShown(feed)) break;
-            const feedDom = fragement.appendChild(feed.dom);
-            if (autoLoad) {
-              feedDom.setAttribute('yawf-feed-preload', 'unread');
-            }
-            getter.addShown(feed);
-          }
-          feedlist.insertBefore(fragement, feedlist.firstChild);
-          if (!autoLoad) {
-            newfeedtip.remove();
-          }
-          unreadChecker.run();
-        }
-      };
-
-      // 显示新消息提示横幅
-      const noticeUnread = function (data, groups, query, getter, { feedlist }, unreadChecker) {
-        const status = data.status;
-        if (!status) {
-          const newfeedtip = document.getElementById('yawf-group-new-feed-tip');
-          if (newfeedtip) newfeedtip.remove();
-        } else if (autoLoad) {
-          showUnreadFeeds(groups, query, getter, unreadChecker, { newfeedtip: null, feedlist }, status);
-        } else {
-          if (!document.getElementById('yawf-group-new-feed-tip')) {
-            const container = document.createElement('div');
-            container.innerHTML = '<div class="WB_cardwrap WB_notes" id="yawf-group-new-feed-tip"><a href="javascript:void(0);"></a></div>';
-            const newfeedtip = container.firstChild;
-            feedlist.parentNode.insertBefore(newfeedtip, feedlist);
-            const clickToShowUnreadFeeds = () => {
-              showUnreadFeeds(groups, query, getter, unreadChecker, { newfeedtip, feedlist }, newfeedtip.dataset.status);
-            };
-            newfeedtip.querySelector('a').addEventListener('click', clickToShowUnreadFeeds);
-            document.addEventListener('keyup', function loadContentKey(event) {
-              if (keyboard.event(event) !== keyboard.code.PERIOD) return;
-              document.removeEventListener('keyup', loadContentKey);
-              clickToShowUnreadFeeds();
-            });
-          }
-          const newfeedtip = document.getElementById('yawf-group-new-feed-tip');
-          if (Number(newfeedtip.dataset.status) !== status) {
-            newfeedtip.dataset.status = status;
-            newfeedtip.querySelector('a').textContent = i18n.feedsUnreadTipWithCount.replace('{1}', status);
-          }
-        }
-      };
-
-      // 初始化未读提示
-      const initUnread = async function (groups, query, getter, { feedlist }) {
-        if (!env.config.stkInfoSupported) return;
-        const searchParams = ['is_ori', 'is_forward', 'is_text', 'is_pic', 'is_video', 'is_music', 'is_article', 'key_word', 'start_time', 'end_time', 'is_search', 'is_searchadv'];
-        // 不支持搜索页面
-        if (searchParams.some(param => query.has(param))) return;
-        const stkInfo = await stk.info;
-        const unreadChecker = request.unreadByGroups(groups, stkInfo);
-        const callback = data => {
-          noticeUnread(data, groups, query, getter, { feedlist }, unreadChecker);
-        };
-        unreadChecker.watch(callback);
-        observer.dom.add(function waitFeedListRemoved() {
-          if (document.contains(feedlist)) return;
-          unreadChecker.unwatch(callback);
-          observer.dom.remove(waitFeedListRemoved);
-        });
-      };
-
-      checkPage();
-
+      const gid = this.ref.group.getConfig();
+      const groups = await request.groupListV7();
+      const index = groups.findIndex(g => g.gid === gid);
+      const name = groups[index].title;
+      const api = '/ajax/feed/groupstimeline';
+      fixHomeUrl({ gid, api, name, index, source: 'custom' });
     },
   });
 
@@ -645,7 +284,7 @@
         // 如果作者是自己那么不算延迟加载的（发微薄的时候会插入到最前面）
         const [author] = feedParser.author.id(feed);
         const [fauthor] = feedParser.fauthor.id(feed);
-        if (init.page.$CONFIG.uid === (fauthor || author)) isUnread = false;
+        if (init.page.config.user.idstr === (fauthor || author)) isUnread = false;
         feed.setAttribute('yawf-feed-preload', isUnread ? 'unread' : 'show');
       });
 

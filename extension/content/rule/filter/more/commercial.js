@@ -32,7 +32,7 @@
   };
 
   commercial.ad = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'filter_ad_feed',
     version: 1,
     parent: commercial.commercial,
@@ -44,26 +44,14 @@
       const rule = this;
       observer.feed.filter(function adFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        if (yawf.WEIBO_VERSION === 6) {
-          // 修改这里时请注意，悄悄关注也会显示关注按钮，但是相关微博不应被隐藏
-          // 快转也可能有关注按钮，但是快转不在这里隐藏
-          if (feed.getAttribute('feedtype') === 'ad') return 'hide';
-          if (feed.querySelector('[action-type="feed_list_ad"]')) return 'hide';
-          if (feed.querySelector('a[href*="//adinside.weibo.cn/"]')) return 'hide';
-          if (feed.querySelector('[diss-data*="feedad"]') && !feedParser.isFastForward(feed)) return 'hide';
-          if (feed.querySelector('[suda-uatrack*="insert_feed"]')) return 'hide';
-          if (feed.querySelector('[suda-uatrack*="negativefeedback"]')) return 'hide';
-          if (feed.querySelector('[suda-uatrack*="1022-adFeedEvent"]')) return 'hide';
-        } else {
-          // TODO 我也不确定这个属性是做什么的
-          // if (feed.promotion) console.log('FILTERTEST promotion: %o (%o)', feed.promotion, feed);
-          // if (feed.attitude_dynamic_adid) console.log('FILTERTEST attitude_dynamic_adid: %o (%o)', feed.attitude_dynamic_adid, feed);
-          // 某某赞过的微博
-          if (feed.title?.type === 'likerecommend') return 'hide';
-          // 热推 / 广告之类
-          if (feed.content_auth === 5) return 'hide';
-          if (feed.retweeted_status?.content_auth === 5) return 'hide';
-        }
+        // TODO 我也不确定这个属性是做什么的
+        // if (feed.promotion) console.log('FILTERTEST promotion: %o (%o)', feed.promotion, feed);
+        // if (feed.attitude_dynamic_adid) console.log('FILTERTEST attitude_dynamic_adid: %o (%o)', feed.attitude_dynamic_adid, feed);
+        // 某某赞过的微博
+        if (feed.title?.type === 'likerecommend') return 'hide';
+        // 热推 / 广告之类
+        if (feed.content_auth === 5) return 'hide';
+        if (feed.retweeted_status?.content_auth === 5) return 'hide';
         return null;
       }, { priority: 1e6 });
       this.addConfigListener(() => { observer.feed.rerun(); });
@@ -80,7 +68,7 @@
   };
 
   commercial.fansTop = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'filter_fans_top',
     version: 1,
     parent: commercial.commercial,
@@ -92,13 +80,8 @@
       const rule = this;
       observer.feed.filter(function fansTopFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        if (yawf.WEIBO_VERSION === 6) {
-          if (feed.querySelector('[adcard="fanstop"]')) return 'hide';
-          return null;
-        } else {
-          if (feed.promotion?.adtype === 8) return 'hide';
-          return null;
-        }
+        if (feed.promotion?.adtype === 8) return 'hide';
+        return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
@@ -113,101 +96,14 @@
     cn: '带有微博橱窗商品链接的微博，点击链接可以到商品的购买页面。勾选以隐藏此类微博。',
   };
 
-  commercial.weiboProduct = rule.Rule({
-    weiboVersion: 6, // V7 有另一个设置项
-    id: 'filter_weibo_product',
-    version: 1,
-    parent: commercial.commercial,
-    template: () => i18n.weiboProductFeedFilter,
-    ref: {
-      i: { type: 'bubble', icon: 'ask', template: () => i18n.weiboProductFeedFilterDetail },
-    },
-    init() {
-      const rule = this;
-      observer.feed.filter(function weiboProductFeedFilter(feed) {
-        if (!rule.isEnabled()) return null;
-        if (feed.querySelector('.WB_feed_spec[exp-data*="key=tblog_weibocard"][exp-data*="1022-product"]')) return 'hide';
-        if (feed.querySelector('.WB_feed_spec[exp-data*="key=tblog_weibocard"][exp-data*="2017845002-product"]')) return 'hide';
-        if (feed.querySelector('a[action-type="feed_list_url"][suda-uatrack*="2017845002-product"]')) return 'hide';
-        if (feed.querySelector('a[action-type="feed_list_url"][suda-uatrack*="2017845002-collection"]')) return 'hide';
-        if (feed.querySelector('.media_box .buy_list')) return 'hide';
-        return null;
-      });
-      this.addConfigListener(() => { observer.feed.rerun(); });
-    },
-  });
-
-  i18n.taobaoProductFeedFilter = {
-    cn: '带有淘宝、天猫或聚划算商品的微博{{i}}',
-    tw: '帶有淘寶、天貓或聚划算商品的微博{{i}}',
-    en: 'Weibo with Taobao / Tmall / Juhuasuan commodity{{i}}',
-  };
-  i18n.taobaoProductFeedFilterDetail = {
-    cn: '带有{{taobao}}、{{tmall}}或{{juhuasuan}}的微博',
-  };
-  i18n.taobaoProduct = {
-    cn: '淘宝商品',
-  };
-  i18n.tmallProduct = {
-    cn: '天猫商品',
-  };
-  i18n.juhuasuanProduct = {
-    cn: '聚划算商品',
-  };
-
-  commercial.taobaoProduct = rule.Rule({
-    weiboVersion: 6, // V7 有另一个设置项
-    id: 'filter_tb_tm_feed',
-    version: 1,
-    parent: commercial.commercial,
-    template: () => i18n.taobaoProductFeedFilter,
-    ref: {
-      i: {
-        type: 'bubble',
-        icon: 'ask',
-        template: () => i18n.taobaoProductFeedFilterDetail,
-        ref: Object.assign(...[
-          { id: 'taobao', className: 'icon_cd_tb', content: () => i18n.taobaoProduct },
-          { id: 'tmall', className: 'icon_cd_tmall', content: () => i18n.tmallProduct },
-          { id: 'juhuasuan', className: 'icon_cd_ju', content: () => i18n.juhuasuanProduct },
-        ].map(({ id, className, content }) => ({
-          [id]: {
-            render() {
-              const wrap = document.createElement('div');
-              wrap.innerHTML = '<span class="W_btn_b W_btn_cardlink btn_22px"><span class="ico_spe"><i class="W_icon yawf-card-icon"></i></span><span class="W_autocut yawf-card-content"></span></span>';
-              const icon = wrap.querySelector('.yawf-card-icon');
-              icon.classList.add(className);
-              const text = wrap.querySelector('.yawf-card-content');
-              text.textContent = content();
-              return wrap.firstChild;
-            },
-          },
-        }))),
-      },
-    },
-    init() {
-      const rule = this;
-      observer.feed.filter(function taobaoProductFeedFilter(feed) {
-        if (!rule.isEnabled()) return null;
-        if (feed.querySelector('.icon_cd_tmall, .icon_cd_tb, .icon_cd_ju')) return 'hide';
-        if (feed.querySelector('a[href^="https://shoptb.sc.weibo.com/"]')) return 'hide';
-        return null;
-      });
-      this.addConfigListener(() => { observer.feed.rerun(); });
-    },
-  });
-
   i18n.weiboProductLikeFeedFilter = {
     cn: '带有商品链接的微博{{i}}',
     tw: '帶有商品鏈接的微博{{i}}',
     en: 'Weibo with link to weibo shop / taobao {{i}}',
   };
-  i18n.weiboProductLikeFeedFilterDetail = {
-    cn: '带有微博橱窗商品或淘宝商品链接的微博。适配微博 V7，对应 V6 版的“微博橱窗”“淘宝商品”两个设置项。',
-  };
 
   commercial.weiboProductLike = rule.Rule({
-    weiboVersion: 7,
+    v7Support: true,
     id: 'filter_weibo_product_like',
     version: 75,
     parent: commercial.commercial,
@@ -273,7 +169,7 @@
   };
 
   commercial.userLike = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'filter_user_like',
     version: 1,
     parent: commercial.commercial,
@@ -285,23 +181,13 @@
       const rule = this;
       observer.feed.filter(function userLikeFeedFilter(feed) {
         if (!rule.isEnabled()) return null;
-        if (yawf.WEIBO_VERSION === 6) {
-          if (init.page.type() !== 'profile') return null;
-          const { oid, onick } = init.page.$CONFIG;
-          if (!oid || !onick) return null;
-          const [author] = feedParser.author.id(feed);
-          const [fauthor] = feedParser.fauthor.id(feed);
-          if ((fauthor || author) !== oid) return 'hide';
-          return null;
-        } else {
-          if (init.page.type() !== 'profile') return null;
-          const oid = String(init.page.route.params.id);
-          if (!oid) return null;
-          const [author] = feedParser.author.id(feed);
-          const [fauthor] = feedParser.fauthor.id(feed);
-          if (String(fauthor || author) !== oid) return 'hide';
-          return null;
-        }
+        if (init.page.type() !== 'profile') return null;
+        const oid = String(init.page.route.params.id);
+        if (!oid) return null;
+        const [author] = feedParser.author.id(feed);
+        const [fauthor] = feedParser.fauthor.id(feed);
+        if (String(fauthor || author) !== oid) return 'hide';
+        return null;
       });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
@@ -328,12 +214,11 @@
       i: { type: 'bubble', icon: 'ask', template: () => i18n.fakeWeiboFilterDetail },
     },
     init() {
-      const rule = this;
+      // const rule = this;
       observer.feed.filter(function fakeWeiboFilter(feed) {
-        if (feed.matches('[id^="Pl_Core_WendaList__"] *')) return null;
-        if (feed.hasAttribute('mid')) return null;
-        if (rule.isEnabled() && init.page.type() !== 'search') return 'hide';
-        return 'unset';
+        return null;
+        // if (rule.isEnabled() && init.page.type() !== 'search') return 'hide';
+        // return 'unset';
       }, { priority: 1e6 });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },

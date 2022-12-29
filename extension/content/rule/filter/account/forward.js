@@ -24,11 +24,6 @@
       tw: '总是隱藏以下作者轉發的微博||帳號{{items}}',
       en: 'Hide feeds from these authors\' forwarding||author {{items}}',
     },
-    accountAuthorForwardFold: {
-      cn: '折叠以下作者转发的微博||帐号{{items}}',
-      tw: '折叠以下作者轉發的微博||帳號{{items}}',
-      en: 'Fold feeds from these authors\' forwarding||author {{items}}',
-    },
     accountAuthorForwardReason: {
       cn: '由 @{1} 转发',
       tw: '由 @{1} 轉發',
@@ -37,7 +32,7 @@
   });
 
   class AuthorForwardFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
@@ -82,9 +77,6 @@
       },
       show: {
         title: () => i18n.accountAuthorForwardShow,
-      },
-      fold: {
-        title: () => i18n.accountAuthorForwardFold,
       },
     },
     fast: {

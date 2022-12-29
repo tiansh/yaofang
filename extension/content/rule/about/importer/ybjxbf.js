@@ -94,14 +94,11 @@
 
       collection('whiteKeywords', 'filter_content_text_show.items', keywordMapper);
       collection('blackKeywords', 'filter_content_text_hide.items', keywordMapper);
-      collection('grayKeywords', 'filter_content_text_fold.items', keywordMapper);
       collection('whiteKeywords', 'filter_content_regex_show.items', regexMapper);
       collection('blackKeywords', 'filter_content_regex_hide.items', regexMapper);
-      collection('grayKeywords', 'filter_content_regex_fold.items', regexMapper);
       collection('userBlacklist', 'filter_author_id_hide.items', userIdMapper);
       collection('userBlacklist', 'filter_original_id_hide.items', userIdMapper);
       collection('sourceKeywords', 'filter_source_text_hide.items', textMapper);
-      collection('sourceGrayKeywords', 'filter_source_text_fold.items', textMapper);
       collection('URLKeywords', 'filter_comment_name_show.items', textMapper);
 
       rule('filterOthersOnly', 'filter_my_feed');

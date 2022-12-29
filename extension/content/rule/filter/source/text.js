@@ -24,11 +24,6 @@
       tw: '隱藏來自以下來源的微博||來源{{items}}',
       en: 'Hide feeds from these sources||source {{items}}',
     },
-    sourceFold: {
-      cn: '折叠来自以下来源的微博||来源{{items}}',
-      tw: '折疊來自以下來源的微博||來源{{items}}',
-      en: 'Fold feeds from these sources||source {{items}}',
-    },
     sourceReason: {
       cn: '来自 {1}',
       tw: '來自 {1}',
@@ -37,7 +32,7 @@
   });
 
   class SourceFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
@@ -68,9 +63,6 @@
       },
       show: {
         title: () => i18n.sourceShow,
-      },
-      fold: {
-        title: () => i18n.sourceFold,
       },
     },
     fast: {

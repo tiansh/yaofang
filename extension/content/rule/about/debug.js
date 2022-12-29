@@ -28,7 +28,7 @@
   };
 
   debug.enable = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'script_enable_debug',
     version: 1,
     parent: debug.debug,

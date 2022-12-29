@@ -33,23 +33,7 @@
   ui.dialog = function ({ id, title, render, button, bar }) {
     // 初始化 DOM
     const template = document.createElement('template');
-    if (yawf.WEIBO_VERSION === 6) {
-      template.innerHTML = `
-<div class="W_layer yawf-dialog">
-  <div tabindex="0"></div>
-  <div class="content" node-type="autoHeight">
-    <div class="W_layer_title yawf-dialog-title" node-type="title"></div>
-    <div class="W_layer_close"><a class="W_ficon ficon_close S_ficon yawf-dialog-close" href="javascript:void(0);" node-type="close">X</a></div>
-    <div node-type="inner" class="yawf-dialog-content"></div>
-    <div class="W_layer_btn S_bg1 yawf-dialog-buttons">
-      <a href="javascript:void(0);" class="W_btn_a btn_34px yawf-dialog-button-ok" node-type="ok" action-type="ok"><span></span></a>
-      <a href="javascript:void(0);" class="W_btn_b btn_34px yawf-dialog-button-cancel" node-type="cancel" action-type="cancel"><span></span></a>
-    </div>
-  </div>
-</div>
-`;
-    } else {
-      template.innerHTML = `
+    template.innerHTML = `
 <div class="woo-box-flex woo-box-alignCenter woo-box-justifyCenter woo-modal-wrap woo-modal-an--pop-enter">
   <div class="woo-modal-main yawf-dialog">
     <i class="woo-font woo-font--cross yawf-dialog-close"></i>
@@ -66,7 +50,6 @@
   <div class="woo-modal-mask yawf-dialog-mask"></div>
 </div>
 `;
-    }
     const container = document.importNode(template.content.firstElementChild, true);
     const dialog = container.querySelector('.yawf-dialog') || container;
     dialog.id = id;
@@ -75,13 +58,11 @@
     const okButton = dialog.querySelector('.yawf-dialog-button-ok');
     const cancelButton = dialog.querySelector('.yawf-dialog-button-cancel');
     const closeButton = dialog.querySelector('.yawf-dialog-close');
-    const mask = yawf.WEIBO_VERSION === 7 ? container.querySelector('.yawf-dialog-mask') : null;
+    const mask = container.querySelector('.yawf-dialog-mask');
     const contentNode = dialog.querySelector('.yawf-dialog-content');
     // 填入内容
     titleNode.textContent = title;
-    if (yawf.WEIBO_VERSION === 7) {
-      titleNode.classList.add('woo-dialog-bar');
-    }
+    titleNode.classList.add('woo-dialog-bar');
     okButton.textContent = i18n.okButtonTitle;
     cancelButton.textContent = i18n.cancelButtonTitle;
     closeButton.title = i18n.closeButtonTitle;
@@ -94,9 +75,7 @@
     const lastPos = { x: 0, y: 0 };
     const setPos = function ({ x, y }) {
       const left = Math.min(Math.max(0, x), document.body.clientWidth - dialog.clientWidth - 2);
-      const top = yawf.WEIBO_VERSION === 6 ?
-        Math.min(Math.max(window.pageYOffset, y), window.pageYOffset + window.innerHeight - dialog.clientHeight - 2) :
-        Math.min(Math.max(0, y), document.body.clientHeight - dialog.clientHeight - 2);
+      const top = Math.min(Math.max(0, y), document.body.clientHeight - dialog.clientHeight - 2);
       if (left + 'px' !== dialog.style.left) dialog.style.left = left + 'px';
       if (top + 'px' !== dialog.style.top) dialog.style.top = top + 'px';
       return Object.assign(lastPos, { x: left, y: top });
@@ -136,11 +115,6 @@
       titleNode.addEventListener('mousedown', dragMoveStart);
     }
     // 背景遮罩
-    const cover = yawf.WEIBO_VERSION === 6 ? document.createElement('div') : null;
-    if (yawf.WEIBO_VERSION === 6) {
-      cover.setAttribute('node-type', 'outer');
-      cover.className = 'yawf-dialog-outer';
-    }
     // 响应鼠标
     if (!button?.ok && !button?.cancel) {
       buttonCollectionNode.parentNode.removeChild(buttonCollectionNode);
@@ -160,12 +134,10 @@
       if (!event.isTrusted) return;
       (button?.close ?? hide)();
     });
-    if (yawf.WEIBO_VERSION === 7) {
-      mask.addEventListener('click', event => {
-        if (!event.isTrusted) return;
-        (button?.close ?? hide)();
-      });
-    }
+    mask.addEventListener('click', event => {
+      if (!event.isTrusted) return;
+      (button?.close ?? hide)();
+    });
     // 响应按键
     const keys = event => {
       if (!event.isTrusted) return;
@@ -183,28 +155,21 @@
     };
     // 关闭对话框
     const hide = function () {
-      if (yawf.WEIBO_VERSION === 6) dialog.classList.add('UI_animated', 'UI_speed_fast', 'UI_ani_bounceOut');
-      else container.classList.add('woo-modal-an--pop-leave-to');
+      container.classList.add('woo-modal-an--pop-leave-to');
       document.removeEventListener('keydown', keys);
       container.removeEventListener('keypress', stopKeys);
       document.removeEventListener('scroll', resetPos);
       window.removeEventListener('resize', resetPos);
-      if (yawf.WEIBO_VERSION === 6) document.body.removeChild(cover);
       setTimeout(function () { container.remove(); }, 200);
       dialogStack.splice(dialogStack.indexOf(dialog), 1);
     };
     const resetPosition = function ({ x, y } = {}) {
       if (x == null) x = (window.innerWidth - dialog.clientWidth) / 2;
       if (y == null) y = (window.innerHeight - dialog.clientHeight) / 2;
-      if (yawf.WEIBO_VERSION === 6) {
-        setPos({ x, y: y + window.pageYOffset });
-      } else {
-        setPos({ x, y });
-      }
+      setPos({ x, y });
     };
     // 显示对话框
     const show = function ({ x, y } = {}) {
-      if (yawf.WEIBO_VERSION === 6) document.body.appendChild(cover);
       document.body.appendChild(container);
       resetPosition({ x, y });
       document.addEventListener('keydown', keys);
@@ -212,17 +177,9 @@
       document.addEventListener('scroll', resetPos);
       window.addEventListener('resize', resetPos);
       document.activeElement.blur();
-      if (yawf.WEIBO_VERSION === 6) {
-        dialog.classList.remove('UI_ani_bounceOut');
-        dialog.classList.add('UI_animated', 'UI_speed_fast', 'UI_ani_bounceIn');
-        setTimeout(function () {
-          dialog.classList.remove('UI_animated', 'UI_speed_fast', 'UI_ani_bounceIn');
-        }, 200);
-      } else {
-        setTimeout(function () {
-          container.classList.remove('woo-modal-an--pop-enter');
-        }, 200);
-      }
+      setTimeout(function () {
+        container.classList.remove('woo-modal-an--pop-enter');
+      }, 200);
       dialogStack.push(dialog);
     };
     return { hide, show, resetPosition, dom: dialog };
@@ -237,27 +194,11 @@
     const inner = ({ id, title, text, icon = defaultIcon }) => new Promise(resolve => {
       const render = function (dom) {
         const template = document.createElement('template');
-        if (yawf.WEIBO_VERSION === 6) {
-          template.innerHTML = `
-<div class="layer_point">
-  <dl class="point clearfix">
-    <dt node-type="icon"><span class="W_icon yawf-dialog-icon"></span></dt>
-    <dd node-type="text"><p class="S_txt1 yawf-dialog-text"></p></dd>
-  </dl>
-</div>
-`;
-        } else {
-          template.innerHTML = `
+        template.innerHTML = `
 <div class="woo-dialog-message yawf-dialog-text"></div>
 `;
-        }
         const content = document.importNode(template.content.firstElementChild, true);
-        const iconElement = content.querySelector('.yawf-dialog-icon');
-        if (yawf.WEIBO_VERSION === 6) {
-          iconElement.classList.add(`icon_${icon}B`);
-        }
-        const textElement = yawf.WEIBO_VERSION === 6 ? content.querySelector('.yawf-dialog-text') : content;
-        textElement.textContent = text;
+        content.textContent = text;
         dom.appendChild(content);
       };
       const value = result => () => {
@@ -285,22 +226,11 @@
   ui.bubble = function (bubbleContent, reference) {
     const bubble = (function () {
       const template = document.createElement('template');
-      if (yawf.WEIBO_VERSION === 6) {
-        template.innerHTML = `
-<div class="W_layer W_layer_pop yawf-bubble">
-  <div class="content layer_mini_info">
-    <div class="main_txt yawf-bubble-text"></div>
-    <div class="W_layer_arrow"><span class="W_arrow_bor" node-type="arrow"><i class="S_line3"></i><em class="S_bg2_br"></em></span><div></div></div>
-  </div>
-</div>
-`;
-      } else {
-        template.innerHTML = `
+      template.innerHTML = `
 <div class="woo-pop-main yawf-bubble">
 <div class="yawf-bubble-text"></div>
 </div>
 `;
-      }
       const bubble = document.importNode(template.content.firstElementChild, true);
       if (!(bubbleContent instanceof Node)) {
         bubbleContent = document.createTextNode(bubbleContent + '');
@@ -308,7 +238,6 @@
       bubble.querySelector('.yawf-bubble-text').appendChild(bubbleContent);
       return bubble;
     }());
-    const arrow = yawf.WEIBO_VERSION === 6 ? bubble.querySelector('.W_arrow_bor') : null;
     const referenceList = [];
     const deBound = function (callback) {
       let busy = false;
@@ -337,9 +266,7 @@
       const top0 = rect.top - bubble.clientHeight - 8;
       const top1 = top0 + window.pageYOffset;
       const top2 = rect.bottom + 8 + window.pageYOffset;
-      const left = yawf.WEIBO_VERSION === 6 ?
-        rect.left - 32 + rect.width + window.pageXOffset :
-        rect.left - bubble.clientWidth / 2 + rect.width + window.pageXOffset;
+      const left = rect.left - bubble.clientWidth / 2 + rect.width + window.pageXOffset;
       const atTop = top0 > 0;
       const top = atTop ? top1 : top2;
       if (parseInt(bubble.style.left, 10) !== left) {
@@ -347,16 +274,6 @@
       }
       if (parseInt(bubble.style.top, 10) !== top) {
         bubble.style.top = top + 'px';
-      }
-      if (yawf.WEIBO_VERSION === 6) {
-        const addClass = atTop ? 'W_arrow_bor_b' : 'W_arrow_bor_t';
-        const removeClass = atTop ? 'W_arrow_bor_t' : 'W_arrow_bor_b';
-        if (!arrow.classList.contains(addClass)) {
-          arrow.classList.add(addClass);
-        }
-        if (arrow.classList.contains(removeClass)) {
-          arrow.classList.remove(removeClass);
-        }
       }
     });
     const show = function () {
@@ -408,74 +325,14 @@
   };
 
   css.append(`
-.yawf-WBV6 .yawf-dialog-title {
-  cursor: move;
-}
-.yawf-WBV6 .yawf-dialog-outer {
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  background: none repeat scroll 0% 0% rgb(0, 0, 0);
-  opacity: 0.3;
-  z-index: 9999;
-}
-.yawf-WBV6 .yawf-dialog.yawf-drag {
-  opacity: 0.67;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.yawf-WBV6 .yawf-bubble {
-  max-width: 400px;
-}
-`);
-
-  css.append(`
-.yawf-WBV7 .yawf-dialog {
-  position: fixed;
-  transition: none;
-}
-.yawf-WBV7 .yawf-dialog .woo-dialog-main {
-  max-width: none;
-}
-.yawf-WBV7 .yawf-dialog-text {
-  max-width: 400px;
-}
-.yawf-WBV7 .yawf-dialog-title {
-  cursor: move;
-}
-.yawf-WBV7 .yawf-dialog-outer {
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  background: none repeat scroll 0% 0% rgb(0, 0, 0);
-  opacity: 0.3;
-  z-index: 9999;
-}
-.yawf-WBV7 .yawf-dialog.yawf-drag {
-  opacity: 0.67;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.yawf-WBV7 .yawf-bubble {
-  max-width: 400px;
-  font-size: 14px;
-  padding: 8px 16px;
-  box-sizing: border-box;
-}
-.yawf-WBV7 .yawf-dialog-close {
-  padding: 8px;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 1;
-  cursor: pointer;
-}
+.yawf-dialog.yawf-dialog { position: fixed; transition: none; }
+.yawf-dialog .woo-dialog-main { max-width: none; }
+.yawf-dialog-text { max-width: 400px; }
+.yawf-dialog-title { cursor: move; }
+.yawf-dialog-outer { position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; background: none repeat scroll 0% 0% rgb(0, 0, 0); opacity: 0.3; z-index: 9999; }
+.yawf-dialog.yawf-drag { opacity: 0.67; user-select: none; transition: none; }
+.yawf-bubble { max-width: 400px; font-size: 14px; padding: 8px 16px; box-sizing: border-box; }
+.yawf-dialog-close { padding: 8px; position: absolute; top: 10px; right: 10px; z-index: 1; cursor: pointer; }
 `);
 
 }());

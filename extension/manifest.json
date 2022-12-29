@@ -97,7 +97,6 @@
         "content/request/topicsuggest.js",
         "content/request/longfeed.js",
         "content/request/grouplist.js",
-        "content/request/feedsbygroup.js",
         "content/request/following.js",
         "content/request/votedetail.js",
         "content/request/feedfavorite.js",
@@ -113,7 +112,6 @@
         "content/init/init.js",
         "content/init/setup.js",
         "content/init/ready.js",
-        "content/init/stkwrap.js",
 
         "content/backend/message.js",
         "content/backend/request.js",
@@ -134,7 +132,6 @@
         "content/rule/filter/common/feed.js",
         "content/rule/filter/common/parse.js",
         "content/rule/filter/common/fast.js",
-        "content/rule/filter/common/long.js",
         "content/rule/filter/filter/filter.js",
         "content/rule/filter/filter/following.js",
         "content/rule/filter/filter/homepage.js",

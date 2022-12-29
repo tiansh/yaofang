@@ -32,8 +32,8 @@
     key,
     title,
     type,
-    before: { hide: beforeHide = null, show: beforeShow = null, fold: beforeFold = null } = {},
-    details: { hide = null, show = null, fold = null },
+    before: { hide: beforeHide = null, show: beforeShow = null } = {},
+    details: { hide = null, show = null },
     fast = null,
     version,
   }) {
@@ -46,11 +46,8 @@
       template: title,
     });
 
-    // 依次创建三种类型的过滤规则
     const actions = [
       { action: 'show', details: show, before: beforeShow },
-      { action: 'hide', details: hide, before: beforeHide },
-      { action: 'fold', details: fold, before: beforeFold },
     ].filter(item => item.details);
 
     actions.forEach(({ action, details: { title, priority = null }, before }) => {
@@ -62,7 +59,6 @@
         priority: priority === null ? {
           show: 1e5,
           hide: 0,
-          fold: -1e5,
         }[action] : priority,
         template: () => '{{ball}}' + title(),
         ref: {
@@ -101,9 +97,9 @@
 .yawf-config-feed-ball { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 1em; margin-right: 0.5em; border: 1px solid transparent; vertical-align: middle; background: var(--yawf-ball-color); box-shadow: 0 0 2px var(--yawf-ball-color); opacity: 0.8; }
 .yawf-config-feed-show { --yawf-ball-color: #3ec63e; }
 .yawf-config-feed-hide { --yawf-ball-color: #c63e3e; }
-.yawf-config-feed-fold { --yawf-ball-color: #c6c63e; }
 `);
 
+  // 后面的都还没支持新版
   Object.assign(i18n, {
     fastAddDialogTitle: {
       cn: '创建过滤规则',
@@ -124,11 +120,6 @@
       cn: '隐藏',
       tw: '隱藏',
       en: 'hide',
-    },
-    fastAddFold: {
-      cn: '折叠',
-      tw: '折疊',
-      en: 'fold',
     },
   });
 
@@ -178,7 +169,6 @@
             option.text = i18n[{
               show: 'fastAddShow',
               hide: 'fastAddHide',
-              fold: 'fastAddFold',
             }[action]];
             select.appendChild(option);
           });
@@ -365,17 +355,16 @@
     dropArea.appendChild(dropAreaContent);
     dropAreaContent.innerHTML = '<div class="yawf-drop-title"></div><div class="yawf-drop-text"></div>';
 
-    init.onLoad(function addDropArea() {
-      if (yawf.WEIBO_VERSION === 6) {
-        const reference = document.querySelector('.yawf-gn_set_list');
-        if (!reference) {
-          setTimeout(addDropArea, 100);
-          return;
-        }
-        dropAreaContent.querySelector('.yawf-drop-title').textContent = i18n.dropAreaTitle;
-        dropAreaContent.querySelector('.yawf-drop-text').textContent = i18n.dropAreaContent;
-        reference.appendChild(dropArea);
+    // 还没支持新版，我们先给他注释掉
+    if (Math.E < 0) init.onLoad(function addDropArea() {
+      const reference = document.querySelector('.yawf-gn_set_list');
+      if (!reference) {
+        setTimeout(addDropArea, 100);
+        return;
       }
+      dropAreaContent.querySelector('.yawf-drop-title').textContent = i18n.dropAreaTitle;
+      dropAreaContent.querySelector('.yawf-drop-text').textContent = i18n.dropAreaContent;
+      reference.appendChild(dropArea);
     });
 
   }());
@@ -388,7 +377,7 @@
 .yawf-drop-area.yawf-drag-in { opacity: 1; }
 .WB_global_nav .gn_topmenulist.yawf-drop-area .W_layer_arrow .W_arrow_bor_t { right: 122px; }
 .yawf-drop-content { margin: 20px; border: 5px dashed #666; border-radius: 20px; text-align: center; white-space: wrap; width: 134px; height: 134px; padding: 20px; margin: 20px; line-height: 1.5; }
-.yawf-drop-title { font-size: 16px; font-weight: bold; white-space: pre-wrap; margin: 0 0 20px; -moz-user-select: none; -webkit-user-select: none; user-select: none; }
+.yawf-drop-title { font-size: 16px; font-weight: bold; white-space: pre-wrap; margin: 0 0 20px; user-select: none; }
 .yawf-drop-area-active .gn_topmenulist_yawf { display: none; }
 `);
 

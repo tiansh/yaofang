@@ -24,11 +24,6 @@
       tw: '隱藏包含以下內容的微博||關鍵字{{items}}',
       en: 'Hide feeds with these content||keyword {{items}}',
     },
-    textContentFold: {
-      cn: '折叠包含以下内容的微博||关键词{{items}}',
-      tw: '折疊包含以下內容的微博||關鍵字{{items}}',
-      en: 'Fold feeds with these content||keyword {{items}}',
-    },
     textContentReason: {
       cn: '关键词“{1}”',
       tw: '关键字「{1}」',
@@ -37,7 +32,7 @@
   });
 
   class TextFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
@@ -69,9 +64,6 @@
       },
       show: {
         title: () => i18n.textContentShow,
-      },
-      fold: {
-        title: () => i18n.textContentFold,
       },
     },
     fast: {

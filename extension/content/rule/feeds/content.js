@@ -35,7 +35,7 @@
   };
 
   content.fontSize = rule.Rule({
-    weiboVersion: 7,
+    v7Support: true,
     id: 'feed_user_screen_name',
     version: 104,
     parent: content.content,
@@ -107,13 +107,13 @@ span.yawf-feed-screen-name { font-weight: bold; }
   });
 
   i18n.styleTextFontSize = {
-    cn: '增大微博正文字号为|原大小的{{ratio}}（V7最大200%）',
-    tw: '加大微博內文字體為|原大小的{{ratio}}（V7最大200%）',
-    en: 'Increase font size for weibo content | to {{ratio}} (V7 up to 200%)',
+    cn: '增大微博正文字号为|原大小的{{ratio}}',
+    tw: '加大微博內文字體為|原大小的{{ratio}}',
+    en: 'Increase font size for weibo content | to {{ratio}}',
   };
 
   content.fontSize = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'feed_font_size',
     version: 1,
     parent: content.content,
@@ -125,40 +125,17 @@ span.yawf-feed-screen-name { font-weight: bold; }
           { value: '120', text: '120%', style: `font-size: 16px;` },
           { value: '150', text: '150%', style: `font-size: 21px;` },
           { value: '200', text: '200%', style: `font-size: 28px;` },
-          { value: '300', text: '300%', style: `font-size: 42px;` },
         ],
       },
     },
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        const config = {
-          120: { fs: 16, lh: 26, fs2: 14, lh2: 24, h: 20, h2: 18, fs3: 12 },
-          150: { fs: 21, lh: 32, fs2: 18, lh2: 27, h: 25, h2: 23, fs3: 14 },
-          200: { fs: 28, lh: 42, fs2: 24, lh2: 36, h: 33, h2: 29, fs3: 19 },
-          300: { fs: 42, lh: 64, fs2: 36, lh2: 54, h: 50, h2: 46, fs3: 28 },
-        }[this.ref.ratio.getConfig()];
-        const { fs, lh, fs2, lh2, h, h2, fs3 } = config;
-        css.append(`
-.WB_info, .WB_text, .WB_info *, .WB_text * { font-size: ${fs}px !important; line-height: ${lh}px !important; }
-.WB_feed_expand .WB_info *, .WB_feed_expand .WB_text *, .WB_feed_expand .WB_info, .WB_feed_expand .WB_text { font-size: ${fs2}px !important; line-height: ${lh2}px !important; }
-.WB_text .W_btn_b { height: ${h}px !important; }
-.WB_text .W_btn_b, .WB_text .W_btn_b * { line-height: ${h}px !important; font-size: ${fs2}px !important; }
-.WB_feed_expand .WB_text .W_btn_b, .WB_text .W_btn_c, .WB_empty .W_btn_c { height: ${h2}px !important; line-height: ${h2}px !important; }
-.WB_feed_expand .WB_text .W_btn_b, .WB_feed_expand .WB_text .W_btn_b *, .WB_text .W_btn_c *, .WB_empty .W_btn_c * { line-height: ${h2}px !important; font-size: ${fs3}px !important; }
-.W_icon_feedpin, .W_icon_feedhot { height: 16px !important; line-height: 16px !important; }
-.WB_info { margin-bottom: 2px !important; padding-top: 0 !important; line-height: ${fs <= 28 ? 28 : 50}px !important; }
-.yawf-WB_text_size_main, .yawf-WB_text_size { font-size: ${fs}px; line-height: ${lh}px; }
-.yawf-WB_text_size_expand, .WB_feed_expand .yawf-WB_text_size { font-size: ${fs2}px; }
-`);
-      } else {
-        const config = {
-          120: { fs: 16, alh: 20, lh: 26, fs2: 14, lh2: 24 },
-          150: { fs: 21, alh: 24, lh: 32, fs2: 18, lh2: 27 },
-          200: { fs: 28, alh: 32, lh: 42, fs2: 24, lh2: 36 },
-          300: { fs: 28, alh: 32, lh: 42, fs2: 24, lh2: 36 },
-        }[this.ref.ratio.getConfig()];
-        const { fs, lh, fs2, lh2 } = config;
-        css.append(`
+      const config = {
+        120: { fs: 16, alh: 20, lh: 26, fs2: 14, lh2: 24 },
+        150: { fs: 21, alh: 24, lh: 32, fs2: 18, lh2: 27 },
+        200: { fs: 28, alh: 32, lh: 42, fs2: 24, lh2: 36 },
+      }[this.ref.ratio.getConfig()];
+      const { fs, lh, fs2, lh2 } = config;
+      css.append(`
 :root:root { --feed-detail-og-font-size: ${fs}px; --feed-detail-og-line-height: ${lh}px; --feed-detail-re-font-size: ${fs2}px; --feed-detail-re-line-height: ${lh2}px; }
 .yawf-feed-author-line { margin-bottom: 0px !important; font-size: ${fs}px !important; line-height: ${lh}px !important; }
 .yawf-feed-author-box { justify-content: space-between !important; }
@@ -170,7 +147,6 @@ span.yawf-feed-screen-name { font-weight: bold; }
 
 .wbpv-big-play-button { z-index: 99; }
 `);
-      }
     },
   });
 
@@ -181,7 +157,7 @@ span.yawf-feed-screen-name { font-weight: bold; }
   };
 
   content.expandLong = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'feed_long_expand',
     version: 1,
     parent: content.content,
@@ -390,7 +366,7 @@ span.yawf-feed-screen-name { font-weight: bold; }
   });
 
   content.showVoteResult = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'show_vote_result',
     version: 46,
     parent: content.content,
@@ -399,154 +375,74 @@ span.yawf-feed-screen-name { font-weight: bold; }
       i: { type: 'bubble', icon: 'warn', template: () => i18n.showVoteResultDetail },
     },
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        const updateVoteByLike = function (feedlike) {
-          const like = feedlike.querySelector('[action-type="fl_like"]');
-          const liked = like.querySelector('[node-type="like_status"]').matches('.UI_ani_praised');
-          const items = feedlike.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]');
-          Array.from(items).forEach(item => {
-            item.setAttribute('action-type', liked ? 'feed_list_vote' : 'yawf-feed_list_vote');
-          });
-        };
-        const showVoteResult = async function (vote) {
-          const voteButtons = Array.from(vote.querySelectorAll('[action-type="feed_list_vote"], [action-type="yawf-feed_list_vote"]'));
-          if (!voteButtons.length) return;
-          const voteId = new URLSearchParams(voteButtons[0].getAttribute('action-data')).get('vote_id');
-          if (!voteId) return;
-          const voteResult = await request.voteDetail(voteId);
-          voteButtons.forEach(button => {
-            const actionData = new URLSearchParams(button.getAttribute('action-data'));
-            const id = actionData.get('vote_items');
-            const item = voteResult.vote_info.option_list.find(item => item.id === id);
-            button.dataset.partNum = item.part_num.replace('票', '人');
-            button.dataset.partRatio = item.part_ratio;
-            button.style.setProperty('--part-ratio', item.part_ratio / 100);
-          });
-          const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
-          updateVoteByLike(feedlike);
-        };
-        const watchLike = function (/** @type {HTMLElement} */vote) {
-          const feedlike = vote.closest('.WB_feed_expand, .WB_feed_type');
-          const like = feedlike.querySelector('[action-type="fl_like"]');
-          const observer = new MutationObserver(() => { updateVoteByLike(feedlike); });
-          observer.observe(like, { subtree: true, attributes: true, attributeFilter: ['class'] });
-          updateVoteByLike(feedlike);
-        };
-        observer.dom.add(function updateVoteResult() {
-          const voteList = document.querySelectorAll('.WB_card_vote:not([yawf-card-vote])');
-          if (!voteList.length) return;
-          Array.from(voteList).forEach(vote => {
-            vote.setAttribute('yawf-card-vote', 'yawf-card-vote');
-            showVoteResult(vote);
-            watchLike(vote);
-          });
+      const voteBlock = function () {
+        ui.alert({
+          id: 'yawf-vote-block',
+          icon: 'warn',
+          title: i18n.voteTitle,
+          text: i18n.voteText,
         });
-        document.addEventListener('click', event => {
-          const target = event.target;
-          if (!(target instanceof HTMLElement)) return;
-          const vote = target.closest('[action-type="yawf-feed_list_vote"]');
-          if (!vote) return;
-          ui.alert({
-            id: 'yawf-vote-block',
-            icon: 'warn',
-            title: i18n.voteTitle,
-            text: i18n.voteText,
-          });
-        });
-        css.append(`
-.WB_card_vote.WB_card_vote .vote_con1 .item { position: relative; z-index: 1; overflow: hidden; text-align: left; }
-.WB_card_vote.WB_card_vote .vote_con1 .item::after { content: attr(data-part-num) ; float: right; }
-.WB_card_vote.WB_card_vote .vote_con1 .item::before { content: " "; width: calc(var(--part-ratio) * 100%); top: 0; left: 0; bottom: 0; margin: 0; position: absolute; z-index: -1; }
-.WB_card_vote.WB_card_vote .vote_con2 .vote_btn { position: relative; font-size: 14px; }
-.WB_card_vote.WB_card_vote .vote_con2 .vote_btn a { background: currentColor; border-radius: 0; }
-.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn a { margin-right: -2px; }
-.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn a { margin-left: -2px; }
-.WB_card_vote.WB_card_vote .vote_con2 .vote_btn::after { content: attr(data-part-num); position: absolute; top: 0; bottom: 0; color: white; line-height: 24px; }
-.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn::after { left: 26px; right: auto; }
-.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn::after { left: auto; right: 26px; }
-.WB_card_vote.WB_card_vote .vote_con1 .item_rt.S_txt1 .bg,
-.WB_card_vote.WB_card_vote .vote_con1 .item::before { background-color: #80808022; }
-`);
-        const smallImage = feeds.layout.smallImage;
-        if (smallImage.isEnabled()) {
-          css.append(`
-.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn a { margin-right: -1px; }
-.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn a { margin-left: -1px; }
-.WB_card_vote.WB_card_vote .vote_con2 .W_fl .vote_btn::after { left: 10px; }
-.WB_card_vote.WB_card_vote .vote_con2 .W_fr .vote_btn::after { right: 10px; }
-`);
-        }
-      } else {
-        const voteBlock = function () {
-          ui.alert({
-            id: 'yawf-vote-block',
-            icon: 'warn',
-            title: i18n.voteTitle,
-            text: i18n.voteText,
-          });
-        };
+      };
 
-        util.inject(function (rootKey, voteBlock) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
+      util.inject(function (rootKey, voteBlock) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
 
-          vueSetup.eachComponentVM('feed-vote', function (vm) {
+        vueSetup.eachComponentVM('feed-vote', function (vm) {
 
-            vm.setVote = (function (setVote) {
-              return function (id) {
-                if (!this.isParted) {
-                  const feedData = this.$parent?.data;
-                  if (feedData && !feedData.attitudes_status) {
-                    voteBlock();
-                    return;
-                  }
+          vm.setVote = (function (setVote) {
+            return function (id) {
+              if (!this.isParted) {
+                const feedData = this.$parent?.data;
+                if (feedData && !feedData.attitudes_status) {
+                  voteBlock();
+                  return;
                 }
-                setVote(id);
-              }.bind(vm);
-            }(vm.setVote));
+              }
+              setVote(id);
+            }.bind(vm);
+          }(vm.setVote));
 
-            vueSetup.transformComponentRender(vm, function (render) {
-              return function (createElement, { builder }) {
-                if (this.voteObject.parted) {
-                  return render.call(this, createElement);
-                }
-                // 将当前的投票元素伪装成已参加过投票的状态
-                const wrap = Object.create(this, {
-                  getAniStyle: { value: this.constructor.options.methods.getAniStyle },
-                  isParted: { value: true },
-                  firstParted: { value: true },
-                  voteObject: {
-                    value: Object.create(this.voteObject, {
-                      parted: { value: 1 },
-                    }),
-                  },
+          vueSetup.transformComponentRender(vm, function (render) {
+            return function (createElement, { builder }) {
+              if (this.voteObject.parted) {
+                return render.call(this, createElement);
+              }
+              // 将当前的投票元素伪装成已参加过投票的状态
+              const wrap = Object.create(this, {
+                getAniStyle: { value: this.constructor.options.methods.getAniStyle },
+                isParted: { value: true },
+                firstParted: { value: true },
+                voteObject: {
+                  value: Object.create(this.voteObject, {
+                    parted: { value: 1 },
+                  }),
+                },
+              });
+              wrap.getAniStyle = wrap.getAniStyle.bind(wrap);
+              const { nodeStruct, Nodes, getRoot } = builder(render.call(wrap, createElement));
+              // 去掉分享投票的按钮
+              const { removeChild, vNode } = Nodes;
+              const share = nodeStruct.querySelector(`[class|="${this.$style.btnB}"]`);
+              removeChild(share.parentNode, share);
+              // 修正投票按钮的事件
+              const buttons = nodeStruct.querySelectorAll('x-woo-panel');
+              if (buttons.length === this.voteObject.vote_list.length) {
+                Array.from(buttons).forEach((button, index) => {
+                  const optionId = this.voteObject.vote_list[index].id;
+                  const buttonVNode = vNode(button);
+                  buttonVNode.data.nativeOn.click = buttonVNode.data.on.click = () => {
+                    this.vote(optionId);
+                  };
                 });
-                wrap.getAniStyle = wrap.getAniStyle.bind(wrap);
-                const { nodeStruct, Nodes, getRoot } = builder(render.call(wrap, createElement));
-                // 去掉分享投票的按钮
-                const { removeChild, vNode } = Nodes;
-                const share = nodeStruct.querySelector(`[class|="${this.$style.btnB}"]`);
-                removeChild(share.parentNode, share);
-                // 修正投票按钮的事件
-                const buttons = nodeStruct.querySelectorAll('x-woo-panel');
-                if (buttons.length === this.voteObject.vote_list.length) {
-                  Array.from(buttons).forEach((button, index) => {
-                    const optionId = this.voteObject.vote_list[index].id;
-                    const buttonVNode = vNode(button);
-                    buttonVNode.data.nativeOn.click = buttonVNode.data.on.click = () => {
-                      this.vote(optionId);
-                    };
-                  });
-                }
-                return getRoot();
-              };
-            }, { raw: true });
+              }
+              return getRoot();
+            };
+          }, { raw: true });
 
-            vm.$forceUpdate();
-          });
-        }, util.inject.rootKey, voteBlock);
-
-      }
+          vm.$forceUpdate();
+        });
+      }, util.inject.rootKey, voteBlock);
     },
   });
 

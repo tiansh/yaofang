@@ -40,7 +40,7 @@
       observer.comment.filter(function showMyComment(comment) {
         if (!rule.isEnabled()) return null;
         const author = commentParser.user.name(comment)[0];
-        const username = init.page.$CONFIG.nick;
+        const username = init.page.config.user.screen_name;
         if (author === username) return 'shomme';
         return null;
       });

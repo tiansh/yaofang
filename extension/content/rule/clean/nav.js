@@ -3,9 +3,7 @@
   const yawf = window.yawf;
   const env = yawf.env;
   const util = yawf.util;
-  const css = util.css;
   const backend = yawf.backend;
-  const observer = yawf.observer;
 
   const clean = yawf.rules.clean;
 
@@ -40,49 +38,28 @@
 
   clean.CleanGroup('nav', () => i18n.cleanNavGroupTitle);
   clean.CleanRule('logo_img', () => i18n.cleanNavLogoImg, 1, {
-    weiboVersion: [6, 7],
+    v7Support: true,
     ainit: function () {
-      if (yawf.WEIBO_VERSION === 6) {
-        observer.dom.add(function replaceLogo() {
-          const box = document.querySelector('.WB_global_nav .gn_logo .box');
-          if (!box) { setTimeout(replaceLogo, 100); return; }
-          const img = box.getElementsByTagName('img')[0];
-          if (!img) return;
-          const logo = document.createElement('span');
-          logo.classList.add('logo');
-          img.replaceWith(logo);
-        });
-      } else {
-        util.inject(function (rootKey) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
 
-          vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
-            Object.defineProperty(vm, 'skinData', { get: () => ({}) });
-          });
-          vueSetup.eachComponentVM('weibo-top-nav-base', function (vm) {
-            Object.defineProperty(vm, 'logoUrl', { get: () => null, set: x => { } });
-          });
-        }, util.inject.rootKey);
-      }
+        vueSetup.eachComponentVM('weibo-top-nav', function (vm) {
+          Object.defineProperty(vm, 'skinData', { get: () => ({}) });
+        });
+        vueSetup.eachComponentVM('weibo-top-nav-base', function (vm) {
+          Object.defineProperty(vm, 'logoUrl', { get: () => null, set: x => { } });
+        });
+      }, util.inject.rootKey);
     },
-    acss: '.WB_global_nav .gn_logo .box img { display: none !important; }',
   });
   clean.CleanRuleGroup({
-    // V7: 那段 CSS 是 V6 的，之后应该直接删掉
-    home: clean.CleanRule('main', () => i18n.cleanNavMain, 1, '[yawf-id="home"] { display: none !important; }', { weiboVersion: [6, 7] }),
-    tv: clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '[yawf-id="tv"] { display: none !important; }', { weiboVersion: [6, 7] }),
-    hot: clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '[yawf-id="find"] { display: none !important; }', { weiboVersion: [6, 7] }),
-    eCom: clean.CleanRule('eCom', () => i18n.cleanNavECom, 1, '[yawf-id="mall"] { display: none !important; }', {
-      weiboVersion: [6, 7],
-      ainit: function () {
-        const hideGame = clean.nav.game.getConfig();
-        if (hideGame) css.append('.gn_set_v2 { display: none !important; }');
-      },
-    }),
-    game: clean.CleanRule('game', () => i18n.cleanNavGame, 1, '[yawf-id="game"] { display: none !important; }', { weiboVersion: [6, 7] }),
+    home: clean.CleanRule('main', () => i18n.cleanNavMain, 1, '', { v7Support: true }),
+    tv: clean.CleanRule('tv', () => i18n.cleanNavTV, 1, '', { v7Support: true }),
+    hot: clean.CleanRule('hot', () => i18n.cleanNavHot, 1, '', { v7Support: true }),
+    eCom: clean.CleanRule('eCom', () => i18n.cleanNavECom, 1, '', { v7Support: true }),
+    game: clean.CleanRule('game', () => i18n.cleanNavGame, 1, '', { v7Support: true }),
   }, function (options) {
-    if (yawf.WEIBO_VERSION !== 7) return;
     util.inject(function (rootKey, options) {
       const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;
@@ -141,12 +118,11 @@
       },
     });
   }
-  clean.CleanRule('aria', () => i18n.cleanNavAria, 98, '[yawf-component-tag~="aria"], .gn_set_aria { display: none !important; }', { weiboVersion: [6, 7] });
+  clean.CleanRule('aria', () => i18n.cleanNavAria, 98, '[yawf-component-tag~="aria"] { display: none !important; }', { v7Support: true });
   clean.CleanRule('notice_new', () => i18n.cleanNavNoticeNew, 1, '.WB_global_nav .gn_set_list .W_new_count { display: none !important; }');
-  clean.CleanRule('new', () => i18n.cleanNavNew, 1, '.WB_global_nav .W_new { display: none !important; }', {
-    weiboVersion: [6, 7],
+  clean.CleanRule('new', () => i18n.cleanNavNew, 1, '', {
+    v7Support: true,
     ainit: function () {
-      if (yawf.WEIBO_VERSION !== 7) return;
       util.inject(function (rootKey) {
         const yawf = window[rootKey];
         const vueSetup = yawf.vueSetup;

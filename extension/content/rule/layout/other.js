@@ -78,49 +78,20 @@
 
   Object.assign(i18n, {
     avatarShape: {
-      cn: '统一头像形状为|{{shape}}',
-      hk: '統一頭像形狀為|{{shape}}',
-      en: 'Show all avatars as | {{shape}}',
-    },
-    avatarShapeCircle: {
-      cn: '圆形',
-      hk: '圓形',
-      en: 'Circle',
-    },
-    avatarShapeSquare: {
-      cn: '方形',
-      en: 'Square',
+      cn: '统一头像形状为方形',
+      hk: '統一頭像形狀為方形',
+      en: 'Show all avatars as square',
     },
   });
 
   details.avatarShape = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'layout_avatar_shape',
     version: 1,
     parent: details.details,
     template: () => i18n.avatarShape,
-    ref: {
-      shape: {
-        type: 'select',
-        initial: 'square',
-        select: [
-          { value: 'circle', text: () => i18n.avatarShapeCircle },
-          { value: 'square', text: () => i18n.avatarShapeSquare },
-        ],
-      },
-    },
     ainit() {
-      const shape = this.ref.shape.getConfig();
-      if (yawf.WEIBO_VERSION === 6) {
-        if (shape === 'square') {
-          css.append(`.W_face_radius, .W_person_info .cover .headpic, .PCD_header .pf_photo, .PCD_header .photo_wrap, .PCD_header .pf_photo .photo, .PCD_user_a .picitems .pic_box, .PCD_connectlist .follow_box .mod_pic img, .PCD_ut_a .pic_box, .PCD_counter_b .pic_box, .WB_feed_v3 .WB_sonFeed .WB_face, .WB_feed_v3 .WB_sonFeed .WB_face .face img { border-radius: 0 !important; }`);
-        } else {
-          css.append(`img[usercard], .WB_face img { border-radius: 50% !important; }`);
-        }
-      } else {
-        if (shape === 'circle') return;
-        css.append(`.woo-avatar-hoverMask, .woo-avatar-img, .woo-avatar-main::before { border-radius: 0 !important; }`);
-      }
+      css.append(`.woo-avatar-hoverMask, .woo-avatar-img, .woo-avatar-main::before { border-radius: 0 !important; }`);
     },
   });
 
@@ -363,7 +334,7 @@
 .yawf-face-items { float: right; margin: 0 8px; }
 .yawf-face-items li { color: transparent; }
 .yawf-face-drop-area { background: rgba(255, 255, 127, 0.5); clear: both; float: right; font-weight: bold; height: 36px; line-height: 36px; margin: -36px 8px 0; opacity: 1; padding: 0; width: 348px; text-align: center; }
-.layer_faces .faces_list { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+.layer_faces .faces_list { user-select: none; }
 .layer_faces .faces_list li { overflow: hidden; }
 .layer_faces .faces_list img { border: 10px transparent solid; margin: -10px; }
 `);

@@ -24,11 +24,6 @@
       tw: '隱藏包含以下話題的微博||話題{{items}}',
       en: 'Hide feeds with these topics||topic {{items}}',
     },
-    topicFold: {
-      cn: '折叠包含以下话题的微博||话题{{items}}',
-      tw: '折疊包含以下話題的微博||話題{{items}}',
-      en: 'Fold feeds with these topics||topic {{items}}',
-    },
     topicReason: {
       cn: '提到话题 {1}',
       tw: '提到話題 {1}',
@@ -37,7 +32,7 @@
   });
 
   class TopicFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
@@ -68,9 +63,6 @@
       },
       show: {
         title: () => i18n.topicShow,
-      },
-      fold: {
-        title: () => i18n.topicFold,
       },
     },
     fast: {

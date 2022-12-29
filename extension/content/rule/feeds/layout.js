@@ -143,7 +143,7 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
   };
 
   layout.smallImage = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'feed_small_image',
     version: 1,
     parent: layout.layout,
@@ -153,125 +153,8 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
       i: { type: 'bubble', icon: 'warn', template: () => i18n.smallImageDetail },
     },
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        css.append(`
-.WB_feed.WB_feed_v3 .WB_media_a { margin: -2px 0 0 6px; width: 258px; }
-.WB_feed.WB_feed_v3 .WB_media_a_mn .WB_pic { width: 80px; height: 80px; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic { width: 80px !important; height: 80px !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img { top: 40px !important; left: 40px !important; transform: translate(-50%, -50%); position: relative !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img[style*="left:0"][style*="width:110px"] { width: 100% !important; height: auto !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img[style*="top:0"][style*="height:110px"] { height: 100% !important; width: auto !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img[style*="top:0"] { top: 0 !important; transform: translateX(-50%) !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img[style*="left:0"] { left: 0 !important; transform: translateY(-50%) !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img[style*="top:0"][style*="left:0"] { left: 0 !important; top: 0 !important; transform: none !important; }
-.WB_feed.WB_feed_v4 .WB_media_a_mn .WB_pic img:not([style*="top"]) { max-width; 100%; max-height: 100%; }
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic { max-width: 120px; max-height: 120px; min-width: 36px; height: auto !important; width: auto !important; }
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic img { max-height: 120px; max-width: 120px; width: auto !important; height: auto !important; position: static; -webkit-transform: none; transform: none; }
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not(.yawf-WB_video):not(.WB_video_h5_v2) { width: 120px; height: 80px; min-width: 36px; }
-.WB_feed.WB_feed_v3 .WB_media_a_m4 { width: 172px; }
-.WB_feed.WB_feed_v3 .WB_feed_repeat .WB_media_a_m1 .WB_pic::before { display: none; }
-.WB_feed.WB_feed_v3 .WB_feed_repeat .WB_media_a_m1 .WB_pic img { max-width: 120px; max-height: 120px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec { height: 100px; width: 316px; border: 1px solid rgba(127,127,127,0.3); box-shadow: 0 0 2px rgba(0,0,0,0.15); border-radius: 2px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_pic { height: 100px; width: 100px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_info { height: 88px; width: 202px; padding: 7px 4px 5px 10px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_a .WB_feed_spec_pic { width: 100px; height: 100px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_a .WB_feed_spec_info { width: 200px; height: 88px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_b2 .WB_feed_spec_pic, .WB_feed.WB_feed_v3 .WB_feed_spec_b2 .WB_feed_spec_pic img, .WB_feed.WB_feed_v3 .WB_feed_spec_c .WB_feed_spec_pic, .WB_feed.WB_feed_v3 .WB_feed_spec_c .WB_feed_spec_pic img { height: auto; min-height: 100px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_b .WB_feed_spec_pic, .WB_feed.WB_feed_v3 .WB_feed_spec_c .WB_feed_spec_pic, .WB_feed.WB_feed_v3 .WB_feed_spec2 .WB_feed_spec_pic { height: 100px; width: 250px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_b, .WB_feed.WB_feed_v3 .WB_feed_spec_c, .WB_feed.WB_feed_v3 .WB_feed_spec2 { width: 250px; height: auto; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_info { float: right; height: 88px; padding: 7px 4px 5px 10px; width: 202px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_b .WB_feed_spec_info, .WB_feed.WB_feed_v3 .WB_feed_spec_c .WB_feed_spec_info, .WB_feed.WB_feed_v3 .WB_feed_spec2 .WB_feed_spec_info { float: none; height: auto; width: auto; padding: 10px 5px 0; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_b .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_tit, .WB_feed.WB_feed_v3 .WB_feed_spec_c .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_tit, .WB_feed.WB_feed_v3 .WB_feed_spec2 .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_tit { font-size: inherit; font-weight: 700; margin: 0 0 6px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_info .WB_feed_spec_cont .WB_feed_spec_brieftxt { line-height: 15px; height: 30px; }
-.WB_feed.WB_feed_v3 .WB_feed_spec_user .W_fl { width: 240px; }
-
-.WB_feed .yawf-WB_pic_more { line-height: 80px; }
-
-.layer_feedimgshow .WB_feed.WB_feed_v3 .WB_media_a { margin: 0; width: auto; }
-.layer_feedimgshow .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic { max-width: none; max-height: none; min-width: auto; }
-.layer_feedimgshow .WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_pic img { max-width: 260px; max-width: 40vw; max-height: 260px; max-height: 40vh; min-width: auto; }
-
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video.WB_video_h5 { width: auto; height: auto; display: table; }
-.WB_h5video.hv-s1, .WB_h5video.hv-s3-2, .WB_h5video.hv-s3-5 { width: 120px; height: 80px; max-width: 120px; max-height: 80px; min-width: 36px; }
-.WB_h5video.hv-s1 .con-11, .WB_h5video.hv-s3-2 .con-11, .WB_h5video.hv-s3-5 .con-11 { display: none; }
-.WB_h5video.hv-s1 video, .WB_h5video.hv-s3-2 video, .WB_h5video.hv-s3-5 video { max-width: 100%; max-height: 100%; }
-.WB_h5video.hv-s3.hv-s3-2 .con-4,
-.WB_h5video.hv-s3.hv-s3-5 .con-4 { opacity: 1; z-index: 1; }
-.WB_h5video.hv-s3.hv-s3-2:hover .con-6,
-.WB_h5video.hv-s3.hv-s3-5:hover .con-6,
-.WB_h5video.hv-s3.hv-s3-5 .con-3 .box-2 em,
-.WB_h5video .con-3.hv-s3-3 .box-3 { opacity: 0; z-index: 0; }
-.WB_video .wbv-error-display h4 { bottom: 0; }
-
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) { width: 120px; height: 80px; min-width: 36px; }
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .WB_video:not([yawf-video-play]) .wbv-control-bar { display: none !important; }
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .html5-video:not([yawf-video-play]) { max-width: 120px; max-height: 80px; }
-.WB_feed.WB_feed_v3 .WB_media_a_m1 .html5-video:not([yawf-video-play]) .box-3 { display: none !important; }
-
-.WB_card_vote.WB_card_vote .vote_con1 .item { font-size: inherit; line-height: 14px; margin-top: -5px; text-align: left; }
-.WB_card_vote.WB_card_vote .vote_con1 .item_rt { font-size: inherit; line-height: 24px; height: 24px; margin-top: -5px; }
-.WB_card_vote.WB_card_vote .vote_con2 .vote_pic { width: 120px; height: 90px; }
-.WB_card_vote.WB_card_vote .vote_con2 { width: 242px; margin: 0; }
-.WB_card_vote.WB_card_vote .vote_con2 table { margin: 5px 0; }
-.WB_card_vote.WB_card_vote .vote_con2 .vote_pic .bg { font-size: inherit; text-shadow: 0 0 2px black; }
-.WB_card_vote.WB_card_vote .vote_con2 .vote_btn a { margin: 5px 0; }
-.WB_card_vote.WB_card_vote .vote_tit { font-size: inherit; }
-.WB_card_vote.WB_card_vote .vote_share a { line-height: 24px; height: 24px; margin-top: -5px; }
-`);
-        observer.dom.add(function smallVideo() {
-          [{
-            videoSelector: '.WB_video_h5_v2 .WB_h5video_v2:not([yawf-watch-pause])',
-            containerSelector: '.WB_video_h5_v2',
-            isPlaying: video => video.classList.contains('wbv-playing'),
-          }, {
-            videoSelector: '.html5-video .hv-icon:not([yawf-watch-pause])',
-            containerSelector: '.html5-video',
-            isPlaying: video => video.classList.contains('hv-icon-pause'),
-          }].forEach(function ({ videoSelector, containerSelector, isPlaying }) {
-            const videos = Array.from(document.querySelectorAll(videoSelector));
-            videos.forEach(video => {
-              video.setAttribute('yawf-watch-pause', '');
-              const container = video.closest(containerSelector);
-              let videoObserver;
-              const setPlayAttribute = function setPlayAttribute() {
-                const playing = isPlaying(video);
-                if (playing) {
-                  container.setAttribute('yawf-video-play', '');
-                  if (videoObserver) videoObserver.disconnect();
-                  return true;
-                }
-                return false;
-              };
-              if (setPlayAttribute()) return;
-              videoObserver = new MutationObserver(setPlayAttribute);
-              videoObserver.observe(video, { attributes: true, attributeFilter: ['class'], childList: false, characterData: false });
-            });
-          });
-        });
-        const repost = this.ref.repost.getConfig();
-        if (repost) css.append(`
-.WB_feed.WB_feed_v3 .WB_expand_media { margin: 2px 0 8px; padding: 12px 16px 16px; }
-.WB_feed.WB_feed_v3 .WB_expand { margin: 0 0 10px; padding: 10px 16px 13px; }
-.WB_feed.WB_feed_v3 .WB_expand .WB_func { margin: 0; }
-.WB_feed.WB_feed_v3 .WB_expand_media_box { margin-left: 0; margin-right: 0; }
-.WB_feed.WB_feed_v3 .WB_expand .WB_expand_media { padding: 0 0 5px; margin: 0; }
-.WB_feed.WB_feed_v3 .WB_media_view { margin: 6px auto 0; }
-.WB_feed.WB_feed_v3 .WB_media_view, .WB_feed.WB_feed_v3 .WB_media_view .media_show_box li { width: 440px; }
-.WB_feed.WB_feed_v3 .WB_media_view .media_show_box ul { margin-left: -32px; padding-left: 32px; }
-.WB_feed.WB_feed_v3 .artwork_box { width: 440px; }
-.WB_feed.WB_feed_v3 .WB_media_view .media_show_box img { max-width: 440px; height: auto !important; }
-.WB_feed.WB_feed_v3 .layer_view_morepic .view_pic { padding: 0 40px 20px; }
-.WB_feed.WB_feed_v3 .WB_media_view .pic_choose_box .stage_box { width: 440px; }
-`);
-        const feedWidth = layout.increaseFeedWidth.isEnabled() ? layout.increaseFeedWidth.ref.width.getConfig() : 600;
-        if (feedWidth < 650 && repost) css.append(`
-.WB_h5video { margin-left: -22px; }
-.WB_h5video.hv-s1, .WB_h5video.hv-s3-2, .WB_h5video.hv-s3-5 { margin-left: 0; }
-.yawf-WB_video[yawf-video-play] { margin-left: -22px; }
-`);
-      } else {
-        // 单张图片尺寸计算在 render 里
-        css.append(`
+      // 单张图片尺寸计算在 render 里
+      css.append(`
 .yawf-feed-picture-col3 > div { width: 252px; }
 .yawf-feed-picture-col4 > div { width: 332px; }
 .yawf-feed-video { transition: width 0s 0.2s ease; }
@@ -281,37 +164,36 @@ body .WB_feed_v3 .WB_face .opt.opt .W_btn_b { width: 48px; }
 .yawf-feed-comment-picture { max-width: 80px; }
 .yawf-feed-card-article { max-width: 240px; }
 `);
-        util.inject(function (rootKey) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
 
-          // 我们需要他不复用视频组件
-          vueSetup.transformComponentsRenderByTagName('feed-content', function (nodeStruct, Nodes) {
-            const video = nodeStruct.querySelectorAll('x-feed-video');
-            if (video && !video.key) video.key = this.data.id; // 用 mid 很方便
+        // 我们需要他不复用视频组件
+        vueSetup.transformComponentsRenderByTagName('feed-content', function (nodeStruct, Nodes) {
+          const video = nodeStruct.querySelectorAll('x-feed-video');
+          if (video && !video.key) video.key = this.data.id; // 用 mid 很方便
+        });
+        vueSetup.eachComponentVM('feed-video', function (vm) {
+          // 这个变量要存下来，不然到 beforeDestroy 的时候他爹就不是现在这个了
+          const feed = vm.$parent.data;
+          if (!vm.isPlaying && feed._yawf_VideoTouched) {
+            vm.isPlaying = true;
+            vm.$forceUpdate();
+          }
+          vm.$on('hook:beforeDestroy', function () {
+            feed._yawf_VideoTouched = vm.isPlaying;
           });
-          vueSetup.eachComponentVM('feed-video', function (vm) {
-            // 这个变量要存下来，不然到 beforeDestroy 的时候他爹就不是现在这个了
-            const feed = vm.$parent.data;
-            if (!vm.isPlaying && feed._yawf_VideoTouched) {
-              vm.isPlaying = true;
-              vm.$forceUpdate();
+          vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+            const { addClass } = Nodes;
+            if (this.isPlaying) {
+              addClass(nodeStruct, 'yawf-feed-video-actived');
+            } else {
+              addClass(nodeStruct, 'yawf-feed-video-inactive');
             }
-            vm.$on('hook:beforeDestroy', function () {
-              feed._yawf_VideoTouched = vm.isPlaying;
-            });
-            vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
-              const { addClass } = Nodes;
-              if (this.isPlaying) {
-                addClass(nodeStruct, 'yawf-feed-video-actived');
-              } else {
-                addClass(nodeStruct, 'yawf-feed-video-inactive');
-              }
-            });
           });
+        });
 
-        }, util.inject.rootKey);
-      }
+      }, util.inject.rootKey);
     },
   });
 
@@ -398,15 +280,13 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
 
   Object.assign(i18n, {
     reorderFeedButton: {
-      cn: '重新排列微博控制按钮 {{i}}||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
-      tw: '重新排列微博控制按鈕 {{i}}||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
-      en: 'Reorder buttons of feeds {{i}}||{{0}}|{{1}}|{{2}}|{{3}}|{{4}}',
+      cn: '重新排列微博控制按钮 {{i}}||{{0}}|{{1}}|{{2}}',
+      tw: '重新排列微博控制按鈕 {{i}}||{{0}}|{{1}}|{{2}}',
+      en: 'Reorder buttons of feeds {{i}}||{{0}}|{{1}}|{{2}}',
     },
     reorderFeedButtonDetail: {
-      cn: '此外您还可以在版面清理选项卡，或此处，勾选以隐藏“[[clean_feed_pop]]”“[[clean_feed_favorite]]”“[[clean_feed_forward]]”“[[clean_feed_like]]”。',
+      cn: '此外您还可以在版面清理选项卡，或此处，勾选以隐藏“[[clean_feed_forward]]”“[[clean_feed_like]]”。',
     },
-    reorderFeedButtonPop: { cn: '推广', tw: '推廣', en: ' Promote' },
-    reorderFeedButtonFavorite: { cn: '收藏', tw: '收藏', en: 'Favourite' },
     reorderFeedButtonForward: { cn: '转发', tw: '轉發', en: 'Forward' },
     reorderFeedButtonComment: { cn: '评论', tw: '評論', en: 'Comment' },
     reorderFeedButtonLike: { cn: '赞', tw: '讚', en: 'Like' },
@@ -432,14 +312,12 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
   };
 
   layout.reorderFeedButton = rule.Rule({
-    weiboVersion: [6, 7],
-    id: 'feed_button_order',
+    v7Support: true,
+    id: 'feed_buttons_order', // 悄悄换个名字，因为之前那个设置没法继承下来
     version: 1,
     parent: layout.layout,
     template: () => i18n.reorderFeedButton,
     ref: Object.assign({}, reorderRefGroup([
-      { value: 'pop', text: () => i18n.reorderFeedButtonPop },
-      { value: 'favorite', text: () => i18n.reorderFeedButtonFavorite },
       { value: 'forward', text: () => i18n.reorderFeedButtonForward },
       { value: 'comment', text: () => i18n.reorderFeedButtonComment },
       { value: 'like', text: () => i18n.reorderFeedButtonLike },
@@ -447,34 +325,20 @@ html .WB_artical .WB_feed_repeat .W_tips, html .WB_artical .WB_feed_repeat .WB_m
       i: { type: 'bubble', icon: 'ask', template: () => i18n.reorderFeedButtonDetail },
     }),
     init() {
-      [0, 1, 2, 3, 4].forEach(key => {
+      [0, 1, 2].forEach(key => {
         keepOrderItemsDiff(this.ref[key]);
       });
     },
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        css.append(`
-.WB_feed.WB_feed_v3 .WB_func .WB_handle li:last-child .line { border-right-width: 1px; }
-.WB_feed.WB_feed_v3 .WB_func .WB_handle ul { overflow: hidden; }
-.WB_feed.WB_feed_v3 .WB_func .WB_handle ul::after {  content: " "; display: block; margin-left: -1px; flex: 0 0 0; order: 10; }
-.WB_handle ul li[yawf-handle-type="fl_read"] { order: 0; }
-${[0, 1, 2, 3, 4].map(index => `
-.WB_handle ul li[yawf-handle-type="fl_${this.ref[index].getConfig()}"] { order: ${index + 1}; }
-`).join('')}
-`);
-      } else {
-        [0, 1, 2, 3, 4].forEach(index => {
-          const config = this.ref[index].getConfig();
-          const selector = {
-            pop: '',
-            favorite: '',
-            forward: '.yawf-feed-toolbar-retweet',
-            comment: '.yawf-feed-toolbar-comment',
-            like: '.yawf-feed-toolbar-like',
-          }[config];
-          if (selector) css.append(`${selector} { order: ${index} }`);
-        });
-      }
+      [0, 1, 2].forEach(index => {
+        const config = this.ref[index].getConfig();
+        const selector = {
+          forward: '.yawf-feed-toolbar-retweet',
+          comment: '.yawf-feed-toolbar-comment',
+          like: '.yawf-feed-toolbar-like',
+        }[config];
+        css.append(`${selector} { order: ${index} }`);
+      });
     },
   });
 

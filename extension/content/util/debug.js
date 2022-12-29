@@ -68,4 +68,7 @@
   util.debug = (...args) => debug(...args);
   util.debug.setEnabled = setEnabled;
 
+  // DEBUG
+  setEnabled();
+
 }());

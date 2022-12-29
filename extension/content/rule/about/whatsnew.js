@@ -26,11 +26,6 @@
   Object.assign(i18n, {
     showWhatsNew: { cn: '更新后显示新功能提示', tw: '更新後顯示新功能提示', en: 'Show new features after update' },
     installSuccessTitle: { cn: '药方 (YAWF) 安装成功', tw: '藥方 (YAWF) 安裝成功', en: 'YAWF Installation successes' },
-    installSuccessTextV6: {
-      cn: '感谢您安装药方 (YAWF) 扩展。您可以点击右上角的漏斗图标打开设置。此外您还可以选中并拖拽关键词、帐号、话题、来源等内容到网页右上角，快速创建规则。药方 (YAWF) 是第三方工具，从未要求过付款使用或寻求过捐赠。',
-      tw: '感謝您安裝藥方 (YAWF) 擴充套件。您可以點擊右上角的漏斗圖示打開設定。此外您還可以選中並拖拽關鍵字、帳號、話題、來源等內容到網頁右上角，快速創建規則。藥方 (YAWF) 是第三方工具，從未要求過付款使用或尋求過捐贈。',
-      en: 'Thank you for installing YAWF. You can click on the funnel icon at the top-right corner to open up filter setting menu. You may also quickly create filters by dragging and dropping keywords, accounts, topics and sources to the top-right corner. YAWF is a third-party tool. We had never asked for payment or donation.',
-    },
     installSuccessTextV7: {
       cn: '感谢您安装药方 (YAWF) 扩展。您可以在右上角齿轮图标的菜单中找到药方的设置。目前对新版微博 V7 的支持有限，且部分功能随时可能出现问题。如果您发现任何问题或希望任何功能支持新版，您可以和 @YAWF脚本 反馈。药方 (YAWF) 是第三方工具，从未要求过付款使用或寻求过捐赠。',
     },
@@ -40,7 +35,7 @@
   });
 
   update.whatsNew = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'script_update_whatsnew',
     version: 1,
     parent: update.update,
@@ -65,7 +60,7 @@
         ui.alert({
           id: 'yawf-first-seen',
           title: i18n.installSuccessTitle,
-          text: yawf.WEIBO_VERSION === 6 ? i18n.installSuccessTextV6 : i18n.installSuccessTextV7,
+          text: i18n.installSuccessTextV7,
         }).then(() => {
           this.ref.last.setConfig(currentVersion);
         });
@@ -115,19 +110,13 @@
   });
 
   css.append(`
-.yawf-WBV6 .yawf-whatsnew-dialog { padding: 20px; width: 600px; } 
-.yawf-WBV6 .yawf-whatsnew-header { font-size: 140%; }
-.yawf-WBV6 .yawf-whatsnew-body { height: 300px; overflow: auto; margin: 0 -20px; padding: 0 20px; }
-`);
-
-  css.append(`
-.yawf-WBV7 .yawf-whatsnew-dialog { padding: 20px; width: 600px; } 
-.yawf-WBV7 .yawf-whatsnew-header { font-size: 140%; }
-.yawf-WBV7 .yawf-whatsnew-body { height: 300px; overflow: auto; margin: 0 -20px; padding: 0 20px; }
-.yawf-WBV7 #yawf-whatsnew .woo-dialog-main { padding-bottom: 0; }
-.yawf-WBV7 #yawf-whatsnew .woo-dialog-title { margin-bottom: 0; }
-.yawf-WBV7 #yawf-whatsnew .woo-dialog-body { padding: 0; }
-.yawf-WBV7 #yawf-whatsnew hr { border-color: var(--w-dividing-line); }
+.yawf-whatsnew-dialog { padding: 20px; width: 600px; } 
+.yawf-whatsnew-header { font-size: 140%; }
+.yawf-whatsnew-body { height: 300px; overflow: auto; margin: 0 -20px; padding: 0 20px; }
+#yawf-whatsnew .woo-dialog-main { padding-bottom: 0; }
+#yawf-whatsnew .woo-dialog-title { margin-bottom: 0; }
+#yawf-whatsnew .woo-dialog-body { padding: 0; }
+#yawf-whatsnew hr { border-color: var(--w-dividing-line); }
 `);
 
 }());

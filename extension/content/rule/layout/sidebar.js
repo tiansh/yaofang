@@ -115,7 +115,7 @@
     sidebarShowLiked: { cn: '在首页左侧栏增加 (V7)||{{fav}}我的收藏|{{like}}我的赞' },
   });
   sidebar.liked = rule.Rule({
-    weiboVersion: 7,
+    v7Support: true,
     id: 'layout_left_liked',
     version: 85,
     parent: sidebar.sidebar,
@@ -316,9 +316,9 @@
 @media screen and (max-width: 1006px) {
   body[yawf-merge-left] a.W_gotop { margin-left: calc(calc(var(--yawf-feed-width) + 20px) / 2); }
   body[yawf-merge-left="left"] .WB_main .WB_main_c { float: none; }
-  body[yawf-merge-left="left"] .W_fold { right: auto; left: 0; -webkit-transform: scaleX(-1); transform: scaleX(-1); }
+  body[yawf-merge-left="left"] .W_fold { right: auto; left: 0; transform: scaleX(-1); }
   body[yawf-merge-left="left"] .W_fold.W_fold_out { left: 269px; }
-  body[yawf-merge-left="left"] .WB_main_r { right: auto; left: 0px; -webkit-transform: translateX(-100%) translateZ(0px); transform: translateX(-100%) translateZ(0px); }
+  body[yawf-merge-left="left"] .WB_main_r { right: auto; left: 0px; transform: translateX(-100%) translateZ(0px); }
   body[yawf-merge-left="left"] .WB_main_r.W_fold_layer { left: 269px; }
   body[yawf-merge-left="left"] .WB_main_r { direction: rtl; }
   body[yawf-merge-left="left"] .WB_main_r .WB_cardwrap { direction: ltr; }
@@ -458,39 +458,32 @@
   };
 
   sidebar.showAllGroups = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'layout_side_show_all_groups',
     version: 1,
     parent: sidebar.sidebar,
     template: () => i18n.showAllGroups,
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        css.append(`
-.lev_Box .levmore { display: none !important; }
-.lev_Box [node-type="moreList"] { display: block !important; height: auto !important; }
-`);
-      } else {
-        util.inject(function (rootKey) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
 
-          vueSetup.eachComponentVM('left-nav-home', function (vm) {
-            if (!Array.isArray(vm.customList)) return;
-            vm.customShowCount = Infinity;
-            if (vm.customTabs && Array.isArray(vm.customTabs.list)) {
-              vm.customList = [...vm.customTabs.list];
+        vueSetup.eachComponentVM('left-nav-home', function (vm) {
+          if (!Array.isArray(vm.customList)) return;
+          vm.customShowCount = Infinity;
+          if (vm.customTabs && Array.isArray(vm.customTabs.list)) {
+            vm.customList = [...vm.customTabs.list];
+          }
+          vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+            const { removeChild } = Nodes;
+
+            const moreButton = nodeStruct.querySelector('x-woo-box:last-child');
+            if (nodeStruct.lastChild === moreButton) {
+              removeChild(nodeStruct, moreButton);
             }
-            vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
-              const { removeChild } = Nodes;
-
-              const moreButton = nodeStruct.querySelector('x-woo-box:last-child');
-              if (nodeStruct.lastChild === moreButton) {
-                removeChild(nodeStruct, moreButton);
-              }
-            });
           });
-        }, util.inject.rootKey);
-      }
+        });
+      }, util.inject.rootKey);
     },
   });
 

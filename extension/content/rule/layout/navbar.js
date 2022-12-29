@@ -120,7 +120,6 @@
   });
 
   Object.assign(i18n, {
-    navHideName: { cn: '导航栏上的用户名|{{act}} (V6){{i}}', tw: '導覽列上的用戶名|{{act}} (V6){{i}}', en: 'Username on nav bar would be | {{act}} (V6){{i}}' },
     navHideNameReplace: { cn: '替换为“个人主页”', tw: '替換為「個人主頁」', en: 'replaced by text "My Profile"' },
     navHideNameHidden: { cn: '隐藏', tw: '隱藏', en: 'hidden' },
     navHideNameDetail: {
@@ -129,43 +128,12 @@
     navHideNameReplaceText: { cn: '个人主页', tw: '個人主頁', en: 'My Profile' },
   });
 
-  const hideNavName = css.add('.yawf-WBV6 .WB_global_nav .gn_nav_list li.gn_name.S_txt1 { display: none; }');
-  navbar.navHideName = rule.Rule({
-    id: 'layout_nav_hide_name',
-    version: 1,
-    parent: navbar.navbar,
-    template: () => i18n.navHideName,
-    ref: {
-      act: {
-        type: 'select',
-        select: [
-          { value: 'hidden', text: () => i18n.navHideNameHidden },
-          { value: 'replace', text: () => i18n.navHideNameReplace },
-        ],
-      },
-      i: { type: 'bubble', icon: 'ask', template: () => i18n.navHideNameDetail },
-    },
-    init() {
-      if (this.getConfig()) {
-        if (this.ref.act.getConfig() === 'replace') {
-          css.append(`
-.WB_global_nav .gn_nav_list li .gn_name .S_txt1::before { content: "${i18n.navHideNameReplaceText}"; display: block; }
-.WB_global_nav .gn_nav_list li .gn_name .S_txt1 { height: 26px; display: inline-block; width: 4em; }
-`);
-        } else {
-          css.append('.WB_global_nav .gn_nav_list li a.gn_name .S_txt1 { display: none; }');
-        }
-      }
-      hideNavName.remove();
-    },
-  });
-
   Object.assign(i18n, {
     navHideAvatar: { cn: '导航栏不显示个人头像 (V7)' },
   });
-  const hideNavAvatar = css.add('.yawf-WBV7 [class*="Ctrls_avatarItem_"] { visibility: hidden; }');
+  const hideNavAvatar = css.add('[class*="Ctrls_avatarItem_"] { visibility: hidden; }');
   navbar.navHideAvatar = rule.Rule({
-    weiboVersion: 7,
+    v7Support: true,
     id: 'layout_nav_hide_avatar',
     version: 85,
     parent: navbar.navbar,

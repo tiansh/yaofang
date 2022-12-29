@@ -24,11 +24,6 @@
       tw: '隱藏提到以下帳號的微博||作者{{items}}',
       en: 'Hide feeds mentioned these accounts||mention {{items}}',
     },
-    accountMentionFold: {
-      cn: '折叠提到以下帐号的微博||作者{{items}}',
-      tw: '折疊提到以下帳號的微博||作者{{items}}',
-      en: 'Fold feeds mentioned these accounts||mention {{items}}',
-    },
     accountMentionReason: {
       cn: '提到了 @{1}',
       tw: '提到了 @{1}',
@@ -37,7 +32,7 @@
   });
 
   class MentionFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
@@ -68,9 +63,6 @@
       },
       show: {
         title: () => i18n.accountMentionShow,
-      },
-      fold: {
-        title: () => i18n.accountMentionFold,
       },
     },
     fast: {

@@ -31,10 +31,10 @@
   clean.CleanRule('info', () => i18n.cleanRightInfo, 1, '[yawf-id="v6_pl_rightmod_myinfo_myinfo"] { display: none !important; }');
   clean.CleanRule('v7_entry', () => i18n.cleanRightV7Entry, 91, '[yawf-id="v6_pl_rightmod_myinfo_new_pc_apply"] { display: none !important; }');
   clean.CleanRule('ranks', () => i18n.cleanRightRanks, 1, '#v6_pl_rightmod_rank, [yawf-id="rightmod_taobao_movie"], [yawf-id="rightmod_recom_movie"] { display: none !important; }');
-  const hotSearchTop = clean.CleanRule('hot_topic_top', () => i18n.cleanRightHotTopicTop, 91, '', { weiboVersion: 7 });
-  const hotSearch = clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '[yawf-id="rightmod_zt_hottopic"] { display: none !important; }', { weiboVersion: [6, 7] });
-  const interested = clean.CleanRule('interest', () => i18n.cleanRightInterest, 1, '[yawf-id="rightmod_recom_interest"] { display: none !important; }', { weiboVersion: [6, 7] });
-  const service = clean.CleanRule('service', () => i18n.cleanRightService, 104, '', { weiboVersion: 7 })
+  const hotSearchTop = clean.CleanRule('hot_topic_top', () => i18n.cleanRightHotTopicTop, 91, '', { v7Support: true });
+  const hotSearch = clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '', { v7Support: true });
+  const interested = clean.CleanRule('interest', () => i18n.cleanRightInterest, 1, '', { v7Support: true });
+  const service = clean.CleanRule('service', () => i18n.cleanRightService, 104, '', { v7Support: true });
   clean.CleanRule('member', () => i18n.cleanRightMember, 1, '#v6_trustPagelet_recom_member { display: none !important; }');
   clean.CleanRule('groups', () => i18n.cleanRightGroups, 1, '#v6_pl_rightmod_groups { display: none; }');
   clean.CleanRule('recom_group_user', () => i18n.cleanRightRecomGroupUser, 1, '#v6_pl_rightmod_recomgroupuser { display: none; }');
@@ -68,7 +68,6 @@
     cardInterested: interested,
     cardService: service,
   }, function (options) {
-    if (yawf.WEIBO_VERSION !== 7) return;
     util.inject(function (rootKey, options) {
       const yawf = window[rootKey];
       const vueSetup = yawf.vueSetup;

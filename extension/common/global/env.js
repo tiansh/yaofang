@@ -7,8 +7,6 @@
 
   const config = env.config = {};
 
-  config.stkWrapSupported = true;
-  config.stkInfoSupported = true;
   config.contextMenuSupported = true;
   config.requestBlockingSupported = true;
   config.chatInPageSupported = true;

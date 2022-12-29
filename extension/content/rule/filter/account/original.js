@@ -29,11 +29,6 @@
       tw: '隱藏轉發自以下帳號的微博||原作者{{items}}',
       en: 'Hide feeds forwarded from these authors||original {{items}}',
     },
-    accountOriginalFold: {
-      cn: '折叠转发自以下帐号的微博||原作者{{items}}',
-      tw: '折疊轉發自以下帳號的微博||原作者{{items}}',
-      en: 'Fold feeds forwarded from these authors||original {items}}',
-    },
     accountOriginalDiscover: {
       cn: '按原创作者过滤的规则对发现页面的作者生效',
       tw: '按原創作者過濾的規則對發現頁面的作者生效',
@@ -71,7 +66,7 @@
   };
 
   class OriginalFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
@@ -87,7 +82,7 @@
           return { result: rule.feedAction, reason };
         }
 
-        const pageType = yawf.WEIBO_VERSION === 6 ? init.page.type() : null; // V7 TODO
+        const pageType = init.page.type();
         const isDiscover = pageType === 'discover';
         const asDiscover = rules.original.id.discover.isEnabled() && isDiscover;
         const asFastForward = feedParser.isFast(feed);
@@ -125,9 +120,6 @@
       show: {
         title: () => i18n.accountOriginalShow,
       },
-      fold: {
-        title: () => i18n.accountOriginalFold,
-      },
     },
     before: {
       show: additionalRules,
@@ -140,7 +132,7 @@
   });
 
   original.id.follower = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'filter_original_follower',
     version: 1,
     parent: original.id.id,

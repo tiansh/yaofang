@@ -27,12 +27,6 @@
       tw: '隱藏匹配以下正規表示式的微博||正規式{{items}}',
       en: 'Hide feeds match these regexen||Regexen {{items}}',
     },
-    regexContentFold: {
-      cn: '折叠匹配以下正则表达式的微博||正则式{{items}}',
-      hk: '折叠匹配以下正則表達式的微博||正則式{{items}}',
-      tw: '折叠匹配以下正規表示式的微博||正規式{{items}}',
-      en: 'Fold feeds match these regexen||Regexen {{items}}',
-    },
     regexContextReason: {
       cn: '正则匹配',
       hk: '正則符合',
@@ -42,7 +36,7 @@
   });
 
   class RegexFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
@@ -73,9 +67,6 @@
       },
       show: {
         title: () => i18n.regexContentShow,
-      },
-      fold: {
-        title: () => i18n.regexContentFold,
       },
     },
     fast: {

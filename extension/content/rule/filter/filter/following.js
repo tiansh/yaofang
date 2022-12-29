@@ -18,7 +18,7 @@
 
   const getContext = functools.once(async function () {
     const followConfig = await config.pool('Follow', {
-      uid: init.page.$CONFIG.uid,
+      uid: init.page.config.user.idstr,
       isLocal: true,
     });
     const fetchData = new rule.class.OffscreenConfigItem({
@@ -73,7 +73,7 @@
           }
           return value;
         }());
-        base.weiboVersion = yawf.WEIBO_VERSION;
+        base.weiboVersion = 7;
         return base;
       },
     });
@@ -135,7 +135,7 @@
     const { fetchData } = followingContext;
     const lock = fetchData.touchTimestamp();
     fetchData.restart();
-    const { allPages, followInPage } = await request.getFollowingPage(init.page.$CONFIG.uid);
+    const { allPages, followInPage } = await request.getFollowingPage(init.page.config.user.idstr);
     fetchData.assertLock(lock);
     const fetchContext = fetchData.getConfig();
     fetchContext.allPages = allPages;
@@ -150,7 +150,7 @@
     const oldFetchContext = fetchData.getConfig();
     const currentPage = oldFetchContext.currentPage;
     const nextPage = oldFetchContext.allPages[currentPage];
-    const { followInPage } = await request.getFollowingPage(init.page.$CONFIG.uid, nextPage);
+    const { followInPage } = await request.getFollowingPage(init.page.config.user.idstr, nextPage);
     fetchData.assertLock(lock);
     const fetchContext = fetchData.getConfig();
     fetchContext.list.push(...followInPage);
@@ -219,7 +219,7 @@
     }
 
     // 如果之前获取数据使用的微博版本和现在不一样，那么数据要丢弃
-    if (fetchData.getConfig().weiboVersion !== yawf.WEIBO_VERSION) {
+    if (fetchData.getConfig().weiboVersion !== 7) {
       fetchData.setConfig({});
     }
 
@@ -303,7 +303,7 @@
     }).join('\r\n') + '\r\n'; // CRLF 换行符支持效果最好，而且也更合乎规范
     const blob = new Blob([content], { type: 'text/csv' });
     const date = new Date(timestamp).toISOString().replace(/[-]|T.*/g, '');
-    const filename = download.filename('following-' + init.page.$CONFIG.uid + '-' + date + '.csv');
+    const filename = download.filename('following-' + init.page.config.user.idstr + '-' + date + '.csv');
     download.blob({ blob, filename });
   };
 
@@ -424,7 +424,7 @@
   };
 
   following.autoCheckFollowing = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'filter_follow_check',
     version: 1,
     parent: following.following,
@@ -450,21 +450,13 @@
           this.getConfig();
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
-          if (yawf.WEIBO_VERSION === 6) {
-            buttonArea.innerHTML = '<span class="yawf-following-checking"></span><a href="javascript:;" class="W_btn_b yawf-following-check-now"><span class="W_f14"></span></a>';
-          } else {
-            buttonArea.innerHTML = '<span class="yawf-following-checking"></span><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-check-now"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
-          }
+          buttonArea.innerHTML = '<span class="yawf-following-checking"></span><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-check-now"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
           const checkNowButton = buttonArea.querySelector('.yawf-following-check-now');
           checkNowButton.addEventListener('click', event => {
             if (!event.isTrusted) return;
             updateFollowList();
           });
-          if (yawf.WEIBO_VERSION === 6) {
-            checkNowButton.querySelector('span').textContent = i18n.autoCheckFollowingNow;
-          } else {
-            checkNowButton.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingNow;
-          }
+          checkNowButton.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingNow;
           this.renderValue(buttonArea);
           return buttonArea;
         },
@@ -507,22 +499,13 @@
         render() {
           const buttonArea = document.createElement('span');
           buttonArea.setAttribute('yawf-config-item', this.configId);
-          if (yawf.WEIBO_VERSION === 6) {
-            buttonArea.innerHTML = '<span class="yawf-following-last-text"></span><span class="yawf-following-last-time"></span><a href="javascript:;" class="W_btn_b yawf-following-export" style="margin-left:1em;"><span class="W_f14"></span></a><a href="javascript:;" class="W_btn_b yawf-following-clear" style="margin-left:1em;"><span class="W_f14"></span></a>';
-          } else {
-            buttonArea.innerHTML = '<span class="yawf-following-last-text"></span><span class="yawf-following-last-time"></span><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-export"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-clear"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
-          }
+          buttonArea.innerHTML = '<span class="yawf-following-last-text"></span><span class="yawf-following-last-time"></span><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-export"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-following-clear"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
           const lastTimeText = buttonArea.querySelector('.yawf-following-last-text');
           const lastTime = buttonArea.querySelector('.yawf-following-last-time');
           const exportButton = buttonArea.querySelector('.yawf-following-export');
           const clearFollowing = buttonArea.querySelector('.yawf-following-clear');
-          if (yawf.WEIBO_VERSION === 6) {
-            exportButton.querySelector('span').textContent = i18n.autoCheckFollowingDownload;
-            clearFollowing.querySelector('span').textContent = i18n.autoCheckFollowingClean;
-          } else {
-            exportButton.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingDownload;
-            clearFollowing.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingClean;
-          }
+          exportButton.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingDownload;
+          clearFollowing.querySelector('.woo-button-content').textContent = i18n.autoCheckFollowingClean;
           exportButton.addEventListener('click', event => {
             if (!event.isTrusted) return;
             exportFollowList(this.getConfig());
@@ -579,30 +562,17 @@
   });
 
   css.append(`
-.yawf-WBV6 .yawf-following-add-title,
-.yawf-WBV6 .yawf-following-lost-title,
-.yawf-WBV6 .yawf-following-rename-title { font-weight: bold; margin: 10px 0 5px; } 
-.yawf-WBV6 .yawf-following-notice-header { padding: 20px; }
-.yawf-WBV6 .yawf-following-notice-body { padding: 0 20px; width: 600px; max-height: 320px; overflow: auto; } 
-.yawf-WBV6 .yawf-following-notice-footer { padding: 20px; } 
-.yawf-WBV6 .yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
-.yawf-WBV6 .yawf-following-rename .yawf-config-user-name,
-.yawf-WBV6 .yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
-.yawf-WBV6 .yawf-config-user-avatar-img { max-width: 50px; max-height: 50px; }
-`);
-
-  css.append(`
-.yawf-WBV7 #yawf-follow-change .woo-dialog-title { margin-bottom: 0; }
-.yawf-WBV7 #yawf-follow-change .woo-dialog-body { padding: 0; }
-.yawf-WBV7 .yawf-following-add-title,
-.yawf-WBV7 .yawf-following-lost-title,
-.yawf-WBV7 .yawf-following-rename-title { font-weight: bold; margin: 10px 0 5px; } 
-.yawf-WBV7 .yawf-following-notice-header { padding: 20px; }
-.yawf-WBV7 .yawf-following-notice-body { padding: 0 20px; width: 600px; max-height: 320px; overflow: auto; } 
-.yawf-WBV7 .yawf-following-notice-footer { padding: 20px; } 
-.yawf-WBV7 .yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
-.yawf-WBV7 .yawf-following-rename .yawf-config-user-name,
-.yawf-WBV7 .yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
+#yawf-follow-change .woo-dialog-title { margin-bottom: 0; }
+#yawf-follow-change .woo-dialog-body { padding: 0; }
+.yawf-following-add-title,
+.yawf-following-lost-title,
+.yawf-following-rename-title { font-weight: bold; margin: 10px 0 5px; } 
+.yawf-following-notice-header { padding: 20px; }
+.yawf-following-notice-body { padding: 0 20px; width: 600px; max-height: 320px; overflow: auto; } 
+.yawf-following-notice-footer { padding: 20px; } 
+.yawf-following-notice-body a.yawf-config-user-name { color: inherit; }
+.yawf-following-rename .yawf-config-user-name,
+.yawf-following-rename .yawf-config-user-detail { display: inline-block; text-overflow: ellipsis; white-space: nowrap; vertical-align: top; }
 `);
 
   i18n.uncheckFollowPresenter = {

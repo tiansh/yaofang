@@ -464,11 +464,7 @@
       if (this.always) return container;
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
-      if (yawf.WEIBO_VERSION === 6) {
-        checkbox.classList.add('W_checkbox', 'yawf-config-checkbox');
-      } else {
-        checkbox.classList.add('yawf-config-checkbox');
-      }
+      checkbox.classList.add('yawf-config-checkbox');
       checkbox.setAttribute('yawf-config-input', this.configId);
       checkbox.addEventListener('change', event => {
         if (!event.isTrusted) {
@@ -478,16 +474,14 @@
       const label = container.querySelector('label');
       label.insertBefore(checkbox, label.firstChild);
       checkbox.checked = this.getConfig();
-      if (yawf.WEIBO_VERSION === 7) {
-        const contain = document.createElement('span');
-        contain.className = 'yawf-config-checkbox-wrap';
-        const icon = document.createElement('span');
-        icon.className = 'yawf-config-checkbox-icon';
-        checkbox.replaceWith(contain);
-        contain.append(checkbox);
-        contain.append(icon);
-        icon.append(ui.icon('checkbox').documentElement);
-      }
+      const contain = document.createElement('span');
+      contain.className = 'yawf-config-checkbox-wrap';
+      const icon = document.createElement('span');
+      icon.className = 'yawf-config-checkbox-icon';
+      checkbox.replaceWith(contain);
+      contain.append(checkbox);
+      contain.append(icon);
+      icon.append(ui.icon('checkbox').documentElement);
       return container;
     }
     renderValue(container) {
@@ -545,9 +539,7 @@
       container.setAttribute('yawf-config-item', this.configId);
       container.classList.add('yawf-config-select');
       const select = document.createElement('select');
-      if (yawf.WEIBO_VERSION === 7) {
-        select.classList.add('woo-input-main');
-      }
+      select.classList.add('woo-input-main');
       const renderOptions = items => {
         items.forEach(({ text, value, style = null }) => {
           const option = document.createElement('option');
@@ -569,12 +561,10 @@
         } else this.setConfig(JSON.parse(select.value));
       });
       container.appendChild(select);
-      if (yawf.WEIBO_VERSION === 7) {
-        const wrap = document.createElement('div');
-        wrap.className = 'woo-input-wrap';
-        select.replaceWith(wrap);
-        wrap.append(select);
-      }
+      const wrap = document.createElement('div');
+      wrap.className = 'woo-input-wrap';
+      select.replaceWith(wrap);
+      wrap.append(select);
       return container;
     }
     renderValue(container) {
@@ -609,9 +599,7 @@
       container.setAttribute('yawf-config-item', this.configId);
       container.classList.add('yawf-config-input');
       const input = document.createElement('input');
-      if (yawf.WEIBO_VERSION === 7) {
-        input.classList.add('woo-input-main');
-      }
+      input.classList.add('woo-input-main');
       input.type = this.inputType;
       input.value = this.getConfig();
       input.addEventListener('input', event => {
@@ -633,12 +621,10 @@
       });
       input.setAttribute('yawf-config-input', this.configId);
       container.appendChild(input);
-      if (yawf.WEIBO_VERSION === 7) {
-        const wrap = document.createElement('div');
-        wrap.className = 'woo-input-wrap';
-        input.replaceWith(wrap);
-        wrap.append(input);
-      }
+      const wrap = document.createElement('div');
+      wrap.className = 'woo-input-wrap';
+      input.replaceWith(wrap);
+      wrap.append(input);
       return container;
     }
     renderValue(container) {
@@ -801,9 +787,7 @@
       container.setAttribute('yawf-config-item', this.configId);
       container.classList.add('yawf-config-key');
       const button = document.createElement('button');
-      if (yawf.WEIBO_VERSION === 7) {
-        button.className = 'woo-button-main woo-button-line woo-button-primary woo-button-s woo-button-round';
-      }
+      button.className = 'woo-button-main woo-button-line woo-button-primary woo-button-s woo-button-round';
       button.type = 'button';
       button.textContent = keyboard.name(this.getConfig());
       button.addEventListener('keydown', event => {
@@ -856,11 +840,7 @@
       container.setAttribute('yawf-config-item', this.configId);
       container.classList.add('yawf-config-text');
       const textarea = document.createElement('textarea');
-      if (yawf.WEIBO_VERSION === 6) {
-        textarea.classList.add('yawf-config-textarea', 'W_input');
-      } else {
-        textarea.className = 'yawf-config-textarea woo-input-main';
-      }
+      textarea.className = 'yawf-config-textarea woo-input-main';
       textarea.value = this.getConfig();
       textarea.addEventListener('input', event => {
         if (!event.isTrusted) textarea.value = this.getConfig();
@@ -871,12 +851,10 @@
       });
       textarea.setAttribute('yawf-config-input', this.configId);
       container.appendChild(textarea);
-      if (yawf.WEIBO_VERSION === 7) {
-        const wrap = document.createElement('div');
-        wrap.className = 'woo-input-wrap';
-        textarea.replaceWith(wrap);
-        wrap.append(textarea);
-      }
+      const wrap = document.createElement('div');
+      wrap.className = 'woo-input-wrap';
+      textarea.replaceWith(wrap);
+      wrap.append(textarea);
       return container;
     }
     renderValue(container) {
@@ -907,21 +885,15 @@
       contentLabel.replaceWith(...Array.from(contentLabel.childNodes));
       const container = document.createElement('span');
       const iconType = this.icon ?? 'ask';
-      let icon;
-      if (yawf.WEIBO_VERSION === 6) {
-        icon = document.createElement('i');
-        icon.classList.add('W_icon', 'yawf-bubble-icon', `icon_${iconType}S`);
-      } else {
-        const iconTypeV7 = {
-          ask: 'help',
-          warn: 'warn',
-          succ: 'success',
-        }[iconType];
-        icon = document.createElement('div');
-        icon.className = 'yawf-bubble-icon';
-        const svg = icon.appendChild(ui.icon(iconTypeV7).documentElement);
-        svg.setAttribute('class', `woo-tip-icon woo-tip-${iconTypeV7}Fill`);
-      }
+      const iconTypeV7 = {
+        ask: 'help',
+        warn: 'warn',
+        succ: 'success',
+      }[iconType];
+      const icon = document.createElement('div');
+      icon.className = 'yawf-bubble-icon';
+      const svg = icon.appendChild(ui.icon(iconTypeV7).documentElement);
+      svg.setAttribute('class', `woo-tip-icon woo-tip-${iconTypeV7}Fill`);
       container.appendChild(icon);
       ui.bubble(content, icon);
       return container;
@@ -946,20 +918,12 @@
     track(item, index = -1) { return '' + index; }
     renderListitem(item, index) {
       const listitem = document.createElement('li');
-      if (yawf.WEIBO_VERSION === 6) {
-        listitem.classList.add('yawf-config-collection-item', 'W_btn_b', 'W_btn_tag');
-      } else {
-        listitem.classList.add('yawf-config-collection-item');
-      }
+      listitem.classList.add('yawf-config-collection-item');
       const track = arguments.length > 1 ? this.track(item, index) : this.track(item);
       listitem.dataset.yawfTrack = track;
       const deleteItem = document.createElement('span');
       deleteItem.classList.add('yawf-config-collection-remove');
-      if (yawf.WEIBO_VERSION === 6) {
-        deleteItem.innerHTML = '<a class="W_ficon ficon_close S_ficon" href="javascript:void(0);">X</a>';
-      } else {
-        deleteItem.innerHTML = '<i class="woo-font woo-font--cross" yawf-component-tag="woo-fonticon"></i>';
-      }
+      deleteItem.innerHTML = '<i class="woo-font woo-font--cross" yawf-component-tag="woo-fonticon"></i>';
       listitem.appendChild(deleteItem);
       const content = document.createElement('div');
       content.classList.add('yawf-config-collection-item-content');
@@ -974,18 +938,12 @@
         // 我们渲染一个输入框
         const input = document.createElement('input');
         input.type = 'text';
-        if (yawf.WEIBO_VERSION === 6) {
-          input.classList.add('yawf-config-collection-input', 'W_input');
-        } else {
-          input.className = 'yawf-config-collection-input woo-input-main';
-        }
+        input.className = 'yawf-config-collection-input woo-input-main';
         label.appendChild(input);
-        if (yawf.WEIBO_VERSION === 7) {
-          const wrap = document.createElement('div');
-          wrap.className = 'woo-input-wrap';
-          input.replaceWith(wrap);
-          wrap.append(input);
-        }
+        const wrap = document.createElement('div');
+        wrap.className = 'woo-input-wrap';
+        input.replaceWith(wrap);
+        wrap.append(input);
         // 在当前标签前面藏一个表单元素，用于处理用户输入提交
         const form = document.createElement('form');
         form.classList.add('yawf-config-collection-form');
@@ -997,11 +955,7 @@
         setTimeout(() => {
           const submit = document.createElement('button');
           submit.setAttribute('form', formId);
-          if (yawf.WEIBO_VERSION === 6) {
-            submit.classList.add('yawf-config-collection-submit', 'W_btn_a');
-          } else {
-            submit.className = 'yawf-config-collection-submit woo-button-main woo-button-line woo-button-primary woo-button-s woo-button-round';
-          }
+          submit.className = 'yawf-config-collection-submit woo-button-main woo-button-line woo-button-primary woo-button-s woo-button-round';
           submit.textContent = i18n.collectionAddButton;
           label.parentNode.insertBefore(submit, label.nextSibling);
         }, 0);
@@ -1179,10 +1133,8 @@
       const setFocus = current => suggestionItems.forEach(item => {
         if (item === current) {
           item.classList.add('yawf-current');
-          if (yawf.WEIBO_VERSION === 6) item.classList.add('cur');
         } else {
           item.classList.remove('yawf-current');
-          if (yawf.WEIBO_VERSION === 6) item.classList.remove('cur');
         }
       });
       const keydownEventHandler = event => {
@@ -1350,9 +1302,6 @@
     renderItem({ id }) {
       const useritem = document.createElement('div');
       useritem.classList.add('yawf-config-user-item');
-      if (yawf.WEIBO_VERSION === 6) {
-        useritem.setAttribute('usercard', `id=${id}`);
-      }
       const useravatar = document.createElement('div');
       useravatar.classList.add('yawf-config-user-avatar');
       useritem.appendChild(useravatar);
@@ -1567,21 +1516,17 @@
       rules.all.set(this.id, this);
     }
     /** @type {number|number[]} */
-    get weiboVersion() { return 6; } // 如果没有特殊说明，这条规则只支持旧版（v6）微博
-    isWeiboVersionSupported() {
-      const versions = Array.isArray(this.weiboVersion) ? this.weiboVersion : [this.weiboVersion];
-      return versions.includes(yawf.WEIBO_VERSION);
-    }
+    get v7Support() { return false; } // 如果没有特殊说明，这条规则只支持旧版（v6）微博
     render(...args) {
       const node = super.render(...args);
       node.classList.add('yawf-config-rule');
-      if (!this.isWeiboVersionSupported()) {
+      if (!this.v7Support) {
         node.classList.add('yawf-config-rule-unsupport');
       }
       return node;
     }
     execute() {
-      if (!this.isWeiboVersionSupported()) return;
+      if (!this.v7Support) return;
       const enabled = this.isEnabled();
       try {
         const styles = [];
@@ -1666,91 +1611,58 @@
   }, { priority: priority.DEFAULT });
 
   css.append(`
-.yawf-WBV6 .yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
-.yawf-WBV6 .yawf-config-rule { display: block; margin: 5px 20px; }
-.yawf-WBV6 .yawf-config-rule-unsupport { opacity: 0.5; }
-.yawf-WBV6 .yawf-bubble .yawf-config-rule { display: inline; margin: 0; }
-.yawf-WBV6 .yawf-config-rule > label + label { margin-left: 8px; }
-.yawf-WBV6 .yawf-config-rule > br + label { margin-left: 20px; }
-.yawf-WBV6 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; }
-.yawf-WBV6 .yawf-bubble-text .yawf-bubble-icon { display: none; }
-.yawf-WBV6 .yawf-config-select { height: 20px; }
-.yawf-WBV6 .yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
-.yawf-WBV6 .yawf-config-range { position: relative; }
-.yawf-WBV6 .yawf-config-range-wrap { display: none; position: absolute; left: 0; right: 0; margin: 0; bottom: calc(100% + 2px); height: 80px; background: #f0f0f0; background: Menu; }
-.yawf-WBV6 .yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
-.yawf-WBV6 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
-.yawf-WBV6 .yawf-config-color input[type="color"] { width: 45px; box-sizing: border-box; height: 20px; vertical-align: middle; }
-.yawf-WBV6 .yawf-config-text textarea { width: calc(100% - 20px); padding-left: 10px; padding-right: 10px; min-height: 120px; resize: vertical; }
-.yawf-WBV6 .yawf-config-collection-input { margin: 5px; }
-.yawf-WBV6 .yawf-config-collection-list { display: block; margin: 5px; }
-.yawf-WBV6 .yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; }
-.yawf-WBV6 .yawf-config-collection-remove { display: block; position: absolute; top: 0; left: 0; display: flow-root; width: 20px; height: 20px; line-height: 20px; }
-.yawf-WBV6 .yawf-config-collection-item-content { max-width: 500px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
-.yawf-WBV6 .yawf-config-collection-user-id .yawf-config-collection-list { margin-left: -5px; }
-.yawf-WBV6 .yawf-config-collection-user-id .yawf-config-collection-item { width: 90px; height: 50px; padding: 1px 20px 1px 56px; text-align: left; }
-.yawf-WBV6 .yawf-config-collection-user-id .yawf-config-collection-remove { right: 0; left: auto; text-align: center; }
-.yawf-WBV6 .yawf-config-collection-user-id .yawf-config-collection-remove a { position: static; margin: 0; }
-.yawf-WBV6 .yawf-config-collection-user-id .yawf-config-user-avatar { position: absolute; left: 1px; top: 1px; width: 50px; height: 50px; overflow: hidden; }
-.yawf-WBV6 .yawf-config-collection-user-id .yawf-config-user-avatar-img { width: 50px; height: 50px; }
-.yawf-WBV6 .yawf-config-collection-user-id .yawf-config-user-name { max-width: 100%; word-break: break-all; white-space: normal; max-height: 40px; overflow: hidden; }
-.yawf-WBV6 .yawf-collection-suggestion.yawf-collection-suggestion { z-index: 10000; position: fixed; }
-.yawf-WBV6 .yawf-list-suggestion-item a { min-height: 15.6px; }
-`);
+label:hover .yawf-config-checkbox-wrap .yawf-config-checkbox-icon,
+.yawf-config-checkbox-wrap:hover .yawf-config-checkbox-icon { border-color: var(--w-checkbox-check-color); }
+.yawf-config-checkbox-wrap { display: inline-block; position: relative; width: var(--w-checkbox-size); height: var(--w-checkbox-size); overflow: hidden; margin-right: 4px; vertical-align: baseline; }
+.yawf-config-checkbox { position: absolute; left: -100px; }
+.yawf-config-checkbox-icon { border: 1px solid var(--w-checkbox-border); color: var(--w-checkbox-check-color); }
+.yawf-config-checkbox-icon { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+.yawf-config-checkbox-icon svg { position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px; }
+.yawf-config-checkbox:not(:checked) ~ .yawf-config-checkbox-icon svg { display: none; }
 
-  css.append(`
-.yawf-WBV7 label:hover .yawf-config-checkbox-wrap .yawf-config-checkbox-icon,
-.yawf-WBV7 .yawf-config-checkbox-wrap:hover .yawf-config-checkbox-icon { border-color: var(--w-checkbox-check-color); }
-.yawf-WBV7 .yawf-config-checkbox-wrap { display: inline-block; position: relative; width: var(--w-checkbox-size); height: var(--w-checkbox-size); overflow: hidden; margin-right: 4px; vertical-align: baseline; }
-.yawf-WBV7 .yawf-config-checkbox { position: absolute; left: -100px; }
-.yawf-WBV7 .yawf-config-checkbox-icon { border: 1px solid var(--w-checkbox-border); color: var(--w-checkbox-check-color); }
-.yawf-WBV7 .yawf-config-checkbox-icon { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-.yawf-WBV7 .yawf-config-checkbox-icon svg { position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px; }
-.yawf-WBV7 .yawf-config-checkbox:not(:checked) ~ .yawf-config-checkbox-icon svg { display: none; }
-
-.yawf-WBV7 .yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
-.yawf-WBV7 .yawf-config-rule { display: block; margin: 5px 20px; }
-.yawf-WBV7 .yawf-config-rule-unsupport { opacity: 0.5; }
-.yawf-WBV7 .yawf-bubble .yawf-config-rule { display: inline; margin: 0; }
-.yawf-WBV7 .yawf-config-rule > label + label { margin-left: 8px; }
-.yawf-WBV7 .yawf-config-rule > br + label { margin-left: 20px; }
-.yawf-WBV7 .yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; display: inline; }
-.yawf-WBV7 .yawf-bubble-text .yawf-bubble-icon { display: none; }
-.yawf-WBV7 .yawf-config-select { height: 20px; }
-.yawf-WBV7 .yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
-.yawf-WBV7 .yawf-config-range { position: relative; }
-.yawf-WBV7 .yawf-config-range-wrap { display: none; position: absolute; left: 0; right: 0; margin: 0; bottom: calc(100% + 2px); height: 80px; background: #f0f0f0; background: Menu; }
-.yawf-WBV7 .yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
-.yawf-WBV7 .yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
-.yawf-WBV7 .yawf-config-color input[type="color"] { width: 45px; box-sizing: border-box; height: 20px; vertical-align: middle; }
-.yawf-WBV7 .yawf-config-text textarea { width: 100%; min-height: 120px; resize: vertical; padding-left: var(--w-input-indent); padding-right: var(--w-input-indent); }
-.yawf-WBV7 .yawf-config-collection-submit,
-.yawf-WBV7 .yawf-config-key button { padding: 4px 16px; margin: 0 4px; vertical-align: bottom; }
-.yawf-WBV7 .yawf-config-collection-list { display: block; margin: 5px; padding: 0; }
-.yawf-WBV7 .yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; display: inline-block; position: relative; margin-left: 8px; border: 1px solid var(--w-b-line-primary-border); }
-.yawf-WBV7 .yawf-config-collection-remove { display: block; position: absolute; top: 2px; left: 0; display: flow-root; width: 20px; height: 20px; line-height: 20px; text-align: center; cursor: pointer; }
-.yawf-WBV7 .yawf-config-collection-item-content { max-width: 500px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
-.yawf-WBV7 .yawf-config-collection-user-id .yawf-config-collection-list { margin-left: -5px; }
-.yawf-WBV7 .yawf-config-collection-user-id .yawf-config-collection-item { width: 90px; height: 50px; padding: 1px 20px 1px 56px; text-align: left; }
-.yawf-WBV7 .yawf-config-collection-user-id .yawf-config-collection-remove { right: 0; left: auto; text-align: center; }
-.yawf-WBV7 .yawf-config-collection-user-id .yawf-config-collection-remove a { position: static; margin: 0; }
-.yawf-WBV7 .yawf-config-collection-user-id .yawf-config-user-avatar { position: absolute; left: 1px; top: 1px; width: 50px; height: 50px; overflow: hidden; }
-.yawf-WBV7 .yawf-config-collection-user-id .yawf-config-user-avatar-img { width: 50px; height: 50px; }
-.yawf-WBV7 .yawf-config-collection-user-id .yawf-config-user-name { max-width: 100%; word-break: break-all; white-space: normal; max-height: 40px; overflow: hidden; }
-.yawf-WBV7 .yawf-collection-suggestion.yawf-collection-suggestion { z-index: 10000; position: fixed; background: var(--w-card-background); border: 1px solid var(--w-layer-border); border-radius: var(--w-layer-radius); }
-.yawf-WBV7 .yawf-collection-suggestion-list { margin: 0; padding: 10px 0; list-style: none; }
-.yawf-WBV7 .yawf-list-suggestion-item { line-height: 20px; padding: 5px 10px; }
-.yawf-WBV7 .yawf-list-suggestion-item.yawf-current { line-height: 20px; padding: 5px 10px; background: var(--w-pop-item-hover); }
-.yawf-WBV7 .yawf-list-suggestion-item a { min-height: 15.6px; color: inherit; text-decoration: none; }
-.yawf-WBV7 .yawf-config-item .woo-input-wrap { height: 20px; line-height: 20px; --w-input-height: 20px; box-sizing: content-box; margin-left: 4px; margin-right: 4px; }
-.yawf-WBV7 .yawf-config-item .woo-input-wrap.woo-input-text { height: auto; width: 100%; box-sizing: border-box; }
-.yawf-WBV7 .yawf-config-item .woo-input-wrap input,
-.yawf-WBV7 .yawf-config-item .woo-input-wrap select { vertical-align: bottom; }
-.yawf-WBV7 .yawf-config-item .yawf-config-select .woo-input-wrap { padding-right: 36px; position: relative; }
-.yawf-WBV7 .yawf-config-item .yawf-config-select .woo-input-wrap::before { content: " "; display: block; width: 0; height: 0; border-top: 4px solid currentColor; border-left: 4px solid transparent; border-right: 4px solid transparent; position: absolute; right: 14px; top: calc(50% - 2px); }
-.yawf-WBV7 .yawf-config-text .woo-input-wrap { width: 520px; height: auto; padding: 0; }
-.yawf-WBV7 .yawf-config-item .woo-input-main { background: inherit; }
-.yawf-WBV7 .yawf-config-item .woo-input-wrap select { margin-left: -12px; padding-left: 12px; margin-right: -36px; padding-right: 36px; width: auto; }
+.yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
+.yawf-config-rule { display: block; margin: 5px 20px; }
+.yawf-config-rule-unsupport { opacity: 0.5; }
+.yawf-bubble .yawf-config-rule { display: inline; margin: 0; }
+.yawf-config-rule > label + label { margin-left: 8px; }
+.yawf-config-rule > br + label { margin-left: 20px; }
+.yawf-bubble-icon { vertical-align: middle; margin-left: 2px; margin-right: 2px; display: inline; }
+.yawf-bubble-text .yawf-bubble-icon { display: none; }
+.yawf-config-select { height: 20px; }
+.yawf-config-number input[type="number"] { width: 45px; box-sizing: border-box; }
+.yawf-config-range { position: relative; }
+.yawf-config-range-wrap { display: none; position: absolute; left: 0; right: 0; margin: 0; bottom: calc(100% + 2px); height: 80px; background: #f0f0f0; background: Menu; }
+.yawf-config-range:focus-within .yawf-config-range-wrap { display: block; }
+.yawf-config-range input[type="range"] { position: absolute; top: 0; bottom: 0; margin: auto; width: 75px; right: -20px; left: -20px; transform: rotate(-90deg); }
+.yawf-config-color input[type="color"] { width: 45px; box-sizing: border-box; height: 20px; vertical-align: middle; }
+.yawf-config-text textarea { width: 100%; min-height: 120px; resize: vertical; padding-left: var(--w-input-indent); padding-right: var(--w-input-indent); }
+.yawf-config-collection-submit,
+.yawf-config-key button { padding: 4px 16px; margin: 0 4px; vertical-align: bottom; }
+.yawf-config-collection-list { display: block; margin: 5px; padding: 0; }
+.yawf-config-collection-list .yawf-config-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; display: inline-block; position: relative; margin-left: 8px; border: 1px solid var(--w-b-line-primary-border); }
+.yawf-config-collection-remove { display: block; position: absolute; top: 2px; left: 0; display: flow-root; width: 20px; height: 20px; line-height: 20px; text-align: center; cursor: pointer; }
+.yawf-config-collection-item-content { max-width: 500px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.yawf-config-collection-user-id .yawf-config-collection-list { margin-left: -5px; }
+.yawf-config-collection-user-id .yawf-config-collection-item { width: 90px; height: 50px; padding: 1px 20px 1px 56px; text-align: left; }
+.yawf-config-collection-user-id .yawf-config-collection-remove { right: 0; left: auto; text-align: center; }
+.yawf-config-collection-user-id .yawf-config-collection-remove a { position: static; margin: 0; }
+.yawf-config-collection-user-id .yawf-config-user-avatar { position: absolute; left: 1px; top: 1px; width: 50px; height: 50px; overflow: hidden; }
+.yawf-config-collection-user-id .yawf-config-user-avatar-img { width: 50px; height: 50px; }
+.yawf-config-collection-user-id .yawf-config-user-name { max-width: 100%; word-break: break-all; white-space: normal; max-height: 40px; overflow: hidden; }
+.yawf-collection-suggestion.yawf-collection-suggestion { z-index: 10000; position: fixed; background: var(--w-card-background); border: 1px solid var(--w-layer-border); border-radius: var(--w-layer-radius); }
+.yawf-collection-suggestion-list { margin: 0; padding: 10px 0; list-style: none; }
+.yawf-list-suggestion-item { line-height: 20px; padding: 5px 10px; }
+.yawf-list-suggestion-item.yawf-current { line-height: 20px; padding: 5px 10px; background: var(--w-pop-item-hover); }
+.yawf-list-suggestion-item a { min-height: 15.6px; color: inherit; text-decoration: none; }
+.yawf-config-item .woo-input-wrap { height: 20px; line-height: 20px; --w-input-height: 20px; box-sizing: content-box; margin-left: 4px; margin-right: 4px; }
+.yawf-config-item .woo-input-wrap.woo-input-text { height: auto; width: 100%; box-sizing: border-box; }
+.yawf-config-item .woo-input-wrap input,
+.yawf-config-item .woo-input-wrap select { vertical-align: bottom; }
+.yawf-config-item .yawf-config-select .woo-input-wrap { padding-right: 36px; position: relative; }
+.yawf-config-item .yawf-config-select .woo-input-wrap::before { content: " "; display: block; width: 0; height: 0; border-top: 4px solid currentColor; border-left: 4px solid transparent; border-right: 4px solid transparent; position: absolute; right: 14px; top: calc(50% - 2px); }
+.yawf-config-text .woo-input-wrap { width: 520px; height: auto; padding: 0; }
+.yawf-config-item .woo-input-main { background: inherit; }
+.yawf-config-item .woo-input-wrap select { margin-left: -12px; padding-left: 12px; margin-right: -36px; padding-right: 36px; width: auto; }
 `);
 
 }());

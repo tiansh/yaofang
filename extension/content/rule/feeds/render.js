@@ -537,7 +537,7 @@
   };
 
   render.feedRenderFix = rule.Rule({
-    weiboVersion: 7,
+    v7Support: true,
     id: 'feed_render',
     version: 77,
     parent: render.render,

@@ -23,12 +23,10 @@
   });
 
   Object.assign(i18n, {
-    floodingFeedHide: { cn: '隐藏', tw: '隱藏', en: 'hidden' },
-    floodingFeedFold: { cn: '折叠', tw: '折疊', en: 'folded' },
     floodingAuthor: {
-      cn: '相同作者|超过{{number}}条微博|时超出的{{action}}||{{group}}在分组页面同样生效',
-      tw: '相同作者|超過{{number}}條微博|時超出的{{action}}||{{group}}在分組頁面同樣生效',
-      en: 'Feeds by same author will | be {{action}} | when more than {{number}} seen||{{group}} Also apply to grouping pages',
+      cn: '相同作者|超过{{number}}条微博|时超出的隐藏||{{group}}在分组页面同样生效',
+      tw: '相同作者|超過{{number}}條微博|時超出的隱藏||{{group}}在分組頁面同樣生效',
+      en: 'Feeds by same author will | be hidden | when more than {{number}} seen||{{group}} Also apply to grouping pages',
     },
     floodingAuthorReason: {
       cn: '刷屏',
@@ -36,9 +34,9 @@
       en: 'flooding',
     },
     floodingForward: {
-      cn: '相同微博的转发|超过{{number}}条|时超出的{{action}}',
-      tw: '相同微博的轉發|超過{{number}}條|時超出的{{action}}',
-      en: 'Feeds forwarded form same one will | be {{action}} | when more than {{number}} seen',
+      cn: '相同微博的转发|超过{{number}}条|时超出的隐藏',
+      tw: '相同微博的轉發|超過{{number}}條|時超出的隱藏',
+      en: 'Feeds forwarded form same one will | be hidden | when more than {{number}} seen',
     },
     floodingForwardReason: {
       cn: '频繁转发',
@@ -59,14 +57,6 @@
         max: 20,
         initial: 5,
       },
-      action: {
-        type: 'select',
-        initial: 'hide',
-        select: [
-          { value: 'hide', text: () => i18n.floodingFeedHide },
-          { value: 'fold', text: () => i18n.floodingFeedFold },
-        ],
-      },
       group: { type: 'boolean' },
     },
     init() {
@@ -77,7 +67,7 @@
         if (!rule.isEnabled()) return null;
         // 如果是因为修改规则导致的重新计算，那么我们不再做一次处理
         if (parsed.has(feed)) return null;
-        const me = init.page.$CONFIG.uid;
+        const me = init.page.config.user.idstr;
         const [author] = feedParser.author.id(feed);
         const [fauthor] = feedParser.fauthor.id(feed);
         const authorId = fauthor || author;
@@ -93,9 +83,8 @@
         const feeds = [...document.querySelectorAll('.WB_feed_type')];
         const count = feeds.filter(feed => parsed.get(feed) === authorId).length;
         if (count <= rule.ref.number.getConfig()) return null;
-        const result = rule.ref.action.getConfig();
         const reason = i18n.floodingAuthorReason;
-        return { result, reason };
+        return { result: 'hide', reason };
       }, { priority: -1e6 });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },
@@ -113,14 +102,6 @@
         max: 20,
         initial: 3,
       },
-      action: {
-        type: 'select',
-        initial: 'hide',
-        select: [
-          { value: 'hide', text: () => i18n.floodingFeedHide },
-          { value: 'fold', text: () => i18n.floodingFeedFold },
-        ],
-      },
     },
     init() {
       const rule = this;
@@ -135,9 +116,8 @@
         const feeds = [...document.querySelectorAll('[mid]')];
         const count = feeds.filter(feed => parsed.get(feed) === omid).length;
         if (count <= rule.ref.number.getConfig()) return null;
-        const result = rule.ref.action.getConfig();
         const reason = i18n.floodingForwardReason;
-        return { result, reason };
+        return { result: 'hide', reason };
       }, { priority: -1e6 });
       this.addConfigListener(() => { observer.feed.rerun(); });
     },

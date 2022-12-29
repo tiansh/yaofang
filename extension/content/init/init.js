@@ -3,7 +3,7 @@
  *
  * 初始化流程
  * Ready:
- *   当获取到 $CONFIG 参数时尽快调用
+ *   当获取到 根元素 参数时尽快调用
  * Load:
  *   当 DOMContentLoaded 时调用，此时 DOM 树可用
  *   Load 总是在 Ready 之后
@@ -20,20 +20,10 @@
   const yawf = window.yawf;
   const util = yawf.util;
   const init = yawf.init = yawf.init ?? {};
-  yawf.WEIBO_VERSION = 0;
 
   const page = init.page = init.page ?? {};
 
-  const validPageReadyV6 = $CONFIG => {
-    // 必须的参数
-    if (!$CONFIG) return false;
-    if (!$CONFIG.uid) return false;
-    if (!$CONFIG.nick) return false;
-    if ($CONFIG.islogin === '0') return false;
-    return true;
-  };
-
-  const validPageReadyV7 = config => {
+  const validPageReady = config => {
     // 必须的参数
     if (!config) return false;
     if (!config.user) return false;
@@ -44,7 +34,7 @@
 
   const validPageDom = () => {
     // 如果有登录按钮，则说明没有登录，此时不工作
-    if (document.querySelector('.gn_login')) return false;
+    if (document.querySelector('.loginBtn')) return false;
     return true;
   };
 
@@ -79,20 +69,9 @@
     set.clear();
   };
 
-  const genV6LikeConfigByV7Config = config => ({
-    uid: config.user.idstr,
-    name: config.user.screen_name,
-    oid: null, // 无数据
-    domain: '', // 无数据
-    bpType: '', // 无数据
-    location: '', // 无数据
-    lang: 'zh-CN',
-    skin: null, // 无数据
-  });
-
   init.status = () => status;
   // 触发 Ready
-  init.ready = async $CONFIG => {
+  init.ready = async config => {
     status = true;
     init.ready = init.deinit = noop;
     util.debug('yawf onready');
@@ -106,24 +85,9 @@
   // 触发 ConfigChange
   init.configChange = async config => {
     util.debug('yawf onconfigchange: %o', config);
-    if (validPageReadyV6(config)) {
-      if (!yawf.WEIBO_VERSION) {
-        yawf.WEIBO_VERSION = 6;
-        document.documentElement.classList.add('yawf-WBV6');
-      }
-      if (yawf.WEIBO_VERSION !== 6) return;
-      page.$CONFIG = config;
-      await runSet(onConfigChangeCallback);
-      await init.ready(config);
-    } else if (validPageReadyV7(config)) {
-      if (!yawf.WEIBO_VERSION) {
-        yawf.WEIBO_VERSION = 7;
-        document.documentElement.classList.add('yawf-WBV7');
-      }
-      if (yawf.WEIBO_VERSION !== 7) return;
+    if (validPageReady(config)) {
       if (!page.route) return;
       page.config = config;
-      page.$CONFIG = genV6LikeConfigByV7Config(config);
       await runSet(onConfigChangeCallback);
       await init.ready(config);
     } else {

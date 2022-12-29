@@ -16,7 +16,7 @@
     url.searchParams.set('_t', 1);
     url.searchParams.set('_v', network.fakeCallback());
     url.searchParams.set('key', key);
-    url.searchParams.set('uid', yawf.init.page.$CONFIG.uid);
+    url.searchParams.set('uid', yawf.init.page.config.user.idstr);
     util.debug('fetch url %s', url);
     const resp = await network.fetchText(url);
     const users = Array.from(network.parseJson(resp).data?.user ?? []);

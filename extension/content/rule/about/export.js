@@ -76,7 +76,7 @@
   let wbpConfig = null;
 
   backup.importExport = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'script_import_export',
     version: 1,
     parent: backup.backup,
@@ -84,24 +84,14 @@
       const rule = this;
       const container = document.createElement('span');
       container.className = 'yawf-config-item yawf-config-rule';
-      if (yawf.WEIBO_VERSION === 6) {
-        container.innerHTML = '<label><input type="file" style=" width: 1px; height: 1px; margin: 0 -1px 0 0; opacity: 0;" /><span class="W_btn_b yawf-import" style="cursor: pointer"><span class="W_f14"></span></span></label><a class="W_btn_b yawf-export" href="javascript:;"><span class="W_f14"></span></a><a class="W_btn_b yawf-reset" href="javascript:;"><span class="W_f14"></span></a>';
-      } else {
-        container.innerHTML = '<input type="file" style=" width: 1px; height: 1px; margin: 0 -1px 0 0; opacity: 0;" /><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-import"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-export"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-reset"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
-      }
+      container.innerHTML = '<input type="file" style=" width: 1px; height: 1px; margin: 0 -1px 0 0; opacity: 0;" /><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-import"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-export"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button><button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-reset"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
       const importInput = container.querySelector('input');
       const importButton = container.querySelector('.yawf-import');
       const exportButton = container.querySelector('.yawf-export');
       const resetButton = container.querySelector('.yawf-reset');
-      if (yawf.WEIBO_VERSION === 6) {
-        importButton.querySelector('.W_f14').textContent = i18n.configImportButton;
-        exportButton.querySelector('.W_f14').textContent = i18n.configExportButton;
-        resetButton.querySelector('.W_f14').textContent = i18n.configResetButton;
-      } else {
-        importButton.querySelector('.woo-button-content').textContent = i18n.configImportButton;
-        exportButton.querySelector('.woo-button-content').textContent = i18n.configExportButton;
-        resetButton.querySelector('.woo-button-content').textContent = i18n.configResetButton;
-      }
+      importButton.querySelector('.woo-button-content').textContent = i18n.configImportButton;
+      exportButton.querySelector('.woo-button-content').textContent = i18n.configExportButton;
+      resetButton.querySelector('.woo-button-content').textContent = i18n.configResetButton;
       const readFile = async function (file) {
         if (file.size > (1 << 24)) throw new RangeError();
         return new Promise(resolve => {
@@ -151,11 +141,9 @@
         }
         importData({ config, source });
       });
-      if (yawf.WEIBO_VERSION === 7) {
-        importButton.addEventListener('click', event => {
-          importInput.click();
-        });
-      }
+      importButton.addEventListener('click', event => {
+        importInput.click();
+      });
       exportButton.addEventListener('click', event => {
         if (exportButton.classList.contains('yawf-export-busy')) return;
         exportButton.classList.add('yawf-export-busy');
@@ -171,7 +159,7 @@
         };
         const text = JSON.stringify(data, null, 2);
         const blob = new Blob([text], { type: 'application/json' });
-        const username = yawf.WEIBO_VERSION === 6 ? init.page.$CONFIG.nick : init.page.config.user.screen_name;
+        const username = init.page.config.user.screen_name;
         const date = new Date();
         const dateStr = date.toISOString().replace(/-|T.*/g, '');
         const filename = download.filename(`${username}-${i18n.configFilename}-${dateStr}.json`);
@@ -202,17 +190,9 @@
       });
       if (wbpConfig) try {
         const wrap = document.createElement('div');
-        if (yawf.WEIBO_VERSION === 6) {
-          wrap.innerHTML = '<a class="W_btn_b yawf-import-wbp" href="javascript:;"><span class="W_f14"></span></a>';
-        } else {
-          wrap.innerHTML = '<button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-import-wbp"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
-        }
+        wrap.innerHTML = '<button class="woo-button-main woo-button-flat woo-button-primary woo-button-s woo-button-round woo-dialog-btn yawf-import-wbp"><span class="woo-button-wrap"><span class="woo-button-content"></span></span></button>';
         const importWbpButton = wrap.querySelector('.yawf-import-wbp');
-        if (yawf.WEIBO_VERSION === 6) {
-          importWbpButton.querySelector('.W_f14').textContent = i18n.configImportWbpButton;
-        } else {
-          importWbpButton.querySelector('.woo-button-content').textContent = i18n.configImportWbpButton;
-        }
+        importWbpButton.querySelector('.woo-button-content').textContent = i18n.configImportWbpButton;
         importWbpButton.addEventListener('click', event => {
           importData(wbpConfig);
         });

@@ -5,9 +5,7 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  -moz-user-select: none;
   user-select: none;
-
   --preview-size: 100px;
 
   background-image: url("chrome://global/skin/media/imagedoc-darknoise.png");

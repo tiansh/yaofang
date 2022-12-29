@@ -49,7 +49,7 @@
 
   if (env.config.externalMenuSupported) {
     userCss.css = rule.Rule({
-      weiboVersion: [6, 7],
+      v7Support: true,
       id: 'custom_css',
       version: 1,
       parent: userCss.userCss,

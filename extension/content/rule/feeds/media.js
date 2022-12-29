@@ -2,7 +2,6 @@
 
   const yawf = window.yawf;
   const env = yawf.env;
-  const init = yawf.init;
   const util = yawf.util;
   const rule = yawf.rule;
   const observer = yawf.observer;
@@ -10,7 +9,6 @@
   const download = yawf.download;
   const contextmenu = yawf.contextmenu;
   const imageViewer = yawf.imageViewer;
-  const feedParser = yawf.feed;
 
   const feeds = yawf.rules.feeds;
 
@@ -393,7 +391,7 @@
   });
 
   media.imagePreviewAll = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'image_preview_all',
     version: 50,
     parent: media.media,
@@ -433,226 +431,81 @@
       });
     },
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        const previewSize = this.ref.count.getConfig();
-        const previewWidth = +previewSize[0];
-        const previewCount = previewSize[0] * previewSize[2] || Infinity;
-        const lastImageMask = this.ref.more.getConfig() === 'mask';
+      const configs = {
+        count: this.ref.count.getConfig(),
+        more: this.ref.more.getConfig(),
+      };
+      util.inject(function (rootKey, configs) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
 
-        observer.feed.onAfter(async function (/** @type {HTMLElement} */feed) {
-          // 收藏页面目前原生不支持，原因不明
-          const officialNotSupport = init.page.type() === 'fav';
-          // 单条微博页面已经预先展开了，所以不能再继续操作了
-          if (document.querySelector('[id^="Pl_Official_WeiboDetail__"]')) return;
-          const ul = feed.querySelector('ul[node-type="fl_pic_list"]');
-          // 如果没有图片，或者已经有第十张图片了，那我们应该不工作
-          if (!ul || ul.querySelector('.li_10')) return;
-          // 首页等官方支持的页面，会标记 over9pic，我们用这个属性来判断
-          if (!officialNotSupport && !ul.getAttribute('action-data').includes('over9pic=1')) return;
-          // 目前部分页面没有支持，我们只能看到满 9 张图，就去检查是不是有第十张
-          if (officialNotSupport && !ul.querySelector('.li_9')) return;
-          const mid = (feedParser.isForward(feed) ? feedParser.omid : feedParser.mid)(feed);
-          const [author] = feedParser.author.id(feed);
-          const original = feedParser.isForward(feed) ? feedParser.original.id(feed) : author;
-          ul.classList.add('yawf-WB_media_a_m9p_loading');
-          /** @type {string[]} */
-          const allImages = await request.getAllImages(original, mid);
-          ul.classList.remove('yawf-WB_media_a_m9p_loading');
-          if (!allImages?.length) return;
-          const imageCount = allImages.length;
-          if (imageCount === 9 && officialNotSupport) return;
-          const pids = allImages.map(img => img.replace(/^.*\/(.*)\..*$/, '$1'));
-          const imgType = type => img => img.replace(/^(.*\/).*(\/.*)$/, (_, d, n) => d + type + n);
-          // 最后一个图片的格式和别人不一样，如果我们要显示的不是9个，就会很奇怪，所以我们删掉再自己加一遍
-          ul.removeChild(ul.querySelector('.li_9'));
-          allImages.forEach((image, index) => {
-            if (index < 8) return;
-            const pid = pids[index];
-            const li = document.createElement('li');
-            li.className = `WB_pic li_${index + 1} S_bg1 S_line2 bigcursor li_focus yawf-li_more`;
-            li.setAttribute('action-data', `isPrivate=0&relation=0&pic_id=${pid}`);
-            li.setAttribute('action-type', 'fl_pics');
-            li.setAttribute('suda-uatrack', `key=tblog_newimage_feed&value=image_feed_unfold:${mid}:${pid}:${author}:0`);
-            const img = li.appendChild(document.createElement('img'));
-            // 因为不知道总宽比的时候不太方便处理 orj360，所以用 thumb300 代替一下
-            img.src = imgType('thumb300')(image);
-            img.style = 'height:110px;width:110px;top:0;left:0;';
-            ul.appendChild(li);
-            if (image.endsWith('.gif')) {
-              const tip = document.createElement('i');
-              tip.className = 'W_icon_tag_v2';
-              tip.textContent = i18n.animatedImage;
-              li.appendChild(tip);
-            }
+        const col = Number(configs.count.split('x')[0]);
+        const row = Number(configs.count.split('x')[1]) || Infinity;
+
+        vueSetup.eachComponentVM('feed-picture', function (vm) {
+          Object.defineProperty(vm, 'inlineNum', {
+            get: function () {
+              return [1, 1, 3, 3, 4, 4, 3, 4, 4, 3][vm.pic_num] || col;
+            },
+            set: function (v) { },
+            enumerable: true,
+            configurable: true,
+          });
+          Object.defineProperty(vm, 'newPics', {
+            get: function () {
+              if (vm.$parent.data._yawf_PictureShowAll) return vm.pics.slice(0);
+              return vm.pics.slice(0, col * row);
+            },
+            set: function (v) { },
+            enumerable: true,
+            configurable: true,
           });
 
-          if (imageCount < 10) return;
-          // 同时保留 WB_media_a_m9
-          ul.classList.add('yawf-WB_media_a_m' + imageCount, 'yawf-WB_media_a_m9p');
-          // 不能用 URLSearchParams 来处理 actionData，因为它需要项目间的逗号不被转义才能正常工作
-          const actionData = ul.getAttribute('action-data').split('&');
-          const setActionData = (key, value) => {
-            const newValue = key + '=' + value.map(encodeURIComponent).join(',');
-            const item = actionData.findIndex(item => item.startsWith(key + '='));
-            if (item !== -1) actionData[item] = newValue;
-            else actionData.push(newValue);
-          };
-          setActionData('clear_picSrc', allImages.map(imgType('mw690')));
-          setActionData('thumb_picSrc', allImages.map(imgType('orj360')));
-          setActionData('pic_ids', pids);
-          setActionData('object_ids', pids.map(pid => '1042018:' + pid));
-          // 微博自己判断的是 over9pic == 1，所以我们用图片数量代替一下这个值
-          // 这样既包括 "over9pic=1" 子串，也保持了 truthy，同时还不是 1
-          setActionData('over9pic', [allImages.length]);
-          // GIF 对应的视频 id 拿不到，所以就不更新了，反正也就是动图放不了罢了
-          ul.setAttribute('action-data', actionData.join('&'));
-
-          if (imageCount > previewCount) {
-            /** @type {HTMLDivElement} */
-            const mediaWrap = ul.closest('.WB_media_wrap');
-            if (lastImageMask) {
-              const lastImage = ul.querySelectorAll('.WB_pic')[previewCount - 1];
-              const mask = document.createElement('span');
-              mask.className = 'yawf-W_icon_tag_9p W_icon_tag_9p';
-              mask.textContent = '+' + (imageCount - previewCount);
-              lastImage.appendChild(mask);
-            } else {
-              // 类似超过 140 字的展开全文一样，我们显示一个查看所有图片的按钮
-              const foldContainer = document.createElement('div');
-              foldContainer.className = 'yawf-WB_media_a_ctrl yawf-WB_text_size';
-              foldContainer.innerHTML = '<a href="javascript:;" class="yawf-WB_media_a_show"><i class="W_ficon ficon_arrow_down">c</i></a><a href="javascript:;" class="yawf-WB_media_a_fold"><i class="W_ficon ficon_arrow_up">d</i></a>';
-              const showButton = foldContainer.querySelector('.yawf-WB_media_a_show');
-              const showText = i18n.previewAllShow.replace('{1}', () => imageCount);
-              showButton.insertBefore(document.createTextNode(showText), showButton.firstChild);
-              const foldButton = foldContainer.querySelector('.yawf-WB_media_a_fold');
-              const foldText = i18n.previewAllFold;
-              foldButton.insertBefore(document.createTextNode(foldText), foldButton.firstChild);
-              showButton.addEventListener('click', () => {
-                mediaWrap.classList.add('yawf-WB_media_a_all');
-              });
-              foldButton.addEventListener('click', () => {
-                const oldHeight = mediaWrap.clientHeight;
-                const oldScrollTop = document.documentElement.scrollTop;
-                mediaWrap.classList.remove('yawf-WB_media_a_all');
-                // 调整滚动条以适应高度变化
-                requestAnimationFrame(function () {
-                  const newHeight = mediaWrap.clientHeight;
-                  document.documentElement.scrollTop = oldScrollTop - oldHeight + newHeight;
-                });
-              });
-              mediaWrap.appendChild(foldContainer);
-            }
+          if (!Object.getOwnPropertyDescriptor(vm.$parent.data, '_yawf_PictureShowAll')) {
+            vm.$parent.$set(vm.$parent.data, '_yawf_PictureShowAll', false);
           }
-        });
 
-        if (Number.isFinite(previewCount)) css.append(`.yawf-WB_media_a_m9p .li_${previewCount} ~ .WB_pic { display: none; }`);
-        css.append(`
-.yawf-WB_media_a_m9p_loading { visibility: hidden; opacity: 0; }
-.yawf-WB_media_a_all .yawf-W_icon_tag_9p { display: none; }
-.yawf-WB_media_a_all .yawf-WB_media_a_m9p .WB_pic { display: block; }
-.yawf-WB_media_a_fold { display: none; }
-.yawf-WB_media_a_show { display: inline; }
-.yawf-WB_media_a_all .yawf-WB_media_a_fold { display: inline; }
-.yawf-WB_media_a_all .yawf-WB_media_a_show { display: none; }
-.yawf-WB_media_a_ctrl { clear: both; margin-left: 10px; padding-top: 4px; }
-`);
-        if (previewWidth === 4) {
-          const smallImage = feeds.layout.smallImage.isEnabled();
-          if (smallImage) {
-            css.append('.WB_feed_v3 .WB_media_a.yawf-WB_media_a_m9p { width: 345px; }');
-          } else {
-            css.append('.WB_feed_v3 .WB_media_a.yawf-WB_media_a_m9p { width: 456px; }');
-          }
-        }
-
-        if (lastImageMask) {
-          document.addEventListener('click', event => {
-            const target = event.target;
-            if (!(target instanceof Element)) return;
-            const mask = target.closest('.yawf-W_icon_tag_9p');
-            if (!mask) return;
-            const mediaWrap = mask.closest('.WB_media_wrap');
-            mediaWrap.classList.add('yawf-WB_media_a_all');
+          const expand = function (event) {
+            vm.$parent.data._yawf_PictureShowAll = true;
             event.stopPropagation();
-          }, true);
-        }
-      } else {
-        const configs = {
-          count: this.ref.count.getConfig(),
-          more: this.ref.more.getConfig(),
-        };
-        util.inject(function (rootKey, configs) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
+          };
 
-          const col = Number(configs.count.split('x')[0]);
-          const row = Number(configs.count.split('x')[1]) || Infinity;
-
-          vueSetup.eachComponentVM('feed-picture', function (vm) {
-            Object.defineProperty(vm, 'inlineNum', {
-              get: function () {
-                return [1, 1, 3, 3, 4, 4, 3, 4, 4, 3][vm.pic_num] || col;
-              },
-              set: function (v) { },
-              enumerable: true,
-              configurable: true,
-            });
-            Object.defineProperty(vm, 'newPics', {
-              get: function () {
-                if (vm.$parent.data._yawf_PictureShowAll) return vm.pics.slice(0);
-                return vm.pics.slice(0, col * row);
-              },
-              set: function (v) { },
-              enumerable: true,
-              configurable: true,
-            });
-
-            if (!Object.getOwnPropertyDescriptor(vm.$parent.data, '_yawf_PictureShowAll')) {
-              vm.$parent.$set(vm.$parent.data, '_yawf_PictureShowAll', false);
+          vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
+            const { removeChild, appendChild, h } = Nodes;
+            const moreIcon = nodeStruct.querySelector('x-woo-box-item x-woo-box');
+            if (moreIcon) {
+              removeChild(moreIcon.parentNode, moreIcon);
             }
-
-            const expand = function (event) {
-              vm.$parent.data._yawf_PictureShowAll = true;
-              event.stopPropagation();
-            };
-
-            vueSetup.transformComponentRender(vm, function (nodeStruct, Nodes) {
-              const { removeChild, appendChild, h } = Nodes;
-              const moreIcon = nodeStruct.querySelector('x-woo-box-item x-woo-box');
-              if (moreIcon) {
-                removeChild(moreIcon.parentNode, moreIcon);
+            if (vm.$parent.data._yawf_PictureShowAll) {
+              // pass
+            } else if (this.pic_num > col * row) {
+              if (configs.more === 'mask') {
+                const lastPic = nodeStruct.querySelector('x-woo-box-item:last-child');
+                const mask = h('woo-box', {
+                  class: [this.$style.mask, this.$style.focusImg],
+                  attrs: { align: 'center', justify: 'center' },
+                }, [
+                  h('span', {
+                    class: this.$style.picNum,
+                    on: { click: expand },
+                  }, ['+' + (this.pic_num - col * row)]),
+                ]);
+                appendChild(lastPic, mask);
+              } else {
+                const more = h('div', {}, [
+                  h('a', {
+                    class: 'viewpic yawf-feed-detail-content-retweet-size yawf-feed-pic-expand',
+                    on: { click: expand },
+                  }, [`查看全部图片（共 ${this.pic_num} 张）`]),
+                ]);
+                appendChild(nodeStruct, more);
               }
-              if (vm.$parent.data._yawf_PictureShowAll) {
-                // pass
-              } else if (this.pic_num > col * row) {
-                if (configs.more === 'mask') {
-                  const lastPic = nodeStruct.querySelector('x-woo-box-item:last-child');
-                  const mask = h('woo-box', {
-                    class: [this.$style.mask, this.$style.focusImg],
-                    attrs: { align: 'center', justify: 'center' },
-                  }, [
-                    h('span', {
-                      class: this.$style.picNum,
-                      on: { click: expand },
-                    }, ['+' + (this.pic_num - col * row)]),
-                  ]);
-                  appendChild(lastPic, mask);
-                } else {
-                  const more = h('div', {}, [
-                    h('a', {
-                      class: 'viewpic yawf-feed-detail-content-retweet-size yawf-feed-pic-expand',
-                      on: { click: expand },
-                    }, [`查看全部图片（共 ${this.pic_num} 张）`]),
-                  ]);
-                  appendChild(nodeStruct, more);
-                }
-              }
-            });
-            vm.$forceUpdate();
+            }
           });
-        }, util.inject.rootKey, configs);
-        css.append('.yawf-feed-pic-expand, .yawf-feed-pic-expand:hover { cursor: pointer; text-decoration: none; }');
-      }
+          vm.$forceUpdate();
+        });
+      }, util.inject.rootKey, configs);
+      css.append('.yawf-feed-pic-expand, .yawf-feed-pic-expand:hover { cursor: pointer; text-decoration: none; }');
     },
   });
 
@@ -719,7 +572,7 @@
   });
 
   media.useBuiltInVideoPlayer = rule.Rule({
-    weiboVersion: [6, 7],
+    v7Support: true,
     id: 'feed_built_in_video_player',
     version: 60,
     parent: media.media,
@@ -738,211 +591,105 @@
       i: { type: 'bubble', icon: 'warn', template: () => i18n.useBuiltInVideoPlayerDetail },
     },
     ainit() {
-      if (yawf.WEIBO_VERSION === 6) {
-        const rule = this;
-        const getVideoSource = function (videoSources) {
-          const videoSourceData = new URLSearchParams(videoSources);
-          const quality = rule.ref.quality.getConfig();
-          const qualityTypes = [];
-          const allKeys = Array.from(videoSourceData).map(([key]) => key);
-          if (quality === 'best') {
-            const available = allKeys.filter(Number).sort((x, y) => y - x);
-            qualityTypes.push(...available.map(q => String(q)));
+      const rule = this;
+      const configs = {
+        memorize: this.ref.memorize.getConfig(),
+        volume: this.ref.volume.getConfig(),
+        quality: this.ref.quality.getConfig(),
+      };
+
+      const updateVolume = function (volume) {
+        if (typeof volume !== 'number') return;
+        if (volume < 0 || volume > 100 || !Number.isFinite(volume)) return;
+        rule.ref.volume.setConfig(Math.round(volume));
+      };
+
+      util.inject(function (rootKey, configs, updateVolume) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+
+        const { quality, memorize } = configs;
+        let volume = configs.volume;
+
+        const setVolume = function (video) {
+          const target = Math.round(volume) / 100;
+          if (video.paused && video.volume !== target) {
+            video.volume = target;
           }
-          qualityTypes.push(videoSourceData.get('qType'), ...allKeys);
-          const qualityType = qualityTypes.find(q => /^https?(?::|%3A)/i.test(videoSourceData.get(q)));
-          let videoSource = videoSourceData.get(qualityType);
-          // 有时候会被转义两次，所以要再额外处理一次，原因不明
-          if (/^https?%3A/i.test(videoSource)) {
-            videoSource = decodeURIComponent(videoSource);
-          }
-          // http 会直接被浏览器拦掉，但是有的历史数据是 http
-          videoSource = videoSource.replace(/^http:/, 'https:');
-          return videoSource;
         };
-        const replaceWeiboVideoPlayer = function replaceWeiboVideoPlayer() {
-          const containers = document.querySelectorAll('li.WB_video[node-type="fl_h5_video"][video-sources]');
-          containers.forEach(function (container) {
-            const smallImage = yawf.rules.feeds.layout.smallImage.getConfig();
-            const cover = container.querySelector('[node-type="fl_h5_video_pre"] img');
-            if (!cover) return;
-            const video = container.querySelector('video');
-            if (video) video.src = 'data:text/plain,42';
-            const videoSource = getVideoSource(container.getAttribute('video-sources'));
-            const newContainer = document.createElement('li');
-            newContainer.className = container.className;
-            newContainer.classList.add('yawf-WB_video');
-            const newVideo = document.createElement('video');
-            newVideo.poster = cover.src;
-            newVideo.src = videoSource;
-            newVideo.preload = 'none';
-            newVideo.controls = !smallImage;
-            newVideo.autoplay = false;
-            const updatePlayState = function () {
-              const isPlaying = !newVideo.paused || newVideo.seeking;
-              if (isPlaying) newContainer.setAttribute('yawf-video-play', '');
-              else newContainer.removeAttribute('yawf-video-play');
-              if (smallImage) newVideo.controls = isPlaying;
-            };
-            newVideo.addEventListener('play', updatePlayState);
-            newVideo.addEventListener('pause', updatePlayState);
-            if (smallImage) {
-              newContainer.addEventListener('click', () => {
-                if (!newContainer.hasAttribute('yawf-video-play')) newVideo.play();
-              });
-              const tip = document.createElement('i');
-              tip.className = 'W_icon_tag_v2';
-              tip.textContent = i18n.mediaVideoType;
-              newContainer.appendChild(tip);
-            }
-            newVideo.volume = rule.ref.volume.getConfig() / 100;
-            if (rule.ref.memorize.getConfig()) {
-              newVideo.addEventListener('volumechange', () => {
-                rule.ref.volume.setConfig(Math.round(newVideo.volume * 100));
-              });
-              newVideo.addEventListener('play', () => {
-                newVideo.volume = rule.ref.volume.getConfig() / 100;
-              });
-            }
-            newContainer.appendChild(newVideo);
-            container.parentNode.replaceChild(newContainer, container);
-          });
+        const onClick = function (event) {
+          this.isPlaying = true;
+          setVolume(event.target);
+          this.$refs.video.play();
         };
-        observer.dom.add(replaceWeiboVideoPlayer);
-        css.append(`
-li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video_pre"],
-li.WB_video[node-type="fl_h5_video"][video-sources] > div[node-type="fl_h5_video_disp"] { display: none !important; }
-.yawf-WB_video { transition: width, height 0.2s; }
-.yawf-WB_video video { width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto; }
-.WB_media_a .WB_video.yawf-WB_video { cursor: unset; }
-.yawf-WB_video .W_icon_tag_v2 { z-index: 1; }
-.WB_video[yawf-video-play] .W_icon_tag_v2 { display: none !important; }
-`);
-        util.inject(function () {
-          const FakeVideoPlayer = function e() { };
-          FakeVideoPlayer.prototype.thumbnail = function () { };
-          FakeVideoPlayer.prototype.playStatus = function () { };
-          if (window.VideoPlayer) {
-            window.VideoPlayer = FakeVideoPlayer;
-            return;
+        const onPlay = function (event) {
+          this.isPlaying = true;
+          setVolume(event.target);
+        };
+        const onVolumechange = function (event) {
+          if (!memorize) return;
+          const video = event.target;
+          volume = Math.round(video.volume * 100);
+          updateVolume(volume);
+          Array.from(document.querySelectorAll('.yawf-feed-video')).forEach(setVolume);
+        };
+        const onLoadstart = function (event) {
+          setVolume(event.target);
+        };
+
+        vueSetup.transformComponentsRenderByTagName('feed-video', function (nodeStruct, Nodes) {
+          const { removeChild, appendChild, h } = Nodes;
+
+          const isPlaying = this.isPlaying;
+          // 去掉原本渲染的视频播放器
+          while (nodeStruct.firstChild) {
+            removeChild(nodeStruct, nodeStruct.firstChild);
           }
-          let globalVideoPlayer = void 0;
-          Object.defineProperty(window, 'VideoPlayer', {
-            get() { return globalVideoPlayer; },
-            set(_) { globalVideoPlayer = FakeVideoPlayer; },
-            enumerable: true,
-            configurable: false,
-          });
+          // 我们自己画一个视频播放器上去
+          let url = null;
+          if (quality === 'best') try {
+            const playback = this.infos.media_info.playback_list.find(x => x.play_info?.url);
+            url = playback.play_info.url;
+          } catch (e) { /* ignore */ }
+          if (!url) url = this.infos.media_info.stream_url;
+          const videoWrap = h('div', {
+            ref: 'videoWrapper',
+            class: [this.$style.videoBox, 'yawf-video-box'],
+          }, [h('div', {
+            ref: 'videoContainer',
+            class: [this.$style.placeholder, 'yawf-video-placeholder'],
+          }, [h('div', {
+            class: [this.$style.video, 'yawf-video-container'],
+          }, [h('div', {
+            class: [this.$style.video, 'wbp-video', isPlaying ? 'yawf-feed-video-actived' : null],
+          }, [h('video', {
+            ref: 'video',
+            class: ['yawf-video', 'yawf-feed-video', 'wbpv-tech'],
+            attrs: {
+              src: url.replace(/^https?:\/\//, '//'),
+              poster: this.thumbnail.replace(/^https?:\/\//, '//'),
+              preload: 'auto',
+              controls: isPlaying ? true : false,
+            },
+            on: {
+              click: isPlaying ? null : onClick.bind(this),
+              play: onPlay.bind(this),
+              volumechange: onVolumechange.bind(this),
+              loadstart: onLoadstart.bind(this),
+            },
+          })])])])]);
+          appendChild(nodeStruct, videoWrap);
         });
-        // 这几行分别是不显示视频弹层按钮，显示全屏按钮，以及点视频时不弹层
-        // 因为直播视频没办法替换成原生播放器，所以这两个功能还需要保留
-        // 这里直接把这几个功能放在这里，不单独做一个功能了
-        css.append(`
-.wbv-pop-control { display: none !important; }
-.wbv-fullscreen-control { display: block !important; }
-.wbv-pop-layer { display: none !important; }
-`);
-      } else {
-        const rule = this;
-        const configs = {
-          memorize: this.ref.memorize.getConfig(),
-          volume: this.ref.volume.getConfig(),
-          quality: this.ref.quality.getConfig(),
-        };
 
-        const updateVolume = function (volume) {
-          if (typeof volume !== 'number') return;
-          if (volume < 0 || volume > 100 || !Number.isFinite(volume)) return;
-          rule.ref.volume.setConfig(Math.round(volume));
-        };
+      }, util.inject.rootKey, configs, updateVolume);
 
-        util.inject(function (rootKey, configs, updateVolume) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
-
-          const { quality, memorize } = configs;
-          let volume = configs.volume;
-
-          const setVolume = function (video) {
-            const target = Math.round(volume) / 100;
-            if (video.paused && video.volume !== target) {
-              video.volume = target;
-            }
-          };
-          const onClick = function (event) {
-            this.isPlaying = true;
-            setVolume(event.target);
-            this.$refs.video.play();
-          };
-          const onPlay = function (event) {
-            this.isPlaying = true;
-            setVolume(event.target);
-          };
-          const onVolumechange = function (event) {
-            if (!memorize) return;
-            const video = event.target;
-            volume = Math.round(video.volume * 100);
-            updateVolume(volume);
-            Array.from(document.querySelectorAll('.yawf-feed-video')).forEach(setVolume);
-          };
-          const onLoadstart = function (event) {
-            setVolume(event.target);
-          };
-
-          vueSetup.transformComponentsRenderByTagName('feed-video', function (nodeStruct, Nodes) {
-            const { removeChild, appendChild, h } = Nodes;
-
-            const isPlaying = this.isPlaying;
-            // 去掉原本渲染的视频播放器
-            while (nodeStruct.firstChild) {
-              removeChild(nodeStruct, nodeStruct.firstChild);
-            }
-            // 我们自己画一个视频播放器上去
-            let url = null;
-            if (quality === 'best') try {
-              const playback = this.infos.media_info.playback_list.find(x => x.play_info?.url);
-              url = playback.play_info.url;
-            } catch (e) { /* ignore */ }
-            if (!url) url = this.infos.media_info.stream_url;
-            const videoWrap = h('div', {
-              ref: 'videoWrapper',
-              class: [this.$style.videoBox, 'yawf-video-box'],
-            }, [h('div', {
-              ref: 'videoContainer',
-              class: [this.$style.placeholder, 'yawf-video-placeholder'],
-            }, [h('div', {
-              class: [this.$style.video, 'yawf-video-container'],
-            }, [h('div', {
-              class: [this.$style.video, 'wbp-video', isPlaying ? 'yawf-feed-video-actived' : null],
-            }, [h('video', {
-              ref: 'video',
-              class: ['yawf-video', 'yawf-feed-video', 'wbpv-tech'],
-              attrs: {
-                src: url.replace(/^https?:\/\//, '//'),
-                poster: this.thumbnail.replace(/^https?:\/\//, '//'),
-                preload: 'auto',
-                controls: isPlaying ? true : false,
-              },
-              on: {
-                click: isPlaying ? null : onClick.bind(this),
-                play: onPlay.bind(this),
-                volumechange: onVolumechange.bind(this),
-                loadstart: onLoadstart.bind(this),
-              },
-            })])])])]);
-            appendChild(nodeStruct, videoWrap);
-          });
-
-        }, util.inject.rootKey, configs, updateVolume);
-
-        css.append(String.raw`
+      css.append(String.raw`
 .yawf-feed-video .wbp-video {width: 100%; height: 100%; }
 .yawf-feed-video .wbp-video:not(.yawf-feed-video-actived)::before { content: "\e001"; font-family: krvdficon; font-weight: 400; font-style: normal; font-size: 36px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; opacity: 0.85; text-shadow: 0 2px 4px rgba(0,0,0,.2); pointer-events: none; }
 .yawf-feed-video .wbp-video:not(.yawf-feed-video-actived):hover::before { color: #ff8200; }
 .yawf-video-container { position: absolute; top: 0; right: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; overflow: hidden; }
 `);
 
-      }
     },
   });
 

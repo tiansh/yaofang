@@ -25,11 +25,6 @@
       tw: '隱藏以下作者的微博||作者{{items}}',
       en: 'Hide feeds from these authors||author {{items}}',
     },
-    accountAuthorFold: {
-      cn: '折叠以下作者的微博||作者{{items}}',
-      tw: '折疊以下作者的微博||作者{{items}}',
-      en: 'Fold feeds from these authors||author {{items}}',
-    },
     accountAuthorReason: {
       cn: '作者 @{1}',
       tw: '作者 @{1}',
@@ -38,14 +33,14 @@
   });
 
   class AuthorFeedRule extends rule.class.Rule {
-    get weiboVersion() { return this.feedAction === 'fold' ? [6] : [6, 7]; }
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
     }
     init() {
       const rule = this;
       observer.feed.filter(function authorFilterFeedFilter(/** @type {Element} */feed) {
-        const oid = yawf.WEIBO_VERSION === 6 ? init.page.$CONFIG.oid : init.page.oid();
+        const oid = init.page.oid();
         const [author] = feedParser.author.id(feed);
         const [fauthor] = feedParser.fauthor.id(feed);
         // 个人主页不按照作者隐藏（否则就会把所有东西都藏起来……）
@@ -90,9 +85,6 @@
       },
       show: {
         title: () => i18n.accountAuthorShow,
-      },
-      fold: {
-        title: () => i18n.accountAuthorFold,
       },
     },
     fast: {

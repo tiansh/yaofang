@@ -4,8 +4,6 @@
   const env = yawf.env;
   const util = yawf.util;
   const backend = yawf.backend;
-  const observer = yawf.observer;
-  const init = yawf.init;
 
   const i18n = util.i18n;
 
@@ -50,100 +48,39 @@
 
   clean.CleanGroup('other', () => i18n.cleanOtherGroupTitle);
   clean.CleanRule('ads', () => i18n.cleanOtherAds, 1, {
-    weiboVersion: [6, 7],
-    init: function () {
-      if (yawf.WEIBO_VERSION === 6) {
-        if (env.config.requestBlockingSupported) {
-          backend.onRequest('ads', details => {
-            if (this.isEnabled()) return { cancel: true };
-            return {};
-          });
-        }
-      }
-    },
+    v7Support: true,
     ainit: function () {
-      if (yawf.WEIBO_VERSION === 6) {
-        util.css.append([
-          '[ad-data]', '[feedtype="ad"]',
-          '[id^="ads_"]', '[id^="ad_"]',
-          '[id*="pl_rightmod_ads"]', '[id*="pl_content_biz"]', '[id*="pl_ad_"]', '[id^="sinaadToolkitBox"]',
-          '[class*="WB_ad_"]',
-          '#topicAD', '#topicADButtom', '.WB_feed .popular_buss', '.feed_app_ads', '.W_bigDay',
-          '.WB_feed_yy2016_up_but', '.WB_feed_yy2016_down_but', '#pl_common_ali',
-          '.W_skin_banner',
-          '[node-type="imgBtn"][action-data="canUploadImage=0"]',
-        ].join(',') + ' { display: none !important; } ' +
-          '#wrapAD, .news_logo { visibility: hidden !important; }');
-
-        let version = '';
-        // 检查应当替换为哪种皮肤
-        // 网页中 $CONFIG.skin 给出了用户选择的皮肤
-        const defaultSkin = 'skin058';
-        let targetSkin = defaultSkin;
-        try { targetSkin = init.page.$CONFIG.skin || defaultSkin; } catch (e) { targetSkin = defaultSkin; }
-        if (/skin3[56]\d/.test(targetSkin)) targetSkin = defaultSkin;
-        // 检查网页中是否被插入了广告皮肤，如果有则换成用户选择的（或默认的）皮肤
-        const updateSkin = function updateSkin() {
-          const adskin = document.querySelector('link[href*="/skin35"], link[href*="/skin36"]');
-          if (adskin) {
-            version = new URL(adskin.href).searchParams.get('version');
-            util.debug('ad skin %o(version %o) has been replaced', adskin.href, version);
-            adskin.setAttribute('href', `//img.t.sinajs.cn/t6/skin/${targetSkin}/skin.css?version=${encodeURIComponent(version)}`);
-          }
-          const adskincover = document.querySelector('#skin_cover_s[style*="/skin35"], #skin_cover_s[style*="/skin36"]');
-          if (adskincover) adskincover.style.backgroundImage = `url("//img.t.sinajs.cn/t6/skin/${targetSkin}/images/profile_cover_s.jpg?version=${encodeURIComponent(version)}")`;
-        };
-        observer.dom.add(updateSkin);
-
-        // 一些广告内容的 iframe，如果这些东西只是隐藏没有被摘掉的话，里面的 JavaScript 会不停的报错，直到把你的控制台弄崩
-        const removeAdIframes = function removeAdIframes() {
-          const iframes = Array.from(document.querySelectorAll('iframe[src*="s.alitui.weibo.com"]'));
-          iframes.forEach(function (iframe) {
-            iframe.parentNode.removeChild(iframe);
+      util.inject(function (rootKey) {
+        const yawf = window[rootKey];
+        const vueSetup = yawf.vueSetup;
+        vueSetup.eachComponentVM('card-hot-search', function (vm) {
+          vm.$watch(function () { return this.bandList; }, function () {
+            const cleanUp = vm.bandList.filter(i => !i.is_ad);
+            if (vm.bandList.length !== cleanUp.length) vm.bandList = cleanUp;
           });
-        };
-        observer.dom.add(removeAdIframes);
+          vm.$watch(function () { return this.TopWord; }, function () {
+            if (vm.TopWord?.is_ad) vm.TopWord = null;
+          });
+        }, { immediate: true });
 
-        // 视频播放完毕之后会自动推荐下一个视频，之前很多是相关推荐，但现在也有不少是广告，所以不单独做一个选项，直接放在这里了
-        observer.dom.add(function videoNoAutoNext() {
-          const close = document.querySelector('.video_box_next [action-type="next_close"]:not([yawf-no-auto-next])');
-          if (!close) return;
-          close.setAttribute('yawf-no-auto-next', '');
-          close.click();
-        });
-      } else {
-        util.inject(function (rootKey) {
-          const yawf = window[rootKey];
-          const vueSetup = yawf.vueSetup;
-          vueSetup.eachComponentVM('card-hot-search', function (vm) {
-            vm.$watch(function () { return this.bandList; }, function () {
-              const cleanUp = vm.bandList.filter(i => !i.is_ad);
-              if (vm.bandList.length !== cleanUp.length) vm.bandList = cleanUp;
-            });
-            vm.$watch(function () { return this.TopWord; }, function () {
-              if (vm.TopWord?.is_ad) vm.TopWord = null;
-            });
-          }, { immediate: true });
-
-          vueSetup.eachComponentVM('new-hot', function (vm) {
-            vm.$watch(function () { return this.list; }, function () {
-              const list = vm.list;
-              if (Array.isArray(list) && list.some(item => item.realpos)) {
-                for (let i = 0; i < list.length;) {
-                  if (!list[i].realpos) {
-                    list.splice(i, 1);
-                  } else i++;
-                }
+        vueSetup.eachComponentVM('new-hot', function (vm) {
+          vm.$watch(function () { return this.list; }, function () {
+            const list = vm.list;
+            if (Array.isArray(list) && list.some(item => item.realpos)) {
+              for (let i = 0; i < list.length;) {
+                if (!list[i].realpos) {
+                  list.splice(i, 1);
+                } else i++;
               }
-              vm.hasTop = false;
-            });
+            }
+            vm.hasTop = false;
           });
+        });
 
-          vueSetup.transformComponentsRenderByTagName('tips-ad', function () {
-            return function () { return null; };
-          }, { raw: true });
-        }, util.inject.rootKey);
-      }
+        vueSetup.transformComponentsRenderByTagName('tips-ad', function () {
+          return function () { return null; };
+        }, { raw: true });
+      }, util.inject.rootKey);
     },
   });
   if (env.config.requestBlockingSupported) {
@@ -160,10 +97,9 @@
   clean.CleanRule('template', () => i18n.cleanOtherTemplate, 1, '.icon_setskin { display: none !important; }');
   clean.CleanRule('home_tip', () => i18n.cleanOtherHomeTip, 1, '#v6_pl_content_hometip { display: none !important }');
   clean.CleanRule('footer', () => i18n.cleanOtherFooter, 1, {
-    // 直接 display: none 的话，发现页面的左边栏会飘走
-    acss: '.global_footer, .WB_footer { height: 0; overflow: hidden; } [yawf-component-tag*="copy-right"] { display: none !important; }',
+    acss: '[yawf-component-tag*="copy-right"] { display: none !important; }',
     ref: { i: { type: 'bubble', icon: 'warn', template: () => i18n.cleanOtherFooterDetail } },
-    weiboVersion: [6, 7],
+    v7Support: true,
   });
   clean.CleanRule('im', () => i18n.cleanOtherIM, 1, {
     acss: '.WB_webim { display: none !important; }',
