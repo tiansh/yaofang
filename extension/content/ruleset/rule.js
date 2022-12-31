@@ -884,16 +884,15 @@
       const contentLabel = content.querySelector('label');
       contentLabel.replaceWith(...Array.from(contentLabel.childNodes));
       const container = document.createElement('span');
-      const iconType = this.icon ?? 'ask';
-      const iconTypeV7 = {
+      const iconType = {
         ask: 'help',
         warn: 'warn',
         succ: 'success',
-      }[iconType];
+      }[this.icon] ?? 'help';
       const icon = document.createElement('div');
       icon.className = 'yawf-bubble-icon';
-      const svg = icon.appendChild(ui.icon(iconTypeV7).documentElement);
-      svg.setAttribute('class', `woo-tip-icon woo-tip-${iconTypeV7}Fill`);
+      const svg = icon.appendChild(ui.icon(iconType).documentElement);
+      svg.setAttribute('class', `woo-tip-icon woo-tip-${iconType}Fill`);
       container.appendChild(icon);
       ui.bubble(content, icon);
       return container;

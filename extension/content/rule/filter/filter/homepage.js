@@ -152,7 +152,7 @@
   const groupListLazyPromise = new Promise(resolve => {
     groupListLazyPromiseResolve = resolve;
   }).then(async () => {
-    const groups = await request.groupListV7();
+    const groups = await request.groupList();
     return groups.map(({ gid, title }) => ({ text: title, value: gid }));
   });
   homepage.singleGroup = rule.Rule({
@@ -182,7 +182,7 @@
     },
     async ainit() {
       const gid = this.ref.group.getConfig();
-      const groups = await request.groupListV7();
+      const groups = await request.groupList();
       const index = groups.findIndex(g => g.gid === gid);
       const name = groups[index].title;
       const api = '/ajax/feed/groupstimeline';

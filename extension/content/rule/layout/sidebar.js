@@ -112,7 +112,7 @@
   });
 
   Object.assign(i18n, {
-    sidebarShowLiked: { cn: '在首页左侧栏增加 (V7)||{{fav}}我的收藏|{{like}}我的赞' },
+    sidebarShowLiked: { cn: '在首页左侧栏增加||{{fav}}我的收藏|{{like}}我的赞' },
   });
   sidebar.liked = rule.Rule({
     v7Support: true,

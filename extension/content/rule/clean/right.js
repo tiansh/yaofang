@@ -10,10 +10,9 @@
   Object.assign(i18n, {
     cleanRightGroupTitle: { cn: '隐藏模块 - 右栏', tw: '隱藏模組 - 右欄', en: 'Hide modules - Right Column' },
     cleanRightInfo: { cn: '个人信息', tw: '个人信息', en: 'Personal Info' },
-    cleanRightV7Entry: { cn: '切换到新版' },
     cleanRightRanks: { cn: '榜单（新歌榜等）', tw: '榜單（新歌榜等）', en: 'Rank List (Song list, etc.)' },
     cleanRightHotTopic: { cn: '热门话题 / 微博热搜', tw: '熱門話題', en: 'Hot Topic' },
-    cleanRightHotTopicTop: { cn: '置顶热门话题 (V7)' },
+    cleanRightHotTopicTop: { cn: '置顶热门话题' },
     cleanRightInterest: { cn: '可能感兴趣的人', tw: '可能感興趣的人', en: 'You may know' },
     cleanRightService: { cn: '创作者中心' },
     cleanRightMember: { cn: '会员专区', tw: '會員專區', en: 'Weibo VIP' },
@@ -29,7 +28,6 @@
 
   clean.CleanGroup('right', () => i18n.cleanRightGroupTitle);
   clean.CleanRule('info', () => i18n.cleanRightInfo, 1, '[yawf-id="v6_pl_rightmod_myinfo_myinfo"] { display: none !important; }');
-  clean.CleanRule('v7_entry', () => i18n.cleanRightV7Entry, 91, '[yawf-id="v6_pl_rightmod_myinfo_new_pc_apply"] { display: none !important; }');
   clean.CleanRule('ranks', () => i18n.cleanRightRanks, 1, '#v6_pl_rightmod_rank, [yawf-id="rightmod_taobao_movie"], [yawf-id="rightmod_recom_movie"] { display: none !important; }');
   const hotSearchTop = clean.CleanRule('hot_topic_top', () => i18n.cleanRightHotTopicTop, 91, '', { v7Support: true });
   const hotSearch = clean.CleanRule('hot_topic', () => i18n.cleanRightHotTopic, 1, '', { v7Support: true });

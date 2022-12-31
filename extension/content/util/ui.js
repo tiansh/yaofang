@@ -30,7 +30,7 @@
    * 显示一个对话框
    * @param {{ id: string, title: string, render: Function, button: { [type: string]: Function? }?, bar: boolean? }}
    */
-  ui.dialog = function ({ id, title, render, button, bar }) {
+  ui.dialog = function ({ id, title, render, button }) {
     // 初始化 DOM
     const template = document.createElement('template');
     template.innerHTML = `
@@ -310,7 +310,6 @@
     bubble.addEventListener('mouseleave', leave);
   };
 
-  // V7 only
   const icons = {
     checkbox: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M0 0v16h16V0H0zm14.398 2.9a.667.667 0 0 1 .523 1.129l-8.686 8.604c-.26.258-.677.258-.937 0L1.408 8.78a.667.667 0 1 1 .939-.947l3.42 3.39 8.215-8.14a.667.667 0 0 1 .416-.182z"/></svg>',
     success: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><path fill="currentColor" d="M512 0a512 512 0 1 0 0 1024A512 512 0 1 0 512 0zm265.393 292.006c16.75-.2 33.417 5.913 46.023 18.418 25.24 25.038 24.694 66.134-1.176 91.795L509.836 712.08a66.95 66.95 0 0 1-43.293 19.467l-.19.01a63.06 63.06 0 0 1-7.584.443c-17.812 0-33.938-7.168-45.604-18.754l-213.22-211.504C188.838 490.25 182 474.623 182 457.412c0-35.4 28.93-64.1 64.62-64.1 17.35 0 33.107 6.783 44.715 17.822l169.58 168.217L730.877 311.6c12.935-12.83 29.766-19.374 46.516-19.584z"/></svg>',

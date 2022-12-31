@@ -48,6 +48,7 @@
 
     const actions = [
       { action: 'show', details: show, before: beforeShow },
+      { action: 'hide', details: hide, before: beforeHide },
     ].filter(item => item.details);
 
     actions.forEach(({ action, details: { title, priority = null }, before }) => {

@@ -74,8 +74,8 @@
       this.done = [];
       this.filters = new FilterCollection();
       this.pending = [];
-      this.busy = false;
-      this.clean = null;
+      this.busy = null;
+      this.resolve = null;
     }
     filter(filter, { priority = 0 } = {}) {
       this.filters.add(filter, priority);
@@ -93,55 +93,30 @@
         })
       )));
     }
-    async active(items, isAppend = true) {
-      if (isAppend) {
-        this.pending.push(...items);
-      } else {
-        this.pending.unshift(...items);
-      }
+    async active(items) {
+      this.pending.push(...items);
       if (this.busy) {
-        if (!this.clean) {
-          this.clean = new Promise(resolve => {
-            this.resolve = resolve;
-          });
-        }
-        await this.clean;
+        await this.busy;
         return;
       }
-      this.busy = true;
-      const promises = [];
+      let resolve = null;
+      this.busy = new Promise(r => { resolve = r; });
       while (this.pending.length) {
         while (this.pending.length) {
           const item = this.pending.shift();
-          // console.log('filter run', item);
-          promises.push((async () => {
-            await this.invokeCallbacks(this.before, item);
-            const result = await this.filters.filter(item);
-            // console.log('filter apply', item);
-            const callAfter = this.apply(item, result);
-            if (callAfter) {
-              await this.invokeCallbacks(this.after, item, result);
-            }
-            await this.invokeCallbacks(this.finally, item, result);
-            await new Promise(resolve => setTimeout(resolve, 0));
-          })());
+          await this.invokeCallbacks(this.before, item);
+          const result = await this.filters.filter(item);
+          const callAfter = this.apply(item, result);
+          if (callAfter) {
+            await this.invokeCallbacks(this.after, item, result);
+          }
+          await this.invokeCallbacks(this.finally, item, result);
           await new Promise(resolve => setTimeout(resolve, 0));
-          // console.log('filter end', item);
         }
-        await Promise.all(promises);
-        // console.log('filter done');
         await this.invokeCallbacks(this.done);
       }
-      this.busy = false;
-      if (this.pending.length) {
-        await this.active(this.pending.splice(0));
-        return;
-      }
-      if (this.clean) this.clean = null;
-      if (this.resolve) {
-        this.resolve();
-        this.resolve = null;
-      }
+      this.busy = null;
+      resolve();
     }
     async rerun() {
       const lastRerun = this.lastRerun = {};
@@ -246,7 +221,7 @@ article[class*="Feed"].yawf-feed-filter-running::before { content: " "; display:
             if (data.topic_struct) feedDetail.topic_struct = data.topic_struct;
           }
         } catch (e) {
-          console.error(e);
+          console.error('Error while fetching long text', e);
         }
         feedDetail._yawf_LongTextContentLoading = false;
       };
@@ -267,19 +242,22 @@ article[class*="Feed"].yawf-feed-filter-running::before { content: " "; display:
       const triggerFilter = function (vm, feed) {
         const runIndex = feed._yawf_FilterRunIndex;
         feed._yawf_FilterStatus = 'running';
-        const cleanUp = function () {
-          pendingFeeds.delete(runIndex);
-          vm.$off('hook:beforeDestroy', cleanUp);
-        };
-        vm.$once('hook:beforeDestroy', cleanUp);
         return new Promise(resolve => {
+          const cleanUp = function () {
+            pendingFeeds.delete(runIndex);
+            vm.$off('hook:beforeDestroy', cleanUp);
+          };
+          vm.$once('hook:beforeDestroy', function () {
+            cleanUp();
+            resolve({});
+          });
           const handleFilterResult = function ({ result, reason }) {
             cleanUp();
             feed._yawf_FilterStatus = result;
             feed._yawf_FilterReason = reason;
             resolve({ result, reason });
           };
-          pendingFeeds.set(runIndex, new WeakRef(handleFilterResult));
+          pendingFeeds.set(runIndex, handleFilterResult);
           const event = new CustomEvent(key, {
             detail: JSON.stringify({ action: 'trigger', runIndex, data: feed }),
           });
@@ -437,34 +415,40 @@ article[class*="Feed"].yawf-feed-filter-running::before { content: " "; display:
         } else if (detail.action === 'result') {
           // 应用过滤结果
           const runIndex = detail.runIndex;
-          const handler = pendingFeeds.get(runIndex)?.deref();
+          const handler = pendingFeeds.get(runIndex);
           if (handler) handler(detail.result);
         }
       }, true);
       let runIndex = 0;
-      vueSetup.eachComponentVM('feed-scroll', function (vm) {
-        // 当 feed-scroll 内 feed 列表变化时，我们把那些没见过的全都标记一下
-        vm.$watch(function () { return this.data; }, function () {
-          const feeds = [...vm.data];
-          feeds.forEach(async feed => {
-            if (!(feed.mid > 0)) return;
-            if (feed._yawf_FilterApply) return;
+      const seenFeeds = new WeakMap();
+      const onBeforeUpdate = function () {
+        const vm = this;
+        if (!Array.isArray(vm.data)) return;
+        vm.data.forEach(async feed => {
+          if (seenFeeds.has(feed)) return;
+          if (!(feed.mid > 0)) return;
+          try {
             const id = runIndex++;
-            // console.log('filter start', feed.mid);
             vm.$set(feed, '_yawf_FilterStatus', 'loading');
             vm.$set(feed, '_yawf_FilterReason', null);
             vm.$set(feed, '_yawf_FilterApply', true);
             vm.$set(feed, '_yawf_FilterRunIndex', id);
+            seenFeeds.set(feed, id);
             await longContentExpand(vm, feed);
-            // console.log('filter trigger', feed.mid);
             const { result, reason } = await triggerFilter(vm, feed);
-            // console.log('filter finish', feed.mid);
-            applyFilterResult(vm, feed, { result, reason });
-          });
-        }, { immediate: true });
+            if (Array.isArray(vm.data) && vm.data.includes(feed)) {
+              applyFilterResult(vm, feed, { result, reason });
+            }
+          } catch (e) {
+            util.debug('Error while filter feed %o', feed);
+            applyFilterResult(vm, feed, {});
+          }
+        });
+      };
+      vueSetup.eachComponentVM('feed-scroll', function (vm) {
+        vm.$options.beforeUpdate.push(onBeforeUpdate);
+        onBeforeUpdate();
       });
-
-
     }, util.inject.rootKey, key);
   }, { priority: priority.LAST });
 

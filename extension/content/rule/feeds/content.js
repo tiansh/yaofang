@@ -166,8 +166,6 @@ span.yawf-feed-screen-name { font-weight: bold; }
       count: { type: 'range', min: 140, max: 2000, step: 10, initial: 200 },
       br: { type: 'range', min: 1, max: 60, step: 1, initial: 30 },
     },
-    // V6 这个设置项的相关逻辑实现在 content/rule/filter/common/long.js
-    // V7 实现如下
     init() {
       const expand = this.isEnabled();
       const count = this.ref.count.getConfig();
@@ -388,59 +386,9 @@ span.yawf-feed-screen-name { font-weight: bold; }
         const yawf = window[rootKey];
         const vueSetup = yawf.vueSetup;
 
-        vueSetup.eachComponentVM('feed-vote', function (vm) {
-
-          vm.setVote = (function (setVote) {
-            return function (id) {
-              if (!this.isParted) {
-                const feedData = this.$parent?.data;
-                if (feedData && !feedData.attitudes_status) {
-                  voteBlock();
-                  return;
-                }
-              }
-              setVote(id);
-            }.bind(vm);
-          }(vm.setVote));
-
-          vueSetup.transformComponentRender(vm, function (render) {
-            return function (createElement, { builder }) {
-              if (this.voteObject.parted) {
-                return render.call(this, createElement);
-              }
-              // 将当前的投票元素伪装成已参加过投票的状态
-              const wrap = Object.create(this, {
-                getAniStyle: { value: this.constructor.options.methods.getAniStyle },
-                isParted: { value: true },
-                firstParted: { value: true },
-                voteObject: {
-                  value: Object.create(this.voteObject, {
-                    parted: { value: 1 },
-                  }),
-                },
-              });
-              wrap.getAniStyle = wrap.getAniStyle.bind(wrap);
-              const { nodeStruct, Nodes, getRoot } = builder(render.call(wrap, createElement));
-              // 去掉分享投票的按钮
-              const { removeChild, vNode } = Nodes;
-              const share = nodeStruct.querySelector(`[class|="${this.$style.btnB}"]`);
-              removeChild(share.parentNode, share);
-              // 修正投票按钮的事件
-              const buttons = nodeStruct.querySelectorAll('x-woo-panel');
-              if (buttons.length === this.voteObject.vote_list.length) {
-                Array.from(buttons).forEach((button, index) => {
-                  const optionId = this.voteObject.vote_list[index].id;
-                  const buttonVNode = vNode(button);
-                  buttonVNode.data.nativeOn.click = buttonVNode.data.on.click = () => {
-                    this.vote(optionId);
-                  };
-                });
-              }
-              return getRoot();
-            };
-          }, { raw: true });
-
-          vm.$forceUpdate();
+        vueSetup.transformComponentsRenderByTagName('vote-item', function (nodeStruct, Nodes) {
+          const { addClass } = Nodes;
+          addClass(nodeStruct, this.$style.itemed);
         });
       }, util.inject.rootKey, voteBlock);
     },

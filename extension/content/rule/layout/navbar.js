@@ -129,7 +129,7 @@
   });
 
   Object.assign(i18n, {
-    navHideAvatar: { cn: '导航栏不显示个人头像 (V7)' },
+    navHideAvatar: { cn: '导航栏不显示个人头像' },
   });
   const hideNavAvatar = css.add('[class*="Ctrls_avatarItem_"] { visibility: hidden; }');
   navbar.navHideAvatar = rule.Rule({
