@@ -145,8 +145,10 @@
       }
       // 用户昵称
       const userLink = nodeStruct.querySelector('span').closest('x-a-link');
-      if (userLink) addClass(userLink, 'yawf-feed-author');
-      if (newTab.author) setAttribute(userLink, 'target', '_blank');
+      if (userLink) {
+        addClass(userLink, 'yawf-feed-author');
+        if (newTab.author) setAttribute(userLink, 'target', '_blank');
+      }
       const userLine = nodeStruct.querySelector('span').closest('x-woo-box');
       if (userLine) {
         addClass(userLine, 'yawf-feed-author-line');
@@ -353,15 +355,13 @@
 
       // 操作按钮
       const buttons = [...nodeStruct.querySelectorAll('x-woo-box-item')];
-      if (buttons.length === 3) {
-        const [retweet, comment, like] = buttons;
-        addClass(retweet, 'yawf-feed-toolbar-retweet');
-        addClass(comment, 'yawf-feed-toolbar-comment');
-        addClass(like, 'yawf-feed-toolbar-like');
-
-        if (configs.hideFastRepost) {
+      buttons.forEach(button => {
+        if (button.childNodes.length !== 3) return;
+        const buttonType = [...button.childNodes].findIndex(node => node.nodeType === Node.ELEMENT_NODE);
+        addClass(button, ['yawf-feed-toolbar-retweet', 'yawf-feed-toolbar-comment', 'yawf-feed-toolbar-like'][buttonType]);
+        if (buttonType === 0 && configs.hideFastRepost) {
           try {
-            const pop = retweet.querySelector('x-woo-pop');
+            const pop = button.querySelector('x-woo-pop');
             const popVNode = vNode(pop);
             const retweetButtonVNode = popVNode.data.scopedSlots.ctrl()[0];
             const oriRetweetButton = pop.querySelector('x-woo-pop-item:nth-child(2)');
@@ -374,7 +374,7 @@
             // ignore
           }
         }
-      }
+      });
     });
 
     const repostCommentListRanderTransform = function (nodeStruct, Nodes) {
