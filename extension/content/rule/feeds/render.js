@@ -205,12 +205,20 @@
 
       // 替换掉原有的来源，保证来源本身有个标签，后续用来做拖拽过滤用
       if (source && source.nodeType !== Node.COMMENT_NODE) {
+        const tag = 'x-content-parse-wrap-x' + (Math.random() + '').slice(2);
+        const sourceValue = new DOMParser().parseFromString(`<${tag}>` + this.source, 'text/html').querySelector(tag);
+        const link = sourceValue.querySelector('a');
+        const url = link && link.href || null;
+        const sourceText = sourceValue.contentText;
         const newSourceVNode = h('div', {
           class: [this.$style.source, 'yawf-feed-source-container'],
-        }, ['来自 ', h('span', {
+        }, ['来自 ', h(url ? 'a' : 'span', {
           class: ['yawf-feed-source'],
           attrs: { draggable: 'true' },
-        }, [this.source || '微博 weibo.com'])]);
+          href: url,
+          rel: url && 'noopener nofollow',
+          target: url && '_blank',
+        }, [sourceText || '微博 weibo.com'])]);
         insertBefore(sourceBox, newSourceVNode, source);
         removeChild(sourceBox, source);
       }

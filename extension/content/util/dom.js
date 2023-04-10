@@ -18,6 +18,7 @@
     while (result.firstChild) fragment.appendChild(result.firstChild);
     return fragment;
   };
+  dom.parseHtml = parseHtml;
 
   /**
    * @param {Element} element

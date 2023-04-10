@@ -1,6 +1,9 @@
 ; (function () {
 
   const yawf = window.yawf;
+  const util = yawf.util;
+
+  const dom = util.dom;
 
   const feedParser = yawf.feed = {};
   const commentParser = yawf.comment = {}; // eslint-disable-line no-unused-vars
@@ -22,6 +25,7 @@
     ].join('');
   };
 
+  const contentText = html => dom.parseHtml(html).textContent;
   const catched = (f, v = null) => feed => { try { return f(feed); } catch (e) { return v; } };
   const mid = mid => mid > 0 ? mid : null;
 
@@ -56,7 +60,7 @@
     let text = [feed, feed.retweeted_status].filter(x => x?.user).map(x => [
       x.user.screen_name,
       x.longTextContent_raw || x.text_raw,
-      x.source,
+      contentText(x.source),
       date(x.created_at),
     ]).reduce((x, y) => x.concat(y)).join('\u2028');
     if (Array.isArray(feed.url_struct)) {
@@ -103,7 +107,7 @@
   };
   const source = feedParser.source = {};
   source.text = feed => {
-    const sources = [feed, feed.retweeted_status].filter(x => x).map(x => x.source);
+    const sources = [feed, feed.retweeted_status].filter(x => x).map(x => contentText(x.source));
     return sources;
   };
   const pics = feedParser.pics = {};
