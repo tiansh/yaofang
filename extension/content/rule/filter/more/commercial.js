@@ -23,8 +23,8 @@
   });
 
   i18n.adFeedFilter = {
-    cn: '推广微博/粉丝通微博/品牌速递/好友赞过的微博 {{i}}',
-    tw: '推廣微博/粉絲通微博/品牌速遞/好友贊過的微博 {{i}}',
+    cn: '推广微博/粉丝通微博/品牌速递/好友赞过的微博/内容推荐 {{i}}',
+    tw: '推廣微博/粉絲通微博/品牌速遞/好友贊過的微博/內容推薦 {{i}}',
     en: 'Ad Weibo / Inserted not followed Weibo {{i}}',
   };
   i18n.adFeedFilterDetail = {
@@ -34,7 +34,7 @@
   commercial.ad = rule.Rule({
     v7Support: true,
     id: 'filter_ad_feed',
-    version: 1,
+    version: 109,
     parent: commercial.commercial,
     template: () => i18n.adFeedFilter,
     ref: {
@@ -47,6 +47,8 @@
         // TODO 我也不确定这个属性是做什么的
         // if (feed.promotion) console.log('FILTERTEST promotion: %o (%o)', feed.promotion, feed);
         // if (feed.attitude_dynamic_adid) console.log('FILTERTEST attitude_dynamic_adid: %o (%o)', feed.attitude_dynamic_adid, feed);
+        // 未关注的人的微博
+        if (['home', 'group'].includes(init.page.type()) && !feed.user.following) return 'hide';
         // 某某赞过的微博
         if (feed.title?.type === 'likerecommend') return 'hide';
         // 热推 / 广告之类

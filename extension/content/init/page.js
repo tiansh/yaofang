@@ -15,6 +15,7 @@
   page.type = function () {
     if (location.pathname.startsWith('/tv/')) return 'tv';
     const route = page.route;
+    if (route.name === 'home') return 'home';
     if (route.name === 'profile') return 'profile';
     if (route.name === 'like') return 'like';
     if (route.name === 'collect') return 'fav';
