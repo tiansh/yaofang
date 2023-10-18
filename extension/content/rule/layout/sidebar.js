@@ -153,7 +153,7 @@
           }.bind(this);
 
           if (configs.fav) {
-            const target = { name: 'collect', params: { id: this.$root.config.uid } };
+            const target = { name: 'fav', params: { id: this.$root.config.uid } };
             const navItem = h('nav-item', {
               key: 'yawf-fav',
               class: 'yawf-nav-item',
