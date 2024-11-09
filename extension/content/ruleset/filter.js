@@ -137,8 +137,7 @@
   observer.feed = new FilterObserver();
 
   /**
-   * 针对评论的过滤规则
-   * 对应脚本版 observer.comment
+   * 我懒得查找依赖关系了，其实这个已经没用了
    */
   observer.comment = new FilterObserver();
 
@@ -245,14 +244,13 @@ article[class*="Feed"].yawf-feed-filter-running::before { content: " "; display:
         return new Promise(resolve => {
           const cleanUp = function () {
             pendingFeeds.delete(runIndex);
+            resolve({});
             vm.$off('hook:beforeDestroy', cleanUp);
           };
-          vm.$once('hook:beforeDestroy', function () {
-            cleanUp();
-            resolve({});
-          });
+          vm.$once('hook:beforeDestroy', cleanUp);
           const handleFilterResult = function ({ result, reason }) {
-            cleanUp();
+            pendingFeeds.delete(runIndex);
+            vm.$off('hook:beforeDestroy', cleanUp);
             feed._yawf_FilterStatus = result;
             feed._yawf_FilterReason = reason;
             resolve({ result, reason });
@@ -453,3 +451,120 @@ article[class*="Feed"].yawf-feed-filter-running::before { content: " "; display:
   }, { priority: priority.LAST });
 
 }());
+
+; (function () {
+  const yawf = window.yawf;
+
+  const util = yawf.util;
+  const init = yawf.init;
+  const observer = yawf.observer;
+
+  const priority = util.priority;
+  const css = util.css;
+  const strings = util.strings;
+
+  init.onLoad(function () {
+    const configs = {
+      text: {
+        show: yawf.rules.comment.text.show.ref.items.getConfig(),
+        hide: yawf.rules.comment.text.hide.ref.items.getConfig(),
+      },
+      regex: {
+        show: yawf.rules.comment.regex.show.ref.items.getConfigCompiled(),
+        hide: yawf.rules.comment.regex.hide.ref.items.getConfigCompiled(),
+      },
+      user: {
+        show: yawf.rules.comment.name.show.ref.items.getConfig(),
+        hide: yawf.rules.comment.name.hide.ref.items.getConfig(),
+      },
+      more: {
+        bot: yawf.rules.comment.more.commentByBot.getConfig(),
+      }
+    };
+    util.inject(function (rootKey, configs) {
+      console.log(configs);
+      const yawf = window[rootKey];
+      const vueSetup = yawf.vueSetup;
+      const matchText = (comment, textList) => (
+        textList.some(text => comment.text_raw.includes(text))
+      );
+      const matchRegex = (comment, regexList) => (
+        regexList.some(regex => regex.test(comment.text_raw))
+      );
+      const matchUser = (comment, nameList) => (
+        nameList.some(name => (comment.screen_name === name ||
+          comment.text.includes(`<a href=/n/${name} `)))
+      );
+      const matchBot = comment => (
+        comment.analysis_extra?.includes('ai_type')
+      );
+      const filterComment = function (comment) {
+        try {
+          const isShow = (
+            matchText(comment, configs.text.show) ||
+            matchRegex(comment, configs.regex.show) ||
+            matchUser(comment, configs.user.show) ||
+          false);
+          if (isShow) return 'show';
+          const isHide = (
+            matchText(comment, configs.text.hide) ||
+            matchRegex(comment, configs.regex.hide) ||
+            matchUser(comment, configs.user.hide) ||
+            configs.more.bot && matchBot(comment) ||
+          false);
+          if (isHide) {
+            console.log('Comment %o hidden', comment.idstr);
+            return 'hide';
+          }
+          return null;
+        } catch (error) {
+          console.error('Error while filte comment: %o', error);
+          return null;
+        }
+      };
+      const handleCommentSubList = function (sublist) {
+        for (let index2 = 0; index2 < sublist.length;) {
+          const result2 = filterComment(sublist[index2]);
+          if (result2 === 'hide') {
+            sublist.splice(index2, 1);
+            continue;
+          }
+          index2++;
+        }
+      };
+      const handleCommentList = function (list) {
+        for (let index1 = 0; index1 < list.length;) {
+          const result = filterComment(list[index1]);
+          if (result === 'hide') {
+            list.splice(index1, 1);
+            continue;
+          }
+          const sublist = list[index1].comments;
+          if (sublist) {
+            handleCommentSubList(sublist);
+          }
+          index1++;
+        }
+      };
+      vueSetup.eachComponentVM('repost-coment-list', vm => {
+        vm.$watch('list', handleCommentList, { immediate: true, deep: true })
+      });
+      vueSetup.eachComponentVM('feed', vm => {
+        if (!vm.data.rcList) return;
+        vm.$watch('data.rcList', rcList => {
+          handleCommentList(rcList);
+        }, { immediate: true, deep: true });
+      });
+      vueSetup.eachComponentVM('reply-modal', vm => {
+        if (!vm.rootComment) return;
+        vm.$watch('rootComment', rootComment => {
+          handleCommentList([rootComment]);
+        }, { immediate: true, deep: true });
+        vm.$watch('list', list => {
+          handleCommentSubList(list);
+        }, { immediate: true, deep: true });
+      });
+    }, util.inject.rootKey, configs);
+  }, { priority: priority.LAST });
+}())
+

@@ -1621,7 +1621,7 @@ label:hover .yawf-config-checkbox-wrap .yawf-config-checkbox-icon,
 
 .yawf-config-group { display: block; font-weight: bold; margin: 15px 10px 5px; }
 .yawf-config-rule { display: block; margin: 5px 20px; }
-.yawf-config-rule-unsupport { opacity: 0.5; }
+.yawf-config-rule-unsupport { display: none; }
 .yawf-bubble .yawf-config-rule { display: inline; margin: 0; }
 .yawf-config-rule > label + label { margin-left: 8px; }
 .yawf-config-rule > br + label { margin-left: 20px; }

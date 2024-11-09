@@ -27,21 +27,9 @@
   });
 
   class TextCommentRule extends rule.class.Rule {
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
-    }
-    init() {
-      const rule = this;
-      observer.comment.filter(function textCommentFilter(/** @type {Element} */comment) {
-        const text = commentParser.text(comment);
-        const keywords = rule.ref.items.getConfig();
-        const contain = keywords.find(keyword => text.includes(keyword));
-        if (!contain) return null;
-        const reasonText = contain.length > 8 ? contain.slice(0, 6) + '…' : contain;
-        const reason = i18n.textContentReason.replace('{1}', () => reasonText);
-        return { result: rule.feedAction, reason };
-      }, { priority: this.priority });
-      this.ref.items.addConfigListener(() => { observer.comment.rerun(); });
     }
   }
 
@@ -89,19 +77,9 @@
   });
 
   class RegexCommentRule extends rule.class.Rule {
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
-    }
-    init() {
-      const rule = this;
-      observer.comment.filter(function regexCommentFilter(/** @type {Element} */comment) {
-        const text = commentParser.text(comment);
-        const regexen = rule.ref.items.getConfigCompiled();
-        const matchReg = regexen.find(regex => regex.test(text));
-        if (!matchReg) return null;
-        return { result: rule.feedAction };
-      }, { priority: this.priority });
-      this.ref.items.addConfigListener(() => { observer.comment.rerun(); });
     }
   }
 
@@ -109,7 +87,7 @@
     baseClass: RegexCommentRule,
     tab: 'comment',
     key: 'regex',
-    version: 1,
+    version: 110,
     type: 'regexen',
     title: () => i18n.contentRegexCommentGroupTitle,
     details: {

@@ -121,8 +121,8 @@
     parent: sidebar.sidebar,
     template: () => i18n.sidebarShowLiked,
     ref: {
-      fav: { type: 'boolean', initial() { return true; } },
-      like: { type: 'boolean', nitial() { return true; } },
+      fav: { type: 'boolean', get initial() { return true; } },
+      like: { type: 'boolean', get initial() { return true; } },
     },
     ainit() {
       const configs = {
@@ -153,7 +153,7 @@
           }.bind(this);
 
           if (configs.fav) {
-            const target = { name: 'collect', params: { id: this.$root.config.uid } };
+            const target = { name: 'fav', params: { id: this.$root.config.uid } };
             const navItem = h('nav-item', {
               key: 'yawf-fav',
               class: 'yawf-nav-item',
@@ -161,6 +161,7 @@
               on: { click: onClick(target) },
             });
             const navLink = h('a', {
+              key: 'yawf-fav',
               class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
               attrs: { href: this.$router.resolve(target).href },
             }, [navItem]);
@@ -168,19 +169,18 @@
           }
           if (configs.like) {
             const target = { name: 'like', params: { id: this.$root.config.uid } };
-            let navItem = h('nav-item', {
+            const navItem = h('nav-item', {
               key: 'yawf-like',
               class: 'yawf-nav-item',
               attrs: { icon: 'navLike', text: '我的赞' },
               on: { click: onClick(target) },
             });
-            if (configs.link) {
-              navItem = h('a', {
-                class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
-                attrs: { href: this.$router.resolve(target).href },
-              }, [navItem]);
-            }
-            insertBefore(container, navItem, divider);
+            const navLink = h('a', {
+              key: 'yawf-like',
+              class: 'yawf-nav-link yawf-extra-link yawf-link-mfsp yawf-link-nmfpd',
+              attrs: { href: this.$router.resolve(target).href },
+            }, [navItem]);
+            insertBefore(container, navLink, divider);
           }
         });
       }, util.inject.rootKey, configs);

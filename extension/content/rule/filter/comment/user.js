@@ -28,19 +28,9 @@
 
 
   class CommentUserFeedRule extends rule.class.Rule {
+    get v7Support() { return true; }
     constructor(item) {
       super(item);
-    }
-    init() {
-      const rule = this;
-      observer.comment.filter(function commentFilterFeedFilter(/** @type {Element} */feed) {
-        const users = new Set(commentParser.user.name(feed));
-        const accounts = rule.ref.items.getConfig();
-        const contain = accounts.find(account => users.has(account));
-        if (!contain) return null;
-        return { result: rule.feedAction };
-      }, { priority: this.priority });
-      this.ref.items.addConfigListener(() => { observer.comment.rerun(); });
     }
   }
 
@@ -49,7 +39,7 @@
     tab: 'comment',
     key: 'name',
     type: 'usernames',
-    version: 1,
+    version: 110,
     title: () => i18n.accountCommentGroupTitle,
     details: {
       hide: {

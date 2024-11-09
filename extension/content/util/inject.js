@@ -71,6 +71,8 @@
           return invoke(val);
         } else if (val && typeof val === 'object' && val._type === 'callback' && val.invoke === baseKey) {
           return callback(val);
+        } else if (val && typeof val === 'object' && val._type === 'regex' && val.invoke === baseKey) {
+          return new RegExp(val.source, val.flags);
         } else {
           return val;
         }
@@ -109,6 +111,8 @@
       } else if (typeof val === 'object' && val instanceof Callback) {
         const key = val.id;
         return { _type: 'callback', callback: key, invoke: baseKey };
+      } else if (typeof val === 'object' && val instanceof RegExp) {
+        return { _type: 'regex', source: val.source, flags: val.flags, invoke: baseKey };
       }
       return val;
     }));

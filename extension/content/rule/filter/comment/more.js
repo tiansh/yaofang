@@ -20,7 +20,7 @@
   const more = comment.more = {};
   more.more = rule.Group({
     parent: comment.comment,
-    template: () => i18n.moreCommercialGroupTitle,
+    template: () => i18n.commentMoreGroupTitle,
   });
 
 
@@ -137,6 +137,18 @@
       this.addConfigListener(() => { observer.comment.rerun(); });
     },
   });
+
+  i18n.commentByBot = {
+    cn: '隐藏机器人评论',
+  };
+
+  more.commentByBot = rule.Rule({
+    id: 'filter_comment_by_bot',
+    version: 110,
+    parent: more.more,
+    template: () => i18n.commentByBot,
+    get v7Support() { return true; }
+  })
 
   i18n.commentWithForward = {
     cn: '隐藏含有转发消息的微博',
